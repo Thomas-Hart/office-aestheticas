@@ -1,0 +1,20 @@
+.bubble-button {
+    background-color: #1DACC7;
+    border: none;
+    border-radius: 40px;
+    height: 3rem;
+    width: 12rem;
+    font-family: manrope;
+    font-weight: bolder;
+    font-size: 1.3rem;
+    color: white;
+    transition: background-color .2s ease-in, color .2s ease-in, border .2s ease-in;
+  }
+  
+  .bubble-button:hover {
+    background-color: #f0f2f5;
+    color: black;
+    overflow: hidden;
+    border: .15vw solid #1DACC7;
+    cursor: pointer;
+  }

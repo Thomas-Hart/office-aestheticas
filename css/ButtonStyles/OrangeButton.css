@@ -1,0 +1,25 @@
+.honey-button {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: bolder;
+    transition: background-color 0.2s ease-in-out, border 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.1s ease-in-out;
+    border: 0.15rem solid transparent;
+    width: 100%;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  
+  .honey-button:hover {
+    background-color: #befa71;
+    border: 0.15rem solid #befa71;
+    color: black;
+  }
+
+  .honey-button:active {
+    transform: scale(0.98); /* Makes the button slightly smaller */
+    background-color: #d19b4c; /* Changes the background color */
+  }

@@ -1,0 +1,35 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.703.0",
+    "@nuxt/image": "^1.5.0",
+    "@nuxtjs/google-fonts": "^3.2.0",
+    "@paypal/paypal-js": "^8.1.2",
+    "@pinia/nuxt": "^0.5.1",
+    "bcrypt": "^5.1.1",
+    "google-auth-library": "^9.14.1",
+    "jsonwebtoken": "^9.0.2",
+    "klaviyo-api": "^14.0.0",
+    "mongoose": "^8.4.0",
+    "nuxt": "^3.11.2",
+    "nuxt-vue3-google-signin": "^0.0.6",
+    "pinia": "^2.1.7",
+    "square": "^36.0.0",
+    "uuid": "^9.0.1",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@pinia-plugin-persistedstate/nuxt": "^1.2.0",
+    "foundation-emails": "^2.4.0"
+  }
+}
