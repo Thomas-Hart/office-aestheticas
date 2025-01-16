@@ -26,7 +26,7 @@
   
   <style scoped>
 .collection-section {
-  padding: 40px 0;
+  padding: 5rem 0 2rem 0;
   display: flex;
   justify-content: center;
   align-items: center;

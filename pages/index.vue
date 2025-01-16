@@ -11,7 +11,7 @@
     </section>
 
     <section class="set-apart-section">
-      <WebSectionsSetApart />
+      <EcommerceListingsTabs />
     </section>
 
     <!--prettier-ignore-->
@@ -58,7 +58,7 @@ emit("hide-loading");
 }
 
 .set-apart-section {
-  background: url("/SetApartBG.svg") no-repeat;
+  /* background: url("/SetApartBG.svg") no-repeat; */
   min-height: 40rem;
 }
 

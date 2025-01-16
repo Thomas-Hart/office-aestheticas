@@ -51,8 +51,8 @@ onMounted(() => {
     const dx = mousePos.x - lampCenter.x;
     const dy = mousePos.y - lampCenter.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    const maxDistance = 300; // Max distance for effect
-    const proximityFactor = Math.max(0.5, 1 - distance / maxDistance); // Closer = brighter
+    const maxDistance = 750; // Max distance for effect
+    const proximityFactor = Math.max(0.25, 1 - distance / maxDistance); // Closer = brighter
 
     // Create the gradient for the glow
     ctx.save();
@@ -85,10 +85,10 @@ onMounted(() => {
     let frame = 0;
 
     function step() {
-      frame += 0.1;
+      frame += 0.3;
 
       // Bloom fluctuation
-      const bloom = Math.sin(frame / 30) * 3; // Soft, slow pulsing effect
+      const bloom = Math.sin(frame / 40) * 3; // Soft, slow pulsing effect
       drawGlow(bloom);
 
       requestAnimationFrame(step);
