@@ -1,6 +1,6 @@
 <template>
   <div>
-    <NavFooterPreloadTopNav />
+    <NavFooterPreloadOANav />
 
     <div>
       <slot />
@@ -17,7 +17,7 @@
           <path d="M 0 0 Q 0 10 25 10 L 100 10 L 100 0 Z" fill="white" />
         </svg>
       </div> -->
-    <NavFooterPreloadNAHFooter />
+    <NavFooterPreloadOAFooter />
   </div>
 </template>
   
