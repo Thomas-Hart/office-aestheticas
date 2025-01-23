@@ -1,28 +1,19 @@
 <template>
   <div>
-    <NavFooterPreloadOANav />
+    <NavFooterPreloadOANav @toggle-cart="toggleCartVisibility" />
+    <EcommerceNavCart v-if="isCartVisible" @close-cart="toggleCartVisibility" />
 
     <div>
       <slot />
     </div>
-    <!-- <div class="divider">
-        <svg
-          width="100%"
-          height="100"
-          viewBox="0 0 100 10"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect width="100" height="10" fill="" />
-          <path d="M 0 0 Q 0 10 25 10 L 100 10 L 100 0 Z" fill="white" />
-        </svg>
-      </div> -->
+
     <NavFooterPreloadOAFooter />
   </div>
 </template>
-  
-  <script setup>
+
+<script setup>
 const showMobileNav = ref(false);
+const isCartVisible = ref(false);
 
 const store = useUserStore();
 const isLoggedIn = computed(() => !!store.token);
@@ -55,15 +46,21 @@ const usePaths1 = ref(true);
 const currentPaths = computed(() => {
   return p;
 });
+
+// Function to toggle cart visibility
+const toggleCartVisibility = () => {
+  console.log("Here");
+  isCartVisible.value = !isCartVisible.value;
+};
 </script>
-  
-  <style scoped media="screen">
+
+<style scoped media="screen">
 #app {
   scroll-behavior: smooth;
   background-color: #545454;
-  font-family: "Montserrat", sans-serif, "HelveticaNeue-Light",
-    "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande",
-    sans-serif;
+  font-family: "Source Sans Pro", "Montserrat", sans-serif,
+    "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica,
+    Arial, "Lucida Grande", sans-serif;
   position: static;
 }
 
@@ -201,5 +198,3 @@ footer {
   }
 }
 </style>
-
-  

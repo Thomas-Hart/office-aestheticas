@@ -83,7 +83,7 @@ useHead({
 #app {
   scroll-behavior: smooth;
   background-color: #f0f2f5;
-  font-family: Montserrat, sans-serif, "HelveticaNeue-Light",
+  font-family: "Source Sans Pro", Montserrat, sans-serif, "HelveticaNeue-Light",
     "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande",
     sans-serif;
   position: static;
@@ -189,7 +189,7 @@ form button {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: Montserrat, sans-serif, "HelveticaNeue-Light",
+  font-family: "Source Sans Pro", Montserrat, sans-serif, "HelveticaNeue-Light",
     "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande",
     sans-serif;
 }

@@ -23,7 +23,10 @@
             @closeMobileNav="closeMobileNav"
             @openLoginModal="openLoginModal"
           />
-          <NavFooterPreloadNavCart />
+          <NavFooterPreloadNavCartButton
+            @clicked="closeMobileNav"
+            @toggle-cart="toggleCart"
+          />
 
           <!-- Pointer Animation & Text for Cart -->
           <img
@@ -55,7 +58,10 @@
           @closeMobileNav="toggleMobileNav"
           @openLoginModal="openLoginModal"
         />
-        <NavFooterPreloadNavCart @clicked="toggleMobileNav" />
+        <NavFooterPreloadNavCartButton
+          @clicked="toggleMobileNav"
+          @toggle-cart="toggleCart"
+        />
       </div>
     </div>
     <div :class="['modal-wrapper', { 'is-visible': showLoginModal }]">
@@ -72,6 +78,12 @@ const showClickAnimation = ref(false);
 const isDropDownVisible = ref(false);
 const showMobileNav = ref(false);
 const showLoginModal = ref(false);
+
+const emit = defineEmits(["toggle-cart"]);
+
+function toggleCart() {
+  emit("toggle-cart");
+}
 
 // Watch for the cart item count and trigger the click animation when it changes from 0 to 1
 watch(
@@ -132,7 +144,7 @@ function closeLoginModal() {
 .top-nav {
   position: relative;
   width: 100%;
-  height: 80px;
+  height: 60px;
   /* background-color: #545454; */
   background: white;
   display: flex;

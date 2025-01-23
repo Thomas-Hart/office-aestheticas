@@ -1,8 +1,8 @@
 <template>
-  <div class="nav-link shopping-cart" @click="switchRoute('/cart')">
-    <NuxtLink to="/cart" class="nav-link-content">
-      <img src="/clipboard.svg" alt="Cart" class="icon-size" />
-    </NuxtLink>
+  <div class="nav-link shopping-cart" @click="toggleCart">
+    <div class="nav-link-content">
+      <img src="/Graphics/Nav/bag.svg" alt="Cart" class="icon-size" />
+    </div>
     <h2 v-if="hydrated" class="cart-count">
       ({{ itemStore.getCartItemCount() }})
     </h2>
@@ -16,15 +16,15 @@ const showClickAnimation = ref(false);
 const isDropDownVisible = ref(false);
 const hydrated = ref(false); // This is used to ensure the component is fully hydrated
 
-const emit = defineEmits(["clicked"]);
+const emit = defineEmits(["clicked", "toggle-cart"]);
 
 onMounted(() => {
   hydrated.value = true;
 });
 
-function switchRoute(route) {
+function toggleCart() {
   emit("clicked");
-  useRouter().push(route);
+  emit("toggle-cart");
 }
 </script>
   

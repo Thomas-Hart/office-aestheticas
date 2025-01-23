@@ -64,7 +64,12 @@ const mockOrders = [
     status: "Shipped",
     totalCost: 150.75,
     itemizedList: [
-      { image: "/BlogPics/BlogPic1.webp", name: "Item A", quantity: 2, price: 30.5 },
+      {
+        image: "/BlogPics/BlogPic1.webp",
+        name: "Item A",
+        quantity: 2,
+        price: 30.5,
+      },
       { image: "/BlogPic2.webp", name: "Item B", quantity: 1, price: 90.0 },
     ],
     salesTax: 10.25,
@@ -158,7 +163,7 @@ const closeSidebar = () => {
 <style scoped>
 .dashboard {
   display: flex;
-  font-family: Montserrat;
+  font-family: "Source Sans Pro", Montserrat;
   font-weight: bold;
   transition: transform 0.3s ease;
   width: 100%;

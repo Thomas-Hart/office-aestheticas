@@ -101,7 +101,7 @@ emit("hide-loading");
   background: url("/HoneyCombBG.svg") no-repeat;
   background-size: cover;
   color: #f1b55c;
-  font-family: Montserrat, cursive;
+  font-family: "Source Sans Pro", Montserrat, cursive;
 }
 
 .bundle-container {

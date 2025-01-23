@@ -37,7 +37,7 @@ onMounted(() => {
     const bounds = lampIcon.getBoundingClientRect();
     lampCenter = {
       x: bounds.left + bounds.width / 2 + window.scrollX + 8, // Account for horizontal scroll
-      y: bounds.top + bounds.height * 0.1 + window.scrollY, // Account for vertical scroll
+      y: bounds.top + bounds.height * 0.25 + window.scrollY, // Account for vertical scroll
     };
   }
 

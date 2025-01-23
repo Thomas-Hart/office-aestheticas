@@ -28,9 +28,9 @@ const duplicatedItems = ref([...items.value, ...items.value]); // Duplicate item
   padding: 10px 0;
   font-size: 1rem;
   font-weight: bold;
-  font-family: "Montserrat", sans-serif, "HelveticaNeue-Light",
-    "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande",
-    sans-serif;
+  font-family: "Source Sans Pro", "Montserrat", sans-serif,
+    "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica,
+    Arial, "Lucida Grande", sans-serif;
   overflow: hidden;
   position: relative;
   border-bottom: 2px solid white;

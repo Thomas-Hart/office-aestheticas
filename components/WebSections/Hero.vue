@@ -19,14 +19,14 @@
     </div>
   </section>
 </template>
-  
-  <script setup>
+
+<script setup>
 // This script setup can remain empty unless you need props or events
 </script>
-  
-  <style scoped>
+
+<style scoped>
 .collection-section {
-  padding: 5rem 0 2rem 0;
+  padding: 5rem 1rem 2rem 1rem; /* Add padding to prevent images from touching the borders */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -47,10 +47,10 @@
   flex: 1;
   border: 5px solid rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  /* border-radius: 12px; */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   height: 30rem;
-  width: 50rem;
+  width: 40vw;
+  /* max-width: 50rem; */
 }
 
 .image-container img {
@@ -65,7 +65,6 @@
   background-color: white;
   padding: 30px 40px;
   border: 2px solid rgba(60, 90, 70, 0.8);
-  /* border-radius: 16px; */
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   text-align: center;
 }
@@ -92,5 +91,58 @@
 .right-image {
   margin-left: 20px;
 }
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .collection-wrapper {
+    flex-direction: column; /* Shift to vertical layout */
+    gap: 30px; /* Add spacing between items */
+  }
+
+  .image-container {
+    height: 20rem; /* Adjust height for smaller screens */
+    max-height: 20rem;
+    width: 80vw;
+    max-width: 80vw;
+    display: flex;
+  }
+
+  img {
+    align-self: center; /* Center images vertically */
+  }
+
+  .text-container {
+    padding: 20px 30px;
+    width: 60%;
+    max-width: 600px;
+    text-align: center;
+    margin: 0 auto; /* Center the text container */
+  }
+
+  .left-image {
+    margin-right: 0; /* Reset margin for vertical layout */
+  }
+
+  .right-image {
+    margin-left: 0; /* Reset margin for vertical layout */
+  }
+}
+
+@media (max-width: 480px) {
+  .image-container {
+    height: 15rem; /* Further adjust height for smaller devices */
+  }
+
+  .text-container {
+    padding: 15px 20px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+}
 </style>
-  
