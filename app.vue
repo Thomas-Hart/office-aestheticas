@@ -19,6 +19,10 @@
 </template>
 
 <script setup>
+import { ref, computed, watchEffect, provide } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useUserStore } from "~/stores/userStore";
+
 // Reactive states
 const isLoading = ref(false);
 const router = useRouter();
@@ -41,7 +45,14 @@ provide("showLoadingScreen", showLoadingScreen);
 const isProfileRoute = computed(() => route.path === "/profile");
 
 // Before each route navigation, show loading screen
+// BUT skip if it's only a query change (same path)
 router.beforeEach((to, from, next) => {
+  // If the path isn't changing (only query or hash changed),
+  // then do NOT show the loading screen.
+  if (to.path === from.path) {
+    next();
+    return;
+  }
   showLoadingScreen();
   next();
 });
@@ -77,7 +88,6 @@ useHead({
   },
 });
 </script>
-
 
 <style scoped media="screen">
 #app {
@@ -144,7 +154,6 @@ useHead({
 
 /* Additional global styles */
 .login-container {
-  /* font-family: "Montserrat", sans-serif; */
   font-weight: bold;
   max-width: 300px;
   margin: 200px auto;
@@ -171,12 +180,11 @@ input {
 form button {
   width: 100%;
   height: 2rem;
-  /* font-family: "Montserrat", sans-serif; */
   font-weight: bold;
 }
 </style>
-  
-  <style>
+
+<style>
 @import "./css/Dividers/PointBot.css";
 @import "./css/ButtonStyles/DarkButton.css";
 @import "./css/ButtonStyles/ResonateButtonDark.css";
@@ -226,4 +234,3 @@ p {
   line-height: 1.5;
 }
 </style>
-  

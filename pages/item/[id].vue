@@ -184,7 +184,7 @@
 <script setup>
 // Fetch the item data
 const route = useRoute();
-const store = useItemStore();
+const itemStore = useItemStore();
 const userStore = useUserStore();
 
 const { data: item } = await useFetch(`/api/items?_id=${route.params.id}`);
@@ -310,7 +310,7 @@ async function addToRecentlyViewedItems() {
     image: item.value.image,
   };
 
-  console.log("recentlyViewedItem: " + JSON.stringify(recentlyViewedItem));
+  // console.log("recentlyViewedItem: " + JSON.stringify(recentlyViewedItem));
 
   if (userStore.user) {
     try {
@@ -334,7 +334,11 @@ async function addToRecentlyViewedItems() {
 }
 
 function addToCart() {
-  store.addToCart(item.value, selectedVariant.value);
+  if (isLoggedIn) {
+    userStore.addToCart(props.item, selectedVariant.value);
+  } else {
+    itemStore.addToCart(props.item, selectedVariant.value);
+  }
 }
 
 // SEO Metadata

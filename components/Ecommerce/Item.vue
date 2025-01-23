@@ -24,7 +24,9 @@ const props = defineProps({
 });
 
 const isAddedToCart = ref(false);
-const store = useItemStore();
+const itemStore = useItemStore();
+const userStore = useUserStore();
+const isLoggedIn = computed(() => !!userStore.user);
 
 function resolvedItemImg() {
   return `/${props.item.image}`;
@@ -35,7 +37,11 @@ function resolvedCheckImg() {
 }
 
 function addToCart(item) {
-  store.addToCart(item);
+  if (isLoggedIn) {
+    userStore.addToCart(item);
+  } else {
+    itemStore.addToCart(item);
+  }
   isAddedToCart.value = true;
 }
 

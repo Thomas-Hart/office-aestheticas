@@ -2,10 +2,10 @@
   <div class="nav-link shopping-cart" @click="toggleCart">
     <div class="nav-link-content">
       <img src="/Graphics/Nav/bag.svg" alt="Cart" class="icon-size" />
+      <h2 v-if="hydrated" class="cart-count">
+        {{ itemStore.getCartItemCount() }}
+      </h2>
     </div>
-    <h2 v-if="hydrated" class="cart-count">
-      ({{ itemStore.getCartItemCount() }})
-    </h2>
   </div>
 </template>
   
@@ -36,14 +36,15 @@ function toggleCart() {
   cursor: pointer;
   z-index: 101;
 }
-.shopping-cart h2 {
+h2 {
   color: white;
-  font-size: 1.2rem;
+  font-size: 0.9rem;
   margin-left: 10px;
   z-index: 101;
 }
 
 .nav-link {
+  display: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -64,10 +65,18 @@ function toggleCart() {
 }
 
 .cart-count {
-  display: inline-block;
-  width: 40px;
-  text-align: center;
+  background: black;
+  border-radius: 50%;
+  width: 1.1rem;
+  height: 1.1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
 }
+
 .icon-size {
   height: 20px;
   width: 20px;

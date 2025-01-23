@@ -146,7 +146,7 @@ const emit = defineEmits(["openLoginModal"]);
 const isAddedToCart = ref(false);
 const showVariantModal = ref(false);
 
-const store = useItemStore();
+const itemStore = useItemStore();
 const userStore = useUserStore();
 const router = useRouter();
 const loading = ref(true);
@@ -189,8 +189,13 @@ const descriptionWords = computed(() => {
 function resolvedCheckImg() {
   return "/CheckMark.svg";
 }
+
 function addToCart(item) {
-  store.addToCart(item);
+  if (isLoggedIn) {
+    userStore.addToCart(item);
+  } else {
+    itemStore.addToCart(item);
+  }
   isAddedToCart.value = true;
 }
 

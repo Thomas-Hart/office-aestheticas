@@ -79,8 +79,9 @@ const props = defineProps({
 });
 
 const selectedVariant = ref(props.item.variants[0]);
-const store = useItemStore();
+const itemStore = useItemStore();
 const userStore = useUserStore();
+const isLoggedIn = computed(() => !!userStore.user);
 
 console.log("Image variant modal: " + JSON.stringify(props.item.image));
 
@@ -164,7 +165,11 @@ const removeFromCart = (itemId, variantId) => {
 };
 
 function addToCart() {
-  store.addToCart(props.item, selectedVariant.value);
+  if (isLoggedIn) {
+    userStore.addToCart(props.item, selectedVariant.value);
+  } else {
+    itemStore.addToCart(props.item, selectedVariant.value);
+  }
 }
 
 // Close the modal

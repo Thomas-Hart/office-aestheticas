@@ -1,8 +1,7 @@
 <template>
-  <section class="best-sellers-section">
+  <section class="best-sellers-section" ref="bestSellersSection">
     <!-- Title -->
     <h2 class="section-title">Our Best Sellers</h2>
-    <!-- Thick underline (rounded ends) -->
     <div class="title-underline"></div>
 
     <!-- Tabs -->
@@ -11,24 +10,74 @@
         v-for="(tab, index) in tabs"
         :key="index"
         :class="{ active: activeTab === tab }"
-        @click="activeTab = tab"
+        @click="handleTabClick(tab)"
       >
         {{ tab }}
       </button>
     </div>
 
-    <!-- Products Container (max width 1400px) -->
+    <!-- Optional Filters (only when "All" tab is selected) -->
+    <div v-if="activeTab === 'All'" class="filters">
+      <!-- Category Filter -->
+      <div class="filter-group">
+        <label for="categorySelect">Category</label>
+        <select id="categorySelect" v-model="selectedCategory">
+          <option value="">All</option>
+          <option v-for="cat in uniqueCategories" :key="cat" :value="cat">
+            {{ cat }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Price Range -->
+      <div class="filter-group">
+        <label for="minPrice">Price Range</label>
+        <div class="price-inputs">
+          <input
+            type="number"
+            id="minPrice"
+            v-model.number="priceFilter.min"
+            placeholder="Min"
+          />
+          <span>—</span>
+          <input
+            type="number"
+            id="maxPrice"
+            v-model.number="priceFilter.max"
+            placeholder="Max"
+          />
+        </div>
+      </div>
+
+      <!-- Star Rating Filter -->
+      <div class="filter-group star-rating-filter">
+        <label>Minimum Rating</label>
+        <div class="stars">
+          <span
+            v-for="star in 5"
+            :key="star"
+            class="star"
+            :class="{ active: star <= starRating }"
+            @click="selectStar(star)"
+          >
+            ★
+          </span>
+          <span class="clear-rating" @click="selectStar(0)"> Clear </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products container -->
     <div class="products-container">
       <div class="product-grid">
-        <!-- Render items based on filtered array & slice by itemsToShow -->
         <EcommerceListingsItem
-          v-for="(item, index) in displayedItems"
-          :key="index"
+          v-for="(item, idx) in displayedItems"
+          :key="idx"
           :item="item"
         />
       </div>
 
-      <!-- Show More Button (appear if we have more items to show) -->
+      <!-- Show More -->
       <div
         class="show-more-container"
         v-if="filteredItems.length > itemsToShow"
@@ -38,239 +87,188 @@
     </div>
   </section>
 </template>
-  
-  <script setup>
-const tabs = ["Featured", "All", "On Sale!"];
+
+<script setup>
+import { ref, computed, watch, onMounted, nextTick } from "vue";
+import { useRoute, useRouter, useFetch } from "#imports";
+
+/* ========== CONFIG ========== */
+const tabs = ["Featured", "On Sale!", "All"];
+
+// We'll refer to our section for scrolling
+const bestSellersSection = ref(null);
+
+// Our state
 const activeTab = ref("Featured");
-
-// Mock data for demonstration: 20 items
-const items = ref([
-  {
-    _id: "1",
-    name: "Office Chair",
-    price: 172.99,
-    oldPrice: 222.99,
-    image: "chair1.png",
-    ratings: 4.5,
-    reviewCount: 34,
-    description:
-      "This chair is the absolute pinnacle of office assets. You will work better and in more comfort with its intentional design.",
-  },
-  {
-    _id: "2",
-    name: "Ergonomic Chair",
-    price: 199.99,
-    image: "chair1.png",
-    ratings: 4.0,
-    reviewCount: 18,
-  },
-  {
-    _id: "3",
-    name: "Desk Lamp",
-    price: 49.99,
-    oldPrice: 69.99,
-    image: "chair1.png",
-    ratings: 5.0,
-    reviewCount: 12,
-  },
-  {
-    _id: "4",
-    name: "Modern Desk Lamp",
-    price: 29.99,
-    image: "chair1.png",
-    ratings: 3.8,
-    reviewCount: 8,
-  },
-  {
-    _id: "5",
-    name: "Gaming Chair",
-    price: 299.99,
-    oldPrice: 399.99,
-    image: "chair1.png",
-    ratings: 4.7,
-    reviewCount: 56,
-  },
-  {
-    _id: "6",
-    name: "Study Table",
-    price: 199.99,
-    oldPrice: 249.99,
-    image: "chair1.png",
-    ratings: 4.4,
-    reviewCount: 22,
-  },
-  {
-    _id: "7",
-    name: "Wooden Desk",
-    price: 249.99,
-    oldPrice: 289.99,
-    image: "chair1.png",
-    ratings: 4.1,
-    reviewCount: 14,
-  },
-  {
-    _id: "8",
-    name: "Minimalist Desk",
-    price: 129.99,
-    image: "chair1.png",
-    ratings: 4.2,
-    reviewCount: 40,
-  },
-  {
-    _id: "9",
-    name: "Floor Lamp",
-    price: 89.99,
-    oldPrice: 99.99,
-    image: "chair1.png",
-    ratings: 4.0,
-    reviewCount: 6,
-  },
-  {
-    _id: "10",
-    name: "Comfortable Sofa",
-    price: 499.99,
-    image: "chair1.png",
-    ratings: 4.9,
-    reviewCount: 12,
-  },
-  {
-    _id: "11",
-    name: "Leather Recliner",
-    price: 799.99,
-    oldPrice: 899.99,
-    image: "chair1.png",
-    ratings: 4.8,
-    reviewCount: 20,
-  },
-  {
-    _id: "12",
-    name: "Glass Coffee Table",
-    price: 149.99,
-    oldPrice: 199.99,
-    image: "chair1.png",
-    ratings: 4.3,
-    reviewCount: 32,
-  },
-  {
-    _id: "13",
-    name: "Standing Desk",
-    price: 349.99,
-    image: "chair1.png",
-    ratings: 4.5,
-    reviewCount: 15,
-  },
-  {
-    _id: "14",
-    name: "Accent Chair",
-    price: 129.99,
-    image: "chair1.png",
-    ratings: 4.0,
-    reviewCount: 18,
-  },
-  {
-    _id: "15",
-    name: "Table Lamp",
-    price: 19.99,
-    image: "chair1.png",
-    ratings: 3.8,
-    reviewCount: 5,
-  },
-  {
-    _id: "16",
-    name: "Floor Rug",
-    price: 99.99,
-    oldPrice: 129.99,
-    image: "chair1.png",
-    ratings: 4.7,
-    reviewCount: 12,
-  },
-  {
-    _id: "17",
-    name: "Bookshelf",
-    price: 149.99,
-    image: "chair1.png",
-    ratings: 4.4,
-    reviewCount: 10,
-  },
-  {
-    _id: "18",
-    name: "Nightstand",
-    price: 59.99,
-    oldPrice: 79.99,
-    image: "chair1.png",
-    ratings: 4.5,
-    reviewCount: 8,
-  },
-  {
-    _id: "19",
-    name: "Wall Clock",
-    price: 39.99,
-    image: "chair1.png",
-    ratings: 4.2,
-    reviewCount: 4,
-  },
-  {
-    _id: "20",
-    name: "Luxury Couch",
-    price: 999.99,
-    image: "chair1.png",
-    ratings: 5.0,
-    reviewCount: 32,
-  },
-]);
-
-// Show 16 items by default
+const starRating = ref(0);
+const selectedCategory = ref("");
+const priceFilter = ref({ min: 0, max: 0 });
 const itemsToShow = ref(16);
 
-/**
- * Return a new array, sorted from highest price to lowest price
- * We’ll use this for "Featured" logic
- */
-function getHighestPricedItems(arr) {
+/* ========== FETCH ITEMS ========== */
+const { data: items } = await useFetch("/api/items");
+
+/* ========== COMPUTED ========== */
+function sortByHighestPrice(arr) {
   return [...arr].sort((a, b) => b.price - a.price);
 }
 
-/**
- * Computed property to filter items based on the selected tab
- */
-const filteredItems = computed(() => {
-  if (activeTab.value === "All") {
-    // Return all items in the original order
-    return items.value;
-  } else if (activeTab.value === "On Sale!") {
-    // All items that have an oldPrice
-    return items.value.filter((item) => item.oldPrice);
-  } else if (activeTab.value === "Featured") {
-    // The 16 highest price items (or fewer if not enough)
-    return getHighestPricedItems(items.value);
-  }
-  // Fallback
-  return items.value;
+// Unique categories from tags
+const uniqueCategories = computed(() => {
+  if (!items.value) return [];
+  const allTags = items.value
+    .flatMap((item) => item.tags || [])
+    .map((tag) => tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase());
+  return [...new Set(allTags)].sort();
 });
 
-/**
- * Slice the filtered items by itemsToShow
- */
+// Figure out why items arenn't show up
+const filteredItems = computed(() => {
+  if (!items.value) return [];
+
+  let result = [];
+  switch (activeTab.value) {
+    case "Featured":
+      result = sortByHighestPrice(items.value);
+      break;
+    case "On Sale!":
+      result = items.value.filter((item) => item.oldPrice);
+      break;
+    case "All":
+      result = [...items.value];
+      // Category
+      if (selectedCategory.value) {
+        const lowerCat = selectedCategory.value.toLowerCase();
+        result = result.filter((item) =>
+          item.tags.some((tag) => tag.toLowerCase() === lowerCat)
+        );
+      }
+      // Price
+      const minP = priceFilter.value.min;
+      const maxP = priceFilter.value.max;
+      result = result.filter((item) => {
+        const p = item.price;
+        const passMin = minP ? p >= minP : true;
+        const passMax = maxP ? p <= maxP : true;
+        return passMin && passMax;
+      });
+      // Star rating
+      if (starRating.value > 0) {
+        result = result.filter((item) => item.ratings >= starRating.value);
+      }
+      break;
+    default:
+      result = [...items.value];
+  }
+  return result;
+});
+
+// Items to display
 const displayedItems = computed(() => {
   return filteredItems.value.slice(0, itemsToShow.value);
 });
 
-/**
- * Show More button: show all filtered items (or increment as needed)
- */
+/* ========== METHODS ========== */
 function showMore() {
   itemsToShow.value = filteredItems.value.length;
 }
+
+function selectStar(star) {
+  starRating.value = star;
+}
+
+function handleTabClick(tab) {
+  // Immediately update local state so user sees a change
+  activeTab.value = tab;
+  // Also sync to the query
+  updateQuery();
+}
+
+/* ========== QUERY PARAMS ========== */
+const route = useRoute();
+const router = useRouter();
+
+function parseQueryToLocal() {
+  const q = route.query;
+  // Tab
+  if (q.tab && tabs.includes(q.tab)) {
+    activeTab.value = q.tab;
+  } else {
+    activeTab.value = "Featured";
+  }
+  // Category
+  if (typeof q.category === "string") {
+    selectedCategory.value =
+      q.category.charAt(0).toUpperCase() + q.category.slice(1).toLowerCase();
+  } else {
+    selectedCategory.value = "";
+  }
+  // Price
+  priceFilter.value.min = q.minPrice ? Number(q.minPrice) : 0;
+  priceFilter.value.max = q.maxPrice ? Number(q.maxPrice) : 0;
+  // Star rating
+  starRating.value = q.rating ? Number(q.rating) : 0;
+}
+
+// Called whenever local filter state changes (or tab changes)
+function updateQuery() {
+  if (!process.client) return;
+  router.push({
+    query: {
+      ...route.query,
+      tab: activeTab.value,
+      category: selectedCategory.value.toLowerCase() || "",
+      minPrice: priceFilter.value.min || "",
+      maxPrice: priceFilter.value.max || "",
+      rating: starRating.value || "",
+    },
+  });
+}
+
+// Scroll to our section
+function scrollToTop() {
+  if (!process.client) return;
+  nextTick(() => {
+    if (bestSellersSection.value) {
+      bestSellersSection.value.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  });
+}
+
+/* ========== LIFECYCLE ========== */
+
+// On mount, parse existing query
+onMounted(() => {
+  parseQueryToLocal();
+});
+
+// Whenever the route query changes, re-parse local state and scroll
+watch(
+  () => route.query,
+  () => {
+    parseQueryToLocal();
+    scrollToTop();
+  },
+  { deep: true }
+);
+
+// Watch local state changes → update route query
+watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
+  deep: true,
+});
 </script>
-  
-  <style scoped>
+
+<style scoped>
 .best-sellers-section {
   padding: 40px 20px;
   background-color: #fff;
   text-align: center;
   width: 100%;
-  max-width: 1200px; /* Constrain the max width */
-  margin: 0 auto; /* Center the section horizontally */
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .section-title {
@@ -281,19 +279,20 @@ function showMore() {
   margin-bottom: 10px;
 }
 
-/* Thick underline (green), centered, with rounded ends */
+/* Underline */
 .title-underline {
-  width: 300px; /* Adjust as desired */
-  height: 6px; /* Thickness of the line */
+  width: 300px;
+  height: 6px;
   background-color: #3f654c;
-  margin: 0 auto 30px auto; /* center and add spacing below */
-  border-radius: 50px; /* round ends */
+  margin: 0 auto 30px auto;
+  border-radius: 50px;
 }
 
+/* Tabs */
 .tabs {
   display: flex;
   justify-content: center;
-  margin-bottom: 5rem;
+  margin-bottom: 3rem;
   gap: 10px;
 }
 
@@ -301,13 +300,11 @@ function showMore() {
   font-family: "Source Sans Pro", sans-serif;
   font-size: 1rem;
   padding: 10px 20px;
-  /* Uniform button size */
   min-width: 175px;
   border: 2px solid #3f654c;
   background-color: white;
   color: #3f654c;
   cursor: pointer;
-  /* Remove border-radius */
   border-radius: 0;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -319,6 +316,69 @@ function showMore() {
 .tabs button.active {
   background-color: #3f654c;
   color: white;
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-family: "Source Sans Pro", sans-serif;
+  font-size: 0.9rem;
+  color: #333;
+}
+.filter-group label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Price range styling */
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.price-inputs input {
+  width: 70px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 0;
+}
+
+/* Star rating filter styling */
+.star-rating-filter {
+  min-width: 150px;
+}
+.star-rating-filter .stars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.star-rating-filter .star {
+  font-size: 1.5rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.star-rating-filter .star.active {
+  color: #ffd700; /* gold color */
+}
+.star-rating-filter .clear-rating {
+  font-size: 0.8rem;
+  color: #333;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  text-decoration: underline;
 }
 
 /* Products Container */
@@ -348,7 +408,7 @@ function showMore() {
   background-color: white;
   color: #3f654c;
   cursor: pointer;
-  border-radius: 0; /* remove border-radius */
+  border-radius: 0;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -363,17 +423,14 @@ function showMore() {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-
 @media (max-width: 768px) {
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-
 @media (max-width: 480px) {
   .product-grid {
     grid-template-columns: 1fr;
   }
 }
 </style>
-  

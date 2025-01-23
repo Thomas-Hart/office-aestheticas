@@ -26,8 +26,8 @@
 </template>
 
 <script setup>
-const config = useRuntimeConfig();
-const store = useUserStore();
+const userStore = useUserStore();
+const itemStore = useItemStore();
 
 const showSignUp = ref(false); // Controls whether the sign-up form is shown
 const isLoading = ref(false);
@@ -57,9 +57,10 @@ const handleEmailLogin = async (loginData) => {
       method: "POST",
       body: { email: loginData.email, password: loginData.password },
     });
-    store.setToken(response.token);
-    store.setUser(response.user);
+    userStore.setToken(response.token);
+    userStore.setUser(response.user);
     closeModal();
+    updateUserCart();
   } catch (error) {
     loginError.value = {
       general: error.data.message || "Invalid email or password",
@@ -77,15 +78,32 @@ const handleGoogleLogin = async (response) => {
         method: "POST",
         body: { token: credential },
       });
-      store.setToken(response.token);
-      store.setUser(response.user);
+      userStore.setToken(response.token);
+      userStore.setUser(response.user);
       closeModal();
+      updateUserCart();
     } catch (error) {
       loginError.value = {
         general: error.data.message || "Google login failed",
       };
     }
   }
+};
+
+const updateUserCart = async () => {
+  const cart = itemStore.cart;
+  try {
+    const userResponse = await $fetch(
+      `/api/users/cart/add/${userStore.user._id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: { cart },
+      }
+    );
+  } catch (error) {}
 };
 
 const handleLoginError = (error) => {

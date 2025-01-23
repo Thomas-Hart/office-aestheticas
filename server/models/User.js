@@ -1,6 +1,25 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
+const cartItemSchema = new mongoose.Schema({
+  _id: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', required: true },
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  image: { type: String, required: true },
+  variantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Variant', default: null },
+  color: { type: String },
+  size: { type: String },
+  material: { type: String },
+  style: { type: String },
+  capacity: { type: String },
+  flavor: { type: String },
+  scent: { type: String },
+  power: { type: String },
+  length: { type: String },
+  region: { type: String },
+  quantity: { type: Number, required: true, min: 1 },
+});
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -55,12 +74,7 @@ const userSchema = new mongoose.Schema({
       isPrimary: { type: Boolean, default: false },
     },
   ],
-  cart: [
-    {
-      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Item' },
-      quantity: { type: Number, default: 1 },
-    },
-  ],
+  cart: [cartItemSchema],
   wishlist: [
     {
       _id: false, // Add this line

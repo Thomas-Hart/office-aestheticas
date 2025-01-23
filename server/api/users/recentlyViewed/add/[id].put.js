@@ -5,10 +5,8 @@ import { disconnectDB } from '~/server/utils/dbDisconnect';
 export default defineEventHandler(async (event) => {
     await connectDB();
 
-    console.log("HELLO");
-
     const { recentlyViewedItem } = await readBody(event);
-    console.log("recentlyViewed: " + JSON.stringify(recentlyViewedItem));
+    // console.log("recentlyViewed: " + JSON.stringify(recentlyViewedItem));
     const userId = event.context.params.id;
 
     try {
@@ -40,7 +38,7 @@ export default defineEventHandler(async (event) => {
 
         await disconnectDB();
 
-        console.log("recentlyViewedItems updated successfully:", finalUpdatedUser.recentlyViewedItems);
+        // console.log("recentlyViewedItems updated successfully:", finalUpdatedUser.recentlyViewedItems);
         return finalUpdatedUser.recentlyViewedItems;
     } catch (error) {
         console.error("[recentlyViewed] - Error occurred:", error);

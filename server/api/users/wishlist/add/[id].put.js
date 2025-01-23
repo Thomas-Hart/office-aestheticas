@@ -8,10 +8,10 @@ export default defineEventHandler(async (event) => {
 
     try {
         const { wishlistItem } = await readBody(event);
-        console.log("[addToWishlist] - Received wishlist item:", wishlistItem);
+        // console.log("[addToWishlist] - Received wishlist item:", wishlistItem);
 
         const userId = event.context.params.id;
-        console.log("[addToWishlist] - User ID:", userId);
+        // console.log("[addToWishlist] - User ID:", userId);
  
         const updatedUser = await User.findByIdAndUpdate(
             userId,
@@ -29,13 +29,13 @@ export default defineEventHandler(async (event) => {
             });
         }
 
-        console.log("[addToWishlist] - Wishlist updated successfully:", updatedUser.wishlist);
+        // console.log("[addToWishlist] - Wishlist updated successfully:", updatedUser.wishlist);
         return updatedUser.wishlist;
     } catch (error) {
         console.error("[addToWishlist] - Error occurred:", error);
         throw error;
     } finally {
-        console.log("[addToWishlist] - Disconnecting from database...");
+        // console.log("[addToWishlist] - Disconnecting from database...");
         await disconnectDB();
     }
 });
