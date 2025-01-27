@@ -19,10 +19,6 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect, provide } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { useUserStore } from "~/stores/userStore";
-
 // Reactive states
 const isLoading = ref(false);
 const router = useRouter();
@@ -57,22 +53,28 @@ router.beforeEach((to, from, next) => {
   next();
 });
 
-// Use SSR-friendly fetching of user data via useFetch
-// Only fetch if we have a logged-in user
-let fetchedUser, error;
-if (userStore.user && userStore.user._id) {
-  const { data, error: fetchError } = useFetch(
-    `/api/users/${userStore.user._id}`
-  );
-  fetchedUser = data;
-  error = fetchError;
-}
+const fetchedUser = ref(null);
+const error = ref(null);
+
+const fetchUser = async () => {
+  if (userStore.user && userStore.user._id) {
+    try {
+      const response = await $fetch(`/api/users/${userStore.user._id}`);
+      console.log("response: " + JSON.stringify(response));
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    }
+  }
+};
+
+// Fetch user data on app load
+onMounted(fetchUser);
 
 // Watch for fetched user data or errors and set user accordingly
 watchEffect(() => {
-  if (fetchedUser?.value) {
+  if (fetchedUser.value) {
     userStore.setUser(fetchedUser.value);
-  } else if (error?.value) {
+  } else if (error.value) {
     console.error(
       "Failed to fetch user data on page load (app.vue): ",
       error.value
@@ -88,6 +90,7 @@ useHead({
   },
 });
 </script>
+
 
 <style scoped media="screen">
 #app {

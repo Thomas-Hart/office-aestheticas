@@ -89,9 +89,6 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from "vue";
-import { useRoute, useRouter, useFetch } from "#imports";
-
 /* ========== CONFIG ========== */
 const tabs = ["Featured", "On Sale!", "All"];
 
@@ -122,7 +119,7 @@ const uniqueCategories = computed(() => {
   return [...new Set(allTags)].sort();
 });
 
-// Figure out why items arenn't show up
+// Figure out why items arenn't show up **************************************************************************************************************************
 const filteredItems = computed(() => {
   if (!items.value) return [];
 

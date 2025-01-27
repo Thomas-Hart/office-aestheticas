@@ -81,7 +81,7 @@ const handleGoogleLogin = async (response) => {
       userStore.setToken(response.token);
       userStore.setUser(response.user);
       closeModal();
-      updateUserCart();
+      // updateUserCart();
     } catch (error) {
       loginError.value = {
         general: error.data.message || "Google login failed",
@@ -90,6 +90,7 @@ const handleGoogleLogin = async (response) => {
   }
 };
 
+// If you want to add item store cart to user cart on login
 const updateUserCart = async () => {
   const cart = itemStore.cart;
   try {
@@ -100,7 +101,7 @@ const updateUserCart = async () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: { cart },
+        body: { items: cart },
       }
     );
   } catch (error) {}

@@ -165,7 +165,7 @@ const removeFromCart = (itemId, variantId) => {
 };
 
 function addToCart() {
-  if (isLoggedIn) {
+  if (isLoggedIn.value) {
     userStore.addToCart(props.item, selectedVariant.value);
   } else {
     itemStore.addToCart(props.item, selectedVariant.value);

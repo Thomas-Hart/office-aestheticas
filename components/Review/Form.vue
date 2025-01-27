@@ -177,7 +177,7 @@ watch(
   { immediate: true }
 );
 
-watch(isLoggedIn, (loggedIn) => {
+watch(isLoggedIn.value, (loggedIn) => {
   if (!loggedIn) {
     showLoginModal.value = false;
   }

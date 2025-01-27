@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     const updatedUser = await User.findByIdAndUpdate(
         userId,
         {
-            $pull: { wishlist: { item: itemId } },
+            $pull: { recentlyViewsItems: { item: itemId } },
         },
         { new: true }
     );
@@ -25,5 +25,5 @@ export default defineEventHandler(async (event) => {
         });
     }
 
-    return updatedUser.wishlist;
+    return updatedUser.recentlyViewedItems;
 });

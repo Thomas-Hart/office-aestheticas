@@ -228,7 +228,7 @@ function notifyMe() {
 }
 
 const existingReview = computed(() => {
-  if (isLoggedIn.value && reviews.value) {
+  if (isLoggedIn.value.value && reviews.value) {
     return (
       reviews.value.find(
         (review) => review.reviewer._id === userStore.user._id
@@ -240,7 +240,7 @@ const existingReview = computed(() => {
 
 // Computed property for checking if item is in cart
 const itemInCart = computed(() => {
-  return store.cart.find(
+  return itemStore.cart.find(
     (cartItem) =>
       cartItem._id === item.value?._id &&
       cartItem.variantId === selectedVariant.value?._id
@@ -250,7 +250,7 @@ const itemInCart = computed(() => {
 const increaseQuantity = () => {
   if (selectedVariant.value) {
     if (itemInCart.value) {
-      store.updateQuantity({
+      itemStore.updateQuantity({
         itemId: item.value._id,
         variantId: selectedVariant.value._id,
         quantity: itemInCart.value.quantity + 1,
@@ -260,7 +260,7 @@ const increaseQuantity = () => {
     }
   } else {
     if (itemInCart.value) {
-      store.updateQuantity({
+      itemStore.updateQuantity({
         itemId: item.value._id,
         quantity: itemInCart.value.quantity + 1,
       });
@@ -273,7 +273,7 @@ const increaseQuantity = () => {
 const decreaseQuantity = () => {
   if (selectedVariant.value) {
     if (itemInCart.value && itemInCart.value.quantity > 1) {
-      store.updateQuantity({
+      itemStore.updateQuantity({
         itemId: item.value._id,
         variantId: selectedVariant.value._id,
         quantity: itemInCart.value.quantity - 1,
@@ -283,7 +283,7 @@ const decreaseQuantity = () => {
     }
   } else {
     if (itemInCart.value && itemInCart.value.quantity > 1) {
-      store.updateQuantity({
+      itemStore.updateQuantity({
         itemId: item.value._id,
         quantity: itemInCart.value.quantity - 1,
       });
@@ -294,7 +294,7 @@ const decreaseQuantity = () => {
 };
 
 const removeFromCart = (itemId, variantId) => {
-  store.removeFromCart(itemId, variantId);
+  itemStore.removeFromCart(itemId, variantId);
 };
 
 onMounted(addToRecentlyViewedItems);
@@ -334,7 +334,7 @@ async function addToRecentlyViewedItems() {
 }
 
 function addToCart() {
-  if (isLoggedIn) {
+  if (isLoggedIn.value) {
     userStore.addToCart(props.item, selectedVariant.value);
   } else {
     itemStore.addToCart(props.item, selectedVariant.value);

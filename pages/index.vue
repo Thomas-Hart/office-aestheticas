@@ -14,6 +14,10 @@
       <EcommerceListingsTabs />
     </section>
 
+    <section>
+      <WebSectionsImagine />
+    </section>
+
     <!--prettier-ignore-->
     <!-- <section class="testimonials-wrapper"> -->
     <!-- <WebSectionsTestimonials logoPath="OAName.webp"/> -->

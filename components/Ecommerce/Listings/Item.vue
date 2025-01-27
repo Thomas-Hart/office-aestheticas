@@ -191,10 +191,17 @@ function resolvedCheckImg() {
 }
 
 function addToCart(item) {
-  if (isLoggedIn) {
+  console.log("hereeee1", JSON.stringify(item));
+  if (isLoggedIn.value) {
     userStore.addToCart(item);
+    console.log("hereeee2");
+
+    console.log(userStore.user.cart); // Item does not successfully add to cart
   } else {
     itemStore.addToCart(item);
+    console.log("hereeee3");
+
+    console.log(itemStore.cart);
   }
   isAddedToCart.value = true;
 }
@@ -255,7 +262,7 @@ async function removeFromWishlistOnServer(itemId) {
 }
 
 function goToItem(itemId) {
-  router.push(`/item/${itemId}`);
+  // router.push(`/item/${itemId}`);
 }
 
 function closeVariantModal() {

@@ -4,13 +4,14 @@
       <div class="cart-header">
         <div class="cart-count">
           <h1>Cart</h1>
-          <div class="num-circle">{{ activeCart.length }}</div>
+          <div class="num-circle">{{ totalItemCount }}</div>
         </div>
         <button class="close-button" @click="$emit('close-cart')">
           &times;
         </button>
       </div>
 
+      <!-- Cart items -->
       <div
         v-for="(item, index) in activeCart"
         :key="item._id + (item.variantId || '')"
@@ -32,7 +33,15 @@
           <p class="item-color">{{ item.color }}</p>
         </div>
         <div class="item-actions">
-          <p class="item-quantity">{{ item.quantity }}</p>
+          <!-- Now a number input field for quantity -->
+          <input
+            class="item-quantity-input"
+            type="number"
+            min="1"
+            :value="item.quantity"
+            @change="(e) => updateItemQuantity(item, e.target.value)"
+          />
+
           <button
             class="remove-button"
             @click="removeCartItem(item._id, item.variantId)"
@@ -42,6 +51,7 @@
         </div>
       </div>
 
+      <!-- Cart total -->
       <div class="cart-total">
         <div class="total-text">
           <p>Total</p>
@@ -52,6 +62,7 @@
         <p>${{ calculateTotal().toFixed(2) }}</p>
       </div>
 
+      <!-- Cart actions -->
       <div class="cart-actions">
         <button class="view-cart">View Cart</button>
         <button class="checkout">
@@ -62,25 +73,26 @@
   </div>
 </template>
 
-<script setup>
-import { computed } from "vue";
-import { useUserStore } from "~/stores/userStore";
-import { useItemStore } from "~/stores/itemStore";
 
+<script setup>
 const userStore = useUserStore();
 const itemStore = useItemStore();
 
 const isLoggedIn = computed(() => !!userStore.user);
 
-// Determine the active cart to display based on login status
+// Show either user cart (if logged in) or item store cart (if not)
 const activeCart = computed(() => {
-  return isLoggedIn.value ? userStore.cart : itemStore.cart;
+  return isLoggedIn.value ? userStore.user.cart : itemStore.cart;
 });
 
-// Function to resolve the item's image path
+const totalItemCount = computed(() => {
+  return activeCart.value.reduce((total, item) => total + item.quantity, 0);
+});
+
+// Resolve the item's image path
 const resolvedItemImg = (img) => `/ItemPics/${img}`;
 
-// Function to remove an item from the cart
+// Remove an item from the cart
 const removeCartItem = (itemId, variantId) => {
   if (isLoggedIn.value) {
     userStore.removeFromCart(itemId, variantId);
@@ -89,14 +101,44 @@ const removeCartItem = (itemId, variantId) => {
   }
 };
 
-// Function to calculate the total price
+// Calculate total price
 const calculateTotal = () => {
   return activeCart.value.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
 };
+
+/**
+ * Update item quantity via a number input
+ * - If newQuantity < 1, remove item
+ * - Otherwise, update store quantity
+ */
+function updateItemQuantity(item, newValue) {
+  const newQuantity = parseInt(newValue, 10);
+
+  // If user enters 0 or something invalid, remove item
+  if (isNaN(newQuantity) || newQuantity < 1) {
+    removeCartItem(item._id, item.variantId);
+    return;
+  }
+
+  if (isLoggedIn.value) {
+    userStore.updateQuantity({
+      itemId: item._id,
+      variantId: item.variantId || null,
+      quantity: newQuantity,
+    });
+  } else {
+    itemStore.updateQuantity({
+      itemId: item._id,
+      variantId: item.variantId || null,
+      quantity: newQuantity,
+    });
+  }
+}
 </script>
+
   
 <style scoped>
 /* Overall Overlay */
@@ -311,6 +353,16 @@ const calculateTotal = () => {
 .checkout img {
   width: 1rem;
   height: 1rem;
+}
+
+.item-quantity-input {
+  width: 60px;
+  padding: 0.3rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px; /* <-- Desired border radius */
+  text-align: center; /* Center the numeric text */
+  margin-bottom: 0.5rem;
 }
 
 @media (max-width: 1024px) {

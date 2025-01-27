@@ -13,10 +13,6 @@ export default defineEventHandler(async (event) => {
     const randomItem = await Item.findOne({}); // To ensure Item model is registered
 
     const users = await User.find()
-      .populate({
-        path: 'cart.product',
-        model: 'Item', // Populating cart items with the Item model
-      })
       .populate('wishlist', 'name price image') // Populating wishlist items (only fetching certain fields)
       .populate('recentlyViewedItems', 'name price image'); // Populating recently viewed items
 

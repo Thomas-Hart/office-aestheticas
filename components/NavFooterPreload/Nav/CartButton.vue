@@ -2,8 +2,11 @@
   <div class="nav-link shopping-cart" @click="toggleCart">
     <div class="nav-link-content">
       <img src="/Graphics/Nav/bag.svg" alt="Cart" class="icon-size" />
-      <h2 v-if="hydrated" class="cart-count">
+      <h2 v-if="hydrated && !isLoggedIn" class="cart-count">
         {{ itemStore.getCartItemCount() }}
+      </h2>
+      <h2 v-else-if="hydrated && isLoggedIn" class="cart-count">
+        {{ userStore.getCartItemCount() }}
       </h2>
     </div>
   </div>
@@ -12,9 +15,12 @@
   <script setup>
 import { ref } from "vue";
 const itemStore = useItemStore();
+const userStore = useUserStore();
 const showClickAnimation = ref(false);
 const isDropDownVisible = ref(false);
 const hydrated = ref(false); // This is used to ensure the component is fully hydrated
+
+const isLoggedIn = computed(() => !!userStore.user);
 
 const emit = defineEmits(["clicked", "toggle-cart"]);
 

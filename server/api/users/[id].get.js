@@ -16,10 +16,6 @@ export default defineEventHandler(async (event) => {
 
     // Fetch the user by ID and populate related fields
     const user = await User.findById(id)
-      .populate({
-        path: 'cart.product',
-        model: 'Item', // Populating cart items with the Item model
-      })
       .populate('wishlist', 'name price image') // Populating wishlist items (only fetching certain fields)
       .populate('recentlyViewedItems', 'name price image'); // Populating recently viewed items
 
@@ -29,6 +25,7 @@ export default defineEventHandler(async (event) => {
     }
 
     await disconnectDB(); // Disconnect from DB after fetching data
+    console.log(JSON.stringify(user));
     return user;
   } catch (error) {
     console.error('Error fetching user:', error);
