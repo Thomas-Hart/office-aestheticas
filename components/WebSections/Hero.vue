@@ -37,7 +37,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  max-width: 1400px;
+  max-width: 1200px;
   width: 100%;
   gap: 20px;
   position: relative;

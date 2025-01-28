@@ -260,7 +260,7 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
 
 <style scoped>
 .best-sellers-section {
-  padding: 40px 20px;
+  padding: 40px;
   background-color: #fff;
   text-align: center;
   width: 100%;
