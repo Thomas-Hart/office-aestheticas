@@ -273,7 +273,7 @@ function closeVariantModal() {
 <style scoped>
 .product-card {
   position: relative;
-  width: 15rem;
+  width: 100%;
   background-color: #fff;
   border-radius: 0;
   font-family: "Source Sans Pro", monospace;
@@ -287,8 +287,8 @@ function closeVariantModal() {
 /* Image Container */
 .image-container {
   position: relative;
-  width: 15rem;
-  height: 15rem;
+  width: 100%;
+  height: auto;
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
@@ -469,5 +469,27 @@ function closeVariantModal() {
   text-overflow: ellipsis;
   margin-bottom: 0rem;
   font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+  /* .product-card {
+    width: 12rem;
+  }
+
+  .image-container {
+    width: 12rem;
+    height: 12rem;
+  } */
+}
+
+@media (max-width: 768px) {
+  /* .product-card {
+    width: 10rem;
+  }
+
+  .image-container {
+    width: 100%;
+    height: auto;
+  } */
 }
 </style>

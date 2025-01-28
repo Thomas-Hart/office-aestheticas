@@ -18,6 +18,7 @@
   </section>
 </template>
 
+
 <script setup>
 import { onMounted, ref } from "vue";
 
@@ -112,8 +113,10 @@ onMounted(() => {
 });
 </script>
 
+
 <style scoped>
 .intro-section {
+  margin-top: 60px;
   min-height: calc(100vh - 110px); /* Full viewport height minus nav bar */
   background-image: url("/Backgrounds/OAIntroBG.jpg");
   background-size: cover;
@@ -123,6 +126,7 @@ onMounted(() => {
   justify-content: center;
   position: relative;
   text-align: center;
+  padding: 1rem; /* Added padding for small screens */
 }
 
 .background-overlay {
@@ -184,18 +188,21 @@ onMounted(() => {
   gap: 20px;
   justify-content: center;
   margin-top: 35px;
+  flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
 }
 
 .btn {
-  font-family: "Source Sans Pro", serif;
+  font-family: "Lora", "Source Sans Pro", serif;
   font-size: 1.3rem;
   padding: 10px 48px;
   min-width: 180px;
-  border-radius: 0px;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-weight: 500;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .shop-now {
@@ -215,4 +222,107 @@ onMounted(() => {
 .view-all:hover {
   background-color: #e0e0e0;
 }
+
+/* Responsive adjustments */
+
+@media (max-width: 1300px) {
+  .title {
+    font-size: 2.5rem;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+  }
+
+  .lamp-icon {
+    width: 110px;
+  }
+
+  .btn {
+    font-size: 1.1rem;
+    padding: 8px 36px;
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 992px) {
+  .intro-section {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 2.2rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .lamp-icon {
+    width: 90px;
+  }
+
+  .btn {
+    font-size: 1rem;
+    padding: 8px 28px;
+    min-width: 140px;
+  }
+
+  .button-group {
+    gap: 15px;
+    margin-top: 25px;
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+  }
+
+  .lamp-icon {
+    width: 70px;
+  }
+
+  .btn {
+    font-size: 0.9rem;
+    padding: 6px 24px;
+    min-width: 120px;
+  }
+
+  .button-group {
+    gap: 10px;
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .lamp-icon {
+    width: 75px;
+  }
+
+  .btn {
+    font-size: 0.8rem;
+    padding: 5px 20px;
+    min-width: 100px;
+    height: 2rem;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
 </style>
+

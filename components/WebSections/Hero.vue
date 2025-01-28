@@ -9,7 +9,7 @@
       <!-- Text Layer in the Center -->
       <div class="text-container">
         <h2 class="title">Quality Equipment</h2>
-        <p class="subtitle">Just for you</p>
+        <p class="subtitle">Only the best</p>
       </div>
 
       <!-- Right Image -->
@@ -26,20 +26,20 @@
 
 <style scoped>
 .collection-section {
-  padding: 5rem 1rem 2rem 1rem; /* Add padding to prevent images from touching the borders */
+  padding: 5rem 0 2rem 0; /* Add padding to prevent images from touching the borders */
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: white;
+  width: 100%;
 }
 
 .collection-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  max-width: 1200px;
-  width: 100%;
-  gap: 20px;
+  /* max-width: 1300px; */
+  width: calc(min(calc(100vw - 4.5rem), 1300px));
   position: relative;
 }
 
@@ -97,13 +97,14 @@
   .collection-wrapper {
     flex-direction: column; /* Shift to vertical layout */
     gap: 30px; /* Add spacing between items */
+    width: calc(min(calc(100vw - 4rem), 1300px));
   }
 
   .image-container {
     height: 20rem; /* Adjust height for smaller screens */
     max-height: 20rem;
-    width: 80vw;
-    max-width: 80vw;
+    width: 100%;
+    max-width: 100%;
     display: flex;
   }
 
@@ -129,12 +130,20 @@
 }
 
 @media (max-width: 480px) {
+  .collection-wrapper {
+    width: calc(min(calc(100vw - 3.5rem), 1300px));
+  }
+
   .image-container {
     height: 15rem; /* Further adjust height for smaller devices */
   }
 
   .text-container {
-    padding: 15px 20px;
+    width: 80%;
+  }
+
+  .text-container {
+    padding: 10px 10px;
   }
 
   .title {

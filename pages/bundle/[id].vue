@@ -109,7 +109,7 @@ emit("hide-loading");
   justify-content: space-between;
   min-height: 55rem;
   align-items: flex-start;
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   padding: 12rem 2rem;
 }

@@ -2,7 +2,7 @@
   <div class="office-aesthetic">
     <div class="title-underline"></div>
     <div class="header">
-      <h1>Take a Moment to Think About Your New Office</h1>
+      <h2>Take a Moment to Think About Your New Office</h2>
       <p>
         Every purchase from Office Aestheticas is one step closer to excellence
       </p>
@@ -19,8 +19,8 @@
 <style scoped>
 .office-aesthetic {
   text-align: center;
-  padding: 20px;
   width: 100%;
+  overflow: hidden;
 }
 
 .title-underline {
@@ -31,7 +31,11 @@
   border-radius: 50px;
 }
 
-.header h1 {
+.header {
+  padding: 0 2rem;
+}
+
+.header h2 {
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 10px;
@@ -39,16 +43,14 @@
 
 .header p {
   font-size: 1rem;
-  /* color: #555; */
   margin-bottom: 30px;
   font-family: "Lora";
 }
 
 .image-container {
   margin-top: 20px;
-  height: 25rem; /* Container height */
-  width: 1200px;
-  max-width: 90vw; /* Limit maximum width */
+  height: 35rem; /* Container height */
+  width: calc(min(calc(100vw - 4.5rem), 1300px));
   overflow: hidden;
   margin: 0 auto;
   position: relative; /* Needed for overlay */
@@ -71,5 +73,34 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.4); /* Dark transparent overlay */
   pointer-events: none; /* Allow interaction with image below */
+}
+
+@media (max-width: 768px) {
+  .image-container {
+    width: calc(min(calc(100vw - 4rem), 1300px));
+  }
+
+  .header {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .image-container {
+    width: calc(min(calc(100vw - 3.5rem), 1300px));
+  }
+
+  .header {
+    padding: 0 1rem;
+  }
+
+  h2 {
+    margin-bottom: 1rem;
+  }
+
+  .title-underline {
+    width: 200px;
+    height: 4px;
+  }
 }
 </style>

@@ -166,7 +166,7 @@ emit("hide-loading");
   width: 100%;
   position: relative;
   z-index: 3;
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   padding: 5rem 0;
   /* background: url('/Bees.png') repeat; */

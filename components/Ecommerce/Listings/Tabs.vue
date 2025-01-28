@@ -38,6 +38,7 @@
             id="minPrice"
             v-model.number="priceFilter.min"
             placeholder="Min"
+            min="0"
           />
           <span>—</span>
           <input
@@ -45,6 +46,7 @@
             id="maxPrice"
             v-model.number="priceFilter.max"
             placeholder="Max"
+            min="0"
           />
         </div>
       </div>
@@ -69,12 +71,18 @@
 
     <!-- Products container -->
     <div class="products-container">
-      <div class="product-grid">
+      <div class="product-grid" v-if="displayedItems.length > 0">
         <EcommerceListingsItem
           v-for="(item, idx) in displayedItems"
           :key="idx"
           :item="item"
         />
+      </div>
+
+      <div v-else>
+        <img class="logo" src="/Logos/OAName.webp" alt="" />
+        <h2 class="no-items-message">No items match the current selection</h2>
+        <p>Choose another option</p>
       </div>
 
       <!-- Show More -->
@@ -87,6 +95,7 @@
     </div>
   </section>
 </template>
+
 
 <script setup>
 /* ========== CONFIG ========== */
@@ -260,11 +269,11 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
 
 <style scoped>
 .best-sellers-section {
-  padding: 40px;
+  padding: 0;
   background-color: #fff;
   text-align: center;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
 }
 
@@ -291,18 +300,18 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
   justify-content: center;
   margin-bottom: 3rem;
   gap: 10px;
+  flex-wrap: wrap; /* Allow tabs to wrap on smaller screens */
 }
 
 .tabs button {
   font-family: "Source Sans Pro", sans-serif;
   font-size: 1rem;
   padding: 10px 20px;
-  min-width: 175px;
+  min-width: 180px; /* Reduced min-width for smaller screens */
   border: 2px solid #3f654c;
   background-color: white;
   color: #3f654c;
   cursor: pointer;
-  border-radius: 0;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -320,12 +329,13 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 2rem;
+  gap: 1.5rem; /* Reduced gap for smaller screens */
   margin-bottom: 2rem;
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
 }
+
 .filter-group {
   display: flex;
   flex-direction: column;
@@ -333,10 +343,20 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
   font-family: "Source Sans Pro", sans-serif;
   font-size: 0.9rem;
   color: #333;
+  width: 200px; /* Fixed width for consistency */
 }
+
 .filter-group label {
   font-weight: 600;
   margin-bottom: 0.5rem;
+}
+
+#categorySelect {
+  min-width: 10rem;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px; /* Added border-radius */
+  text-align: center;
 }
 
 /* Price range styling */
@@ -344,32 +364,39 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
   display: flex;
   align-items: center;
   gap: 5px;
+  width: 100%;
 }
+
 .price-inputs input {
   width: 70px;
   padding: 5px;
   border: 1px solid #ccc;
-  border-radius: 0;
+  border-radius: 5px; /* Added border-radius */
+  text-align: center;
 }
 
 /* Star rating filter styling */
 .star-rating-filter {
   min-width: 150px;
 }
+
 .star-rating-filter .stars {
   display: flex;
   align-items: center;
   gap: 4px;
 }
+
 .star-rating-filter .star {
   font-size: 1.5rem;
   color: #ccc;
   cursor: pointer;
   transition: color 0.3s;
 }
+
 .star-rating-filter .star.active {
   color: #ffd700; /* gold color */
 }
+
 .star-rating-filter .clear-rating {
   font-size: 0.8rem;
   color: #333;
@@ -386,8 +413,20 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
 /* 4-column grid with equal spacing */
 .product-grid {
   display: grid;
+  width: 100%;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  justify-content: space-between;
+  gap: 4rem;
+}
+
+.logo {
+  height: 18rem;
+  margin-bottom: -6rem;
+  width: auto;
+}
+
+.no-items-message {
+  margin-bottom: 1rem;
 }
 
 /* Show More Button Container */
@@ -405,7 +444,7 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
   background-color: white;
   color: #3f654c;
   cursor: pointer;
-  border-radius: 0;
+  border-radius: 5px; /* Added border-radius */
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -414,20 +453,85 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
   color: white;
 }
 
-/* Responsive adjustments (optional) */
-@media (max-width: 1200px) {
+/* Responsive adjustments */
+@media (max-width: 1300px) {
   .product-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-@media (max-width: 768px) {
+
+@media (max-width: 992px) {
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .filters {
+    gap: 5rem;
+  }
+
+  .filter-group {
+    width: 150px; /* Reduced width for smaller screens */
+  }
 }
-@media (max-width: 480px) {
+
+@media (max-width: 768px) {
   .product-grid {
-    grid-template-columns: 1fr;
+    /* grid-template-columns: 1fr; */
+    gap: 1.5rem;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .filter-group {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .price-inputs {
+    /* justify-content: center; */
+  }
+}
+
+@media (max-width: 480px) {
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .title-underline {
+    width: 200px;
+    height: 4px;
+  }
+
+  /* .tabs {
+    gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .tabs button {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    width: 100%;
+    min-width: 130px;
+    height: 2.5rem;
+  } */
+
+  .star-rating-filter .star {
+    font-size: 1.2rem;
+  }
+
+  .star-rating-filter .clear-rating {
+    font-size: 0.7rem;
+  }
+
+  .show-more-button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
   }
 }
 </style>
+

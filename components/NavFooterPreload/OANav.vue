@@ -1,10 +1,10 @@
 <template>
   <div>
     <!-- Dark Overlay for Top Nav -->
-    <div
+    <!-- <div
       v-if="showClickAnimation && !isDropDownVisible"
       class="dark-overlay"
-    ></div>
+    ></div> -->
 
     <!-- Import the Banner Component -->
     <!-- <NavFooterPreloadTopBanner /> -->
@@ -258,6 +258,8 @@ function closeLoginModal() {
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.8); /* Background for the login modal */

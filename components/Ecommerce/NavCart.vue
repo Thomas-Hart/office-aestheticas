@@ -64,7 +64,7 @@
 
       <!-- Cart actions -->
       <div class="cart-actions">
-        <button class="view-cart">View Cart</button>
+        <button class="view-cart">Keep Shopping</button>
         <button class="checkout">
           <img src="/Graphics/CartCheckout/security.svg" alt="" />Checkout
         </button>
@@ -327,7 +327,7 @@ function updateItemQuantity(item, newValue) {
   width: 48%;
 }
 .view-cart:hover {
-  background: #43a047; /* slight darkening on hover */
+  background: #2e5e2f; /* slight darkening on hover */
 }
 
 /* Checkout Button */

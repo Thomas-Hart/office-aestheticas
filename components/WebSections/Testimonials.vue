@@ -84,7 +84,7 @@ function changeTestimonial(index) {
 <style scoped>
 .testimonials {
   text-align: center;
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;

@@ -258,7 +258,7 @@ emit("hide-loading");
   border-radius: 50%;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1300px) {
   .products-section {
     grid-template-columns: repeat(3, 1fr);
   }

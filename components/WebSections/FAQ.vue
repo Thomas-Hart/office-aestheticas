@@ -57,7 +57,7 @@ const isActive = (index) => {
   <style scoped>
 .FAQ-wrapper {
   margin: 0 auto;
-  max-width: 1200px;
+  max-width: 1300px;
   padding: 4rem 2rem 12rem 0;
   display: flex;
   justify-content: center;

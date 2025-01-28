@@ -192,7 +192,7 @@ watch(
 }
 
 /* Responsiveness */
-@media (max-width: 1200px) {
+@media (max-width: 1300px) {
   .main-image {
     width: 500px;
     height: 450px;

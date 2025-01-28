@@ -259,6 +259,7 @@ emit("hide-loading");
   flex-direction: column;
   justify-content: center;
   padding: 2rem 0;
+  margin-top: 60px;
 }
 
 .content-container {

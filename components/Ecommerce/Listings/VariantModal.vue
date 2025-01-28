@@ -197,7 +197,7 @@ function closeModal() {
   box-shadow: 0px 0px 8px black;
   padding: 2rem;
   border-radius: 8px;
-  min-width: 1200px;
+  min-width: 1300px;
   width: auto;
   /* min-height: 40rem; */
   height: 40rem;

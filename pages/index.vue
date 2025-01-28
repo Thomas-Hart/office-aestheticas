@@ -14,7 +14,7 @@
       <EcommerceListingsTabs />
     </section>
 
-    <section>
+    <section class="imagine-section">
       <WebSectionsImagine />
     </section>
 
@@ -50,7 +50,7 @@ emit("hide-loading");
 }
 
 .intro-section,
-.savings-section,
+.hero-section,
 .set-apart-section {
   width: 100%;
   height: auto;
@@ -58,7 +58,12 @@ emit("hide-loading");
   align-items: center;
   flex-direction: column;
   position: relative;
-  /* overflow: hidden; */
+}
+
+.hero-section,
+.set-apart-section,
+.imagane-section {
+  padding: 2rem;
 }
 
 .set-apart-section {
@@ -72,8 +77,18 @@ emit("hide-loading");
 
 @media (max-width: 768px) {
   /*  ------------  MOBILE  ------------   */
+  .hero-section,
+  .set-apart-section,
+  .imagane-section {
+    padding: 1.5rem;
+  }
 }
 
 @media (max-width: 480px) {
+  .hero-section,
+  .set-apart-section,
+  .imagane-section {
+    padding: 1rem;
+  }
 }
 </style>

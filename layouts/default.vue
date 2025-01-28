@@ -1,7 +1,15 @@
 <template>
   <div>
-    <NavFooterPreloadOANav @toggle-cart="toggleCartVisibility" />
-    <EcommerceNavCart v-if="isCartVisible" @close-cart="toggleCartVisibility" />
+    <NavFooterPreloadOANav
+      @toggle-cart="toggleCartVisibility"
+      :class="{ 'nav-hidden': isNavHidden, 'nav-visible': !isNavHidden }"
+    />
+    <transition name="cart-transition">
+      <EcommerceNavCart
+        v-if="isCartVisible"
+        @close-cart="toggleCartVisibility"
+      />
+    </transition>
 
     <div>
       <slot />
@@ -14,6 +22,8 @@
 <script setup>
 const showMobileNav = ref(false);
 const isCartVisible = ref(false);
+const isNavHidden = ref(false);
+let lastScrollY = 0;
 
 const store = useUserStore();
 const isLoggedIn = computed(() => !!store.token);
@@ -49,12 +59,80 @@ const currentPaths = computed(() => {
 
 // Function to toggle cart visibility
 const toggleCartVisibility = () => {
-  console.log("Here");
   isCartVisible.value = !isCartVisible.value;
 };
+
+// Scroll behavior for hiding and showing nav
+const handleScroll = () => {
+  const currentScrollY = window.scrollY;
+  if (currentScrollY > lastScrollY) {
+    isNavHidden.value = true; // Hide nav on scroll down
+  } else {
+    isNavHidden.value = false; // Show nav on scroll up
+  }
+  lastScrollY = currentScrollY;
+};
+
+onMounted(() => {
+  window.addEventListener("scroll", handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
+});
 </script>
 
-<style scoped media="screen">
+<style scoped>
+/* Nav Bar Styles */
+.nav-visible {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+  transform: translateY(0);
+}
+
+.nav-hidden {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+  transform: translateY(-100%);
+}
+
+/* Cart Transition */
+.cart-transition-enter-active,
+.cart-transition-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.cart-transition-enter-from {
+  opacity: 0;
+}
+
+.cart-transition-enter-to {
+  opacity: 1;
+}
+
+.cart-transition-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.cart-transition-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* Global Styles */
 #app {
   scroll-behavior: smooth;
   background-color: #545454;
@@ -96,19 +174,6 @@ const toggleCartVisibility = () => {
   animation: item-load 0.8s;
 }
 
-footer {
-  /* position: relative;
-  
-  border-top: 1px solid gray;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  min-height: 40rem;
-  overflow: hidden; */
-}
-
 .image-overflow-hidden {
   overflow: hidden;
   width: 100%;
@@ -120,20 +185,6 @@ footer {
 
 .image-overflow-hidden img {
   width: 100%;
-}
-
-.divider {
-  margin-bottom: -4px;
-}
-
-.divider-grow {
-  transform: scale(100%);
-  transition: 3s ease-out;
-  max-width: 100%;
-}
-
-.divider-grow.active {
-  transform: scale(140%);
 }
 
 @keyframes item-load {
@@ -162,39 +213,6 @@ footer {
   100% {
     transform: translateY(0%);
     opacity: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  /* Mobile View */
-  body.overflow-hidden {
-    overflow: hidden;
-  }
-
-  .image-overflow-hidden {
-    height: 32vh;
-  }
-
-  .nav-slide-out {
-    transform: translateY(10%);
-    opacity: 0;
-    z-index: -1;
-  }
-
-  .divider-grow {
-    transform: scale(100%);
-    transition: 3s all ease-out;
-    max-width: 100%;
-  }
-
-  .divider-grow.active {
-    transform: scale(140%);
-  }
-}
-
-@media (max-width: 480px) {
-  .image-overflow-hidden {
-    height: 25vh;
   }
 }
 </style>

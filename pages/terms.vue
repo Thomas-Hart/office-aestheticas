@@ -86,7 +86,7 @@ emit("hide-loading");
 }
 
 .terms {
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   width: 100%;
   padding: 6rem 2rem;

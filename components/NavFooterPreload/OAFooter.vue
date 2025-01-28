@@ -1,197 +1,251 @@
 <template>
-  <div class="footer-wrapper">
-    <div class="upper-content">
-      <div class="left">
-        <address class="footer-heading">
-          <h1>{{ companyName }}</h1>
-          <h2>{{ companyDescription }}</h2>
-        </address>
-        <!-- prettier-ignore -->
-        <nav class="footer-nav">
-          <div class="link" v-for="(link, index) in navPaths" :key="index">
-            <NuxtLink :to="getRoute(link)" class="">{{ link.charAt(0).toUpperCase() + link.slice(1) }}</NuxtLink>
-          </div>
-        </nav>
+  <footer class="office-footer">
+    <!-- Top black bar with links -->
+    <nav class="top-nav">
+      <div class="nav-buttons">
+        <NuxtLink to="#">Refund Policy</NuxtLink>
+        <NuxtLink to="#">Privacy Policy</NuxtLink>
       </div>
-      <div class="right">
-        <h1>Contact</h1>
-        <address class="footer-heading contact-info">
-          <p>Phone: {{ phone }}</p>
-          <p>Email: {{ email }}</p>
-        </address>
-        <h1 class="slogan">
-          {{ slogan }}
-        </h1>
+    </nav>
+
+    <!-- Main background container -->
+    <div class="background-container">
+      <!-- The dark overlay behind text only (NOT covering input & top nav) -->
+      <div class="text-overlay"></div>
+
+      <!-- Main content (Sign up + More Resources) -->
+      <div class="content-section">
+        <div class="signup-offer">
+          <h2>Sign up for exclusive offers</h2>
+          <p>Our best deals for our most loyal customers</p>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            aria-label="Email for exclusive offers"
+          />
+        </div>
+
+        <div class="more-resources">
+          <h2>More Resources</h2>
+          <ul>
+            <li><NuxtLink to="#">Contact us</NuxtLink></li>
+            <li><NuxtLink to="#">About us</NuxtLink></li>
+            <li><NuxtLink to="#">Terms of Service</NuxtLink></li>
+            <li><NuxtLink to="#">Start a Return</NuxtLink></li>
+          </ul>
+        </div>
       </div>
     </div>
-    <!-- prettier-ignore -->
-    <div class="bottom-content">
-      <p>Copyright © 2024 {{ companyName }} LLC. All rights reserved.</p>
-      <p>
-        <NuxtLink to="/privacy" class="hover-underline" @click.stop>Privacy Policy</NuxtLink> |
-        <NuxtLink to="/terms" class="hover-underline" @click.stop>Terms of Service</NuxtLink>
-      </p>
+
+    <!-- Bottom black bar -->
+    <div class="bottom-bar">
+      <p>© 2025, Office Aestheticas. Powered by HARTECHO</p>
     </div>
-  </div>
+  </footer>
 </template>
 
 <script setup>
-const props = defineProps({
-  navPaths: {
-    type: Array,
-    validator: function (array) {
-      return array.every((item) => typeof item === "string");
-    },
-    default: () => [],
-  },
-  companyName: String,
-  companyDescription: String,
-  phone: String,
-  email: String,
-  slogan: String,
-});
-
-const getRoute = (link) => {
-  return link === "home" ? "/" : `/${link}`;
-};
+// Composition API (script setup) for Nuxt 3:
+// Add any reactive logic here, if needed.
 </script>
 
 <style scoped>
-.footer-wrapper {
-  z-index: 6;
-  min-height: 80%;
-  height: auto;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 5rem;
-  width: 100%;
-  position: relative;
-}
-.upper-content {
-  display: flex;
-  gap: 5rem;
-}
-
-.left {
-  flex-grow: 1;
-}
-
-.footer-heading {
+.office-footer {
+  font-family: Arial, sans-serif;
+  color: #fff;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  margin-top: 10rem;
 }
 
-h1 {
-  font-size: 2rem;
-  font-weight: bold;
-  font-style: normal !important;
-  margin: 0;
-}
-
-h2 {
-  font-size: 1.3rem;
-  margin: 0;
-  font-weight: normal;
-}
-
-.footer-nav {
+/* 1) TOP NAV: black bar with Refund & Privacy links */
+.top-nav {
   display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  gap: 2rem;
-  margin-top: 2rem;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  padding: 0.75rem 2rem;
 }
 
-a,
-.link {
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  width: 1300px; /* or use max-width to help with responsiveness */
+}
+
+.top-nav a {
+  color: #fff;
   text-decoration: none;
-  font-size: 20px;
-  transition: 0.5s;
-  color: #c0c0c0;
-}
-
-a,
-.link:hover {
-  color: white;
-}
-
-a:visited,
-a:link {
-  color: inherit;
-}
-
-.right {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.slogan {
-  flex-grow: 1;
-}
-
-.bottom-content {
-  position: relative;
-  margin: 3rem 0 1rem 0;
-  width: 100%;
-  bottom: 0;
-}
-
-p {
-  margin: 0.1rem 0;
-}
-
-a {
   font-size: 1rem;
+  font-weight: 500;
+  margin-right: 2rem;
 }
 
-.hover-underline {
-  text-decoration: none;
-}
-
-.hover-underline:hover {
+.top-nav a:hover {
   text-decoration: underline;
 }
 
-a.router-link-exact-active {
-  transition: 0.6s;
-  color: white;
+/* 2) BACKGROUND CONTAINER + OVERLAY */
+.background-container {
+  position: relative;
+  background: url("/Backgrounds/OfficePic5.jpg") center center no-repeat;
+  background-size: cover;
+  /* A moderate min-height to mimic the original design’s scale */
+  min-height: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  /* Default horizontal padding at large screens */
+  padding: 0 2rem;
 }
 
+.text-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1; /* behind content-section */
+}
+
+/* 3) MAIN CONTENT SECTION */
+.content-section {
+  position: relative;
+  z-index: 2; /* above .text-overlay */
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10rem;
+  /* This container can have a fixed width or max-width to help in large viewports */
+  width: 1300px;
+  margin-top: 5rem;
+}
+
+.signup-offer {
+  margin-right: 2rem;
+}
+
+.signup-offer h2 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.signup-offer p {
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+  font-size: 1.1rem;
+  font-family: "Lora", serif;
+  color: #ddd;
+}
+
+.signup-offer input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  border: none;
+  outline: none;
+}
+
+.more-resources h2 {
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.more-resources ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.more-resources li {
+  margin-bottom: 0.5rem;
+}
+
+.more-resources a {
+  color: #ddd;
+  text-decoration: none;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.more-resources a:hover {
+  text-decoration: underline;
+}
+
+/* 4) BOTTOM BAR */
+.bottom-bar {
+  background-color: #000;
+  text-align: center;
+  padding: 0.75rem 1rem;
+  margin-top: auto;
+}
+
+.bottom-bar p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* ======================================== *
+ *       RESPONSIVE BREAKPOINTS
+ * ======================================== */
+
+/* At or below 1024px: reduce overall width and spacing a bit */
+@media (max-width: 1024px) {
+  .nav-buttons {
+    width: 100%;
+    /* justify-content: space-between; */
+  }
+
+  .content-section {
+    /* width: 90%;
+    gap: 5rem;
+    margin-top: 3rem; */
+  }
+}
+
+/* At or below 768px: reduce horizontal padding to 1.5rem; stack content vertically, etc. */
 @media (max-width: 768px) {
-  /*  ------------  MOBILE  ------------   */
-  .footer-wrapper {
-    padding: 0 1.5rem;
+  .office-footer {
+    margin-top: 5rem;
   }
 
-  .upper-content {
-    gap: 3rem;
+  .top-nav {
+    padding: 0.75rem 1.5rem;
+  }
+
+  .background-container {
+    padding: 0 1.5rem; /* per your request */
+  }
+
+  .content-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2rem;
+    width: 100%;
+    margin-top: 3rem;
   }
 }
+
+/* At or below 480px: reduce horizontal padding to 1rem; also reduce font sizes, etc. */
 @media (max-width: 480px) {
-  .footer-wrapper {
-    padding: 0 1rem;
-  }
-  .upper-content {
-    gap: 1.5rem;
+  .top-nav {
+    padding: 0.75rem 1rem;
   }
 
-  h1 {
-    font-size: 1.3rem;
+  .background-container {
+    padding: 0 1rem; /* per your request */
   }
 
-  h2 {
-    font-size: 1.3rem;
+  .signup-offer h2,
+  .more-resources h2 {
+    font-size: 2rem;
   }
 
-  a,
-  p {
+  .more-resources a {
     font-size: 1rem;
-  }
-
-  .contact-info p {
-    font-size: 0.8rem;
   }
 }
 </style>
