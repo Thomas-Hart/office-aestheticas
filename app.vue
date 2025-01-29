@@ -5,7 +5,7 @@
       <!-- Page content with transition -->
       <transition name="fade" mode="out-in">
         <div class="page-wrapper">
-          <NuxtPage @hide-loading="hideLoadingScreen" @openLoginModal="" />
+          <NuxtPage @hide-loading="hideLoadingScreen" />
         </div>
       </transition>
 
@@ -49,7 +49,10 @@ router.beforeEach((to, from, next) => {
     next();
     return;
   }
+  console.log("switching...");
   showLoadingScreen();
+  console.log("Done!");
+  console.log("isLoading: " + isLoading.value);
   next();
 });
 
@@ -119,7 +122,7 @@ useHead({
   align-items: center;
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
-  z-index: 20;
+  z-index: 2000;
   flex-direction: column;
   transition: opacity 0.5s ease;
   opacity: 1;

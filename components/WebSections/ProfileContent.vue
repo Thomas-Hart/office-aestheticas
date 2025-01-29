@@ -189,7 +189,7 @@ const closeSidebar = () => {
   position: absolute;
   top: 1rem;
   left: 1rem;
-  z-index: 1000;
+  z-index: 900;
   cursor: pointer;
 }
 

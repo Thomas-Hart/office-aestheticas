@@ -5,80 +5,66 @@
     <div class="mobile-nav-content">
       <!-- Close button in top-left -->
       <div class="mobile-nav-header">
-        <button class="close-button" @click="$emit('close')">&times;</button>
-      </div>
-      <!-- (Optional) Logo or brand name near the top -->
-      <div class="mobile-nav-logo">
-        <img class="logo" src="/Logos/OAName.svg" alt="" />
+        <button class="close-button" @click="closeNav">&times;</button>
       </div>
 
-      <!-- Category list -->
-      <ul class="mobile-category-list">
-        <li
-          v-for="(cat, i) in categories"
-          :key="i"
-          @click="onCategoryClick(cat)"
-        >
-          {{ cat }}
-        </li>
-      </ul>
+      <!-- Logo near the top -->
+      <div class="mobile-nav-logo">
+        <img class="logo" src="/Logos/OAName.svg" alt="Office Aestheticas" />
+      </div>
+
+      <!-- Transition wrapper for switching between Links and Categories -->
+      <!-- Added mode="out-in" and keys to each component -->
+      <transition name="fade" mode="out-in">
+        <!-- Links View -->
+        <NavFooterPreloadMobileNavLinks
+          v-if="activeView === 'links'"
+          key="links"
+          @switchToCategories="switchToCategories"
+          @open-shop-menu="activeView = 'menu'"
+          @closeNav="closeNav"
+        />
+
+        <!-- Categories View -->
+        <NavFooterPreloadShopCategories
+          v-else
+          key="categories"
+          @switchToLinks="switchToLinks"
+          @close-mobile-nav="closeNav"
+        />
+      </transition>
     </div>
   </div>
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
-
-// Props
-const props = defineProps({
-  visible: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-// Events
 const emit = defineEmits(["close"]);
 
-// We’ll push this array of categories into the side menu
-const categories = [
-  "Desks and Tables",
-  "Chairs and Seating",
-  "Computers and Electronics",
-  "Office Supplies",
-  "Ergonomic Accessories",
-  "Lighting",
-  "Decor and Comfort",
-  "Communication",
-  "Health and Wellness",
-  "Networking and Security",
-  "Cleaning and Maintenance",
-  "Storage Solutions",
-];
+const activeView = ref("links");
 
-// Router instance
-const router = useRouter();
-
-/**
- * Handle category click:
- *   1. Update URL query (e.g. ?tab=All&category=Lighting)
- *   2. Close the mobile nav
- */
-function onCategoryClick(category) {
-  router.push({
-    path: "/",
-    query: {
-      tab: "All",
-      category,
-    },
-  });
-  closeNav();
-}
-
-// Emit close event to parent
 function closeNav() {
   emit("close");
+  activeView.value = "links";
 }
+function switchToCategories() {
+  activeView.value = "categories";
+}
+function switchToLinks() {
+  activeView.value = "links";
+}
+
+function handleResize() {
+  activeView.value = window.innerWidth < 768 ? "links" : "";
+}
+
+onMounted(() => {
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
+});
 </script>
 
 <style scoped>
@@ -89,7 +75,7 @@ function closeNav() {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.6); /* dims rest of the screen */
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: flex-start;
   z-index: 1000;
@@ -108,7 +94,6 @@ function closeNav() {
   flex-direction: column;
   overflow-y: auto;
 
-  /* Font and Spacing Consistency */
   font-family: "Montserrat", sans-serif;
   line-height: 1.4;
 }
@@ -116,10 +101,11 @@ function closeNav() {
 .mobile-nav-header {
   display: flex;
   justify-content: flex-end;
+  margin-bottom: -1rem;
 }
 
 /* Close Button */
-.mobile-nav-header .close-button {
+.close-button {
   background: none;
   border: none;
   font-size: 2rem;
@@ -129,40 +115,26 @@ function closeNav() {
 /* Logo container near the top */
 .mobile-nav-logo {
   display: flex;
-  /* justify-content: center; */
 }
 
 .logo {
-  height: 8rem;
+  width: 100%;
 }
 
-/* Category list */
-.mobile-category-list {
-  display: flex;
-  flex-direction: column;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* Fade transition for switching between Links and Categories */
+.fade-enter-active,
+.fade-leave-active {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
 }
 
-.mobile-category-list li {
-  cursor: pointer;
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
-  /* Adjust spacing/styling as desired */
-}
-
-.mobile-category-list li:hover {
-  font-weight: bold;
-}
-
-@media (max-width: 480px) {
-  .mobile-category-list li {
-    margin-bottom: 0.7rem;
-  }
-
-  .logo {
-    /* height: 7.5rem; */
+@media (max-width: 768px) {
+  .mobile-nav-content {
+    padding: 1rem 2rem;
   }
 }
 </style>

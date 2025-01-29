@@ -1,55 +1,57 @@
 <template>
-  <div>
-    <!-- Top Navigation Section -->
-    <div class="top-nav">
-      <div class="top-nav-content">
-        <!-- MOBILE: Hamburger Menu Button (hidden on desktop) -->
-        <button class="mobile-menu-button" @click="toggleMobileNav">
-          <img src="/Graphics/NavBars.svg" alt="Menu" />
-        </button>
+  <!-- Top Navigation Section -->
+  <div class="top-nav">
+    <div class="top-nav-content">
+      <!-- MOBILE: Hamburger Menu Button (hidden on desktop) -->
+      <button class="mobile-menu-button" @click="toggleMobileNav">
+        <!-- Explicit width/height to prevent layout shift -->
+        <img src="/Graphics/NavBars.svg" alt="Menu" width="24" height="24" />
+      </button>
 
-        <!-- LOGO: Always visible, but centered on mobile; left on desktop -->
-        <div class="nav-logo-container">
-          <NavFooterPreloadNavLogo />
-        </div>
+      <!-- LOGO: If possible, define width/height in your logo component or here -->
+      <div class="nav-logo-container">
+        <NavFooterPreloadNavLogo />
+      </div>
 
-        <!-- DESKTOP: Navigation Links in the center (hidden on mobile) -->
-        <div class="desktop-nav-links">
-          <NavFooterPreloadNavLinks @open-shop-menu="toggleMobileNav" />
-        </div>
+      <!-- DESKTOP: Navigation Links in the center (hidden on mobile) -->
+      <div class="desktop-nav-links">
+        <NavFooterPreloadNavLinks @open-shop-menu="toggleMobileNav" />
+      </div>
 
-        <!-- DESKTOP: Icons + Cart on the right (hidden on mobile) -->
-        <div class="desktop-nav-right">
-          <NavFooterPreloadNavIcons
-            @closeMobileNav="closeMobileNav"
-            @openLoginModal="openLoginModal"
-          />
-          <NavFooterPreloadNavCartButton
-            @clicked="closeMobileNav"
-            @toggle-cart="toggleCart"
-          />
-        </div>
-
-        <!-- MOBILE: Cart Button (hidden on desktop) -->
+      <!-- DESKTOP: Icons + Cart on the right (hidden on mobile) -->
+      <div class="desktop-nav-right">
+        <NavFooterPreloadNavIcons
+          @closeMobileNav="closeMobileNav"
+          @openLoginModal="openLoginModal"
+        />
         <NavFooterPreloadNavCartButton
-          class="mobile-cart-button"
           @clicked="closeMobileNav"
           @toggle-cart="toggleCart"
         />
       </div>
-    </div>
 
-    <!-- Pointer Animation & Text for Cart (Optional) -->
-    <img
-      v-if="showClickAnimation && !isDropDownVisible"
-      src="/CartPoint.svg"
-      alt="Click Animation"
-      class="click-animation"
-    />
-    <p v-if="showClickAnimation && !isDropDownVisible" class="click-text">
-      Click here to see your cart
-    </p>
+      <!-- MOBILE: Cart Button (hidden on desktop) -->
+      <NavFooterPreloadNavCartButton
+        class="mobile-cart-button"
+        @clicked="closeMobileNav"
+        @toggle-cart="toggleCart"
+      />
+    </div>
   </div>
+
+  <!-- Pointer Animation & Text for Cart (Optional) -->
+  <!-- Also add fixed width/height here if needed -->
+  <img
+    v-if="showClickAnimation && !isDropDownVisible"
+    src="/CartPoint.svg"
+    alt="Click Animation"
+    class="click-animation"
+    width="80"
+    height="80"
+  />
+  <p v-if="showClickAnimation && !isDropDownVisible" class="click-text">
+    Click here to see your cart
+  </p>
 </template>
 
 <script setup>
@@ -57,11 +59,11 @@ import { ref, watch } from "vue";
 
 const itemStore = useItemStore();
 
-// State variables
+// State
 const showClickAnimation = ref(false);
 const isDropDownVisible = ref(false);
 
-// Watch cart item count to trigger a pointer animation from 0 -> 1
+// Watch cart item count to trigger pointer animation from 0 -> 1
 watch(
   () => itemStore.getCartItemCount(),
   (newVal, oldVal) => {
@@ -86,26 +88,18 @@ const emit = defineEmits([
   "close-login-modal",
 ]);
 
-// Emit toggle-cart event
 function toggleCart() {
   emit("toggle-cart");
 }
-
-// Toggle mobile nav
 function toggleMobileNav() {
-  console.log("here");
   emit("toggle-mobile-nav");
 }
-
 function closeMobileNav() {
   emit("close-mobile-nav");
 }
-
-// Login modal
 function openLoginModal() {
   emit("open-login-modal");
 }
-
 function closeLoginModal() {
   emit("close-login-modal");
 }
@@ -116,9 +110,10 @@ function closeLoginModal() {
    NAV WRAPPER
 ---------------------------------------- */
 .top-nav {
+  /* Fix a known height to prevent vertical shift */
   position: relative;
   width: 100%;
-  height: 60px;
+  height: 60px; /* matches .top-nav-content height below */
   background: white;
   display: flex;
   justify-content: center;
@@ -137,14 +132,12 @@ function closeLoginModal() {
 /* ----------------------------------------
    DESKTOP NAV SECTIONS
 ---------------------------------------- */
-/* Middle (nav links on desktop) */
 .desktop-nav-links {
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
-/* Right side (icons + cart on desktop) */
 .desktop-nav-right {
   display: flex;
   align-items: center;
@@ -152,26 +145,31 @@ function closeLoginModal() {
 }
 
 /* ----------------------------------------
-   MOBILE BUTTONS (hidden on desktop)
+   MOBILE BUTTONS
 ---------------------------------------- */
 .mobile-menu-button {
-  display: none; /* Shown below 768px */
+  display: none; /* Shown < 768px */
   background: none;
   border: none;
   cursor: pointer;
+  /* This ensures the button has stable dimensions for the icon */
+  width: 24px;
+  height: 24px;
 }
 
 .mobile-cart-button {
-  display: none; /* Shown below 768px */
+  display: none; /* Shown < 768px */
 }
 
-/* ----------------------------------------
-   LOGO CONTAINER
----------------------------------------- */
+/* Logo container */
 .nav-logo-container {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* Desktop default. Overridden in media query below for mobile. */
+  justify-content: flex-start; /* desktop default, mobile overrides below */
+  /* Optionally fix a width/height if your logo is a direct <img>:
+     min-width: 120px; 
+     min-height: 40px;
+  */
 }
 
 /* ----------------------------------------
@@ -179,8 +177,10 @@ function closeLoginModal() {
 ---------------------------------------- */
 .click-animation {
   position: absolute;
-  top: 6rem; /* Adjust to position under cart icon */
+  top: 6rem;
   right: 5rem;
+  /* we've given the <img> width/height in HTML too, 
+     but you can also set them here to preserve space */
   width: 5rem;
   height: 5rem;
   animation: clickAnimation 1s ease infinite;
@@ -208,11 +208,6 @@ function closeLoginModal() {
   }
 }
 
-.mobile-menu-button img {
-  height: 1.5rem;
-  width: 1.5rem;
-}
-
 /* Prevent body scroll when nav or modal is open */
 .no-scroll {
   overflow: hidden;
@@ -222,19 +217,16 @@ function closeLoginModal() {
    RESPONSIVE QUERIES
 ---------------------------------------- */
 @media (max-width: 768px) {
-  /* Hide the desktop nav links & icons on mobile */
   .desktop-nav-links,
   .desktop-nav-right {
-    display: none;
+    display: none; /* hide on mobile */
   }
 
-  /* Show the mobile hamburger & mobile cart */
   .mobile-menu-button,
   .mobile-cart-button {
-    display: block;
+    display: block; /* show on mobile */
   }
 
-  /* Center the logo on mobile */
   .nav-logo-container {
     flex: 1;
     justify-content: center;
@@ -242,13 +234,11 @@ function closeLoginModal() {
 }
 
 @media (min-width: 769px) {
-  /* Hide the mobile controls on desktop */
   .mobile-menu-button,
   .mobile-cart-button {
     display: none;
   }
 
-  /* Keep everything else visible on desktop */
   .desktop-nav-links,
   .desktop-nav-right {
     display: flex;

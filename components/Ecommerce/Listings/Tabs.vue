@@ -82,7 +82,7 @@
       <div v-else>
         <img class="logo" src="/Logos/OAName.svg" alt="" />
         <h2 class="no-items-message">No items match the current selection</h2>
-        <p>Choose another option</p>
+        <p class="choose-another">Choose another option</p>
       </div>
 
       <!-- Show More -->
@@ -427,6 +427,10 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
 
 .no-items-message {
   margin-bottom: 1rem;
+}
+
+.choose-another {
+  margin-bottom: 2rem;
 }
 
 /* Show More Button Container */

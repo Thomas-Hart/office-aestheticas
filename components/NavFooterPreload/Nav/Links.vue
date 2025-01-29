@@ -1,6 +1,6 @@
 <template>
   <nav class="nav-links">
-    <a href="/" class="nav-link">Home</a>
+    <NuxtLink to="/" class="nav-link">Home</NuxtLink>
     <span class="nav-link" @click="openShopMenu">
       Shop
       <img
@@ -9,7 +9,7 @@
         alt="Down Arrow"
       />
     </span>
-    <a href="/blog" class="nav-link">Blog</a>
+    <NuxtLink to="/blog" class="nav-link">Blog</NuxtLink>
   </nav>
 </template>
   
