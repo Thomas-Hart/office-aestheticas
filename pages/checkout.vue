@@ -31,7 +31,6 @@ emit("hide-loading");
 .checkout-section {
   min-height: 75rem;
   padding: 4rem 0 8rem 0;
-  background: url("/Car5.png") no-repeat;
   background-size: cover;
 }
 </style>

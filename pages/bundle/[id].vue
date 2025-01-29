@@ -98,7 +98,7 @@ emit("hide-loading");
 }
 
 .bundle-wrapper {
-  background: url("/HoneyCombBG.svg") no-repeat;
+  background: url("/Backgrounds/OfficePic5.jpg") no-repeat;
   background-size: cover;
   color: #f1b55c;
   font-family: "Source Sans Pro", Montserrat, cursive;
