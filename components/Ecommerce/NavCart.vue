@@ -64,7 +64,9 @@
 
       <!-- Cart actions -->
       <div class="cart-actions">
-        <button class="view-cart">Keep Shopping</button>
+        <button class="view-cart" @click="setTab('Featured')">
+          Keep Shopping
+        </button>
         <button class="checkout">
           <img src="/Graphics/CartCheckout/security.svg" alt="" />Checkout
         </button>
@@ -77,8 +79,16 @@
 <script setup>
 const userStore = useUserStore();
 const itemStore = useItemStore();
-
+const router = useRouter();
+const route = useRoute();
 const isLoggedIn = computed(() => !!userStore.user);
+
+const emit = defineEmits(["close-cart"]);
+
+function setTab(tab) {
+  emit("close-cart");
+  router.push({ query: { ...route.query, tab } });
+}
 
 // Show either user cart (if logged in) or item store cart (if not)
 const activeCart = computed(() => {

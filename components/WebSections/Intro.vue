@@ -11,8 +11,10 @@
         <img class="lamp-icon" src="/Graphics/Home/lamp.svg" alt="Lamp Icon" />
       </div>
       <div class="button-group">
-        <button class="btn shop-now">Shop Now</button>
-        <button class="btn view-all">View All</button>
+        <button class="btn shop-now" @click="setTab('Featured')">
+          Shop Now
+        </button>
+        <button class="btn view-all" @click="setTab('All')">View All</button>
       </div>
     </div>
   </section>
@@ -21,9 +23,17 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
 const glowCanvas = ref(null);
 let mousePos = { x: 0, y: 0 };
+
+const router = useRouter();
+const route = useRoute();
+
+function setTab(tab) {
+  router.push({ query: { ...route.query, tab } });
+}
 
 onMounted(() => {
   const canvas = glowCanvas.value;
@@ -112,6 +122,7 @@ onMounted(() => {
   };
 });
 </script>
+
 
 
 <style scoped>

@@ -1,5 +1,12 @@
 <template>
-  <div class="product-card" v-if="!loading">
+  <div
+    class="product-card"
+    v-if="!loading"
+    @click="handleMouseEnter"
+    ref="hoverTarget"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+  >
     <div class="image-container">
       <!-- Product Image -->
       <img
@@ -17,95 +24,100 @@
       />
 
       <!-- Dark Overlay (Appears on Hover) -->
-      <div class="overlay">
-        <!-- Wishlist Icon -->
-        <img
-          src="/Graphics/Items/whiteHeart.svg"
-          alt="Wishlist"
-          class="wishlist-icon"
-          @click.stop="handleWishlistClick"
-        />
-        <div class="overlay-content">
-          <!-- TITLE (word-by-word, letter-by-letter) -->
-          <h3 class="overlay-title">
-            <template v-for="(word, wIndex) in titleWords" :key="'tw' + wIndex">
-              <span class="word">
-                <span
-                  v-for="(char, cIndex) in word"
-                  :key="cIndex"
-                  class="letter title-letter"
-                  :style="{
-                    '--char-index': cIndex,
-                    '--char-count': word.length,
-                  }"
-                >
-                  {{ char }}
+      <transition name="fade">
+        <div v-if="showOverlay" class="overlay">
+          <!-- Wishlist Icon -->
+          <img
+            src="/Graphics/Items/whiteHeart.svg"
+            alt="Wishlist"
+            class="wishlist-icon"
+            @click.stop="handleWishlistClick"
+          />
+          <div class="overlay-content">
+            <!-- TITLE (word-by-word, letter-by-letter) -->
+            <h3 class="overlay-title">
+              <template
+                v-for="(word, wIndex) in titleWords"
+                :key="'tw' + wIndex"
+              >
+                <span class="word">
+                  <span
+                    v-for="(char, cIndex) in word"
+                    :key="cIndex"
+                    class="letter title-letter"
+                    :style="{
+                      '--char-index': cIndex,
+                      '--char-count': word.length,
+                    }"
+                  >
+                    {{ char }}
+                  </span>
                 </span>
-              </span>
-              <!-- Visible space after each word, except the last -->
-              <span v-if="wIndex < titleWords.length - 1">&nbsp;</span>
-            </template>
-          </h3>
+                <!-- Visible space after each word, except the last -->
+                <span v-if="wIndex < titleWords.length - 1">&nbsp;</span>
+              </template>
+            </h3>
 
-          <!-- DESCRIPTION (word-by-word, letter-by-letter, clamped with ellipsis) -->
-          <p class="overlay-description">
-            <template
-              v-for="(word, wIndex) in descriptionWords"
-              :key="'dw' + wIndex"
-            >
-              <span class="word">
-                <span
-                  v-for="(char, cIndex) in word"
-                  :key="cIndex"
-                  class="letter desc-letter"
-                  :style="{
-                    '--char-index': cIndex,
-                    '--char-count': word.length,
-                  }"
-                >
-                  {{ char }}
+            <!-- DESCRIPTION (word-by-word, letter-by-letter, clamped with ellipsis) -->
+            <p class="overlay-description">
+              <template
+                v-for="(word, wIndex) in descriptionWords"
+                :key="'dw' + wIndex"
+              >
+                <span class="word">
+                  <span
+                    v-for="(char, cIndex) in word"
+                    :key="cIndex"
+                    class="letter desc-letter"
+                    :style="{
+                      '--char-index': cIndex,
+                      '--char-count': word.length,
+                    }"
+                  >
+                    {{ char }}
+                  </span>
                 </span>
-              </span>
-              <span v-if="wIndex < descriptionWords.length - 1">&nbsp;</span>
-            </template>
-          </p>
+                <span v-if="wIndex < descriptionWords.length - 1">&nbsp;</span>
+              </template>
+            </p>
 
-          <!-- Star Rating -->
-          <div class="overlay-rating" v-if="starImages && starImages.length">
-            <img
-              v-for="(star, i) in starImages"
-              :key="i"
-              :src="star"
-              alt="Star"
-              class="star-icon"
-            />
-          </div>
+            <!-- Star Rating -->
+            <div class="overlay-rating" v-if="starImages && starImages.length">
+              <img
+                v-for="(star, i) in starImages"
+                :key="i"
+                :src="star"
+                alt="Star"
+                class="star-icon"
+              />
+            </div>
 
-          <!-- Buttons -->
-          <div class="overlay-buttons-container">
-            <button
-              v-if="item.variants && item.variants.length > 0"
-              @click.stop="showVariantModal = true"
-              class="overlay-button honey-button"
-            >
-              See Options
-            </button>
-            <button
-              v-else
-              @click.stop="addToCart(item)"
-              class="overlay-button honey-button"
-            >
-              Add To Cart
-            </button>
-            <button
-              @click.stop="goToItem(item._id)"
-              class="overlay-button honey-button"
-            >
-              View Item
-            </button>
+            <!-- Buttons -->
+            <div class="overlay-buttons-container">
+              <button
+                v-if="item.variants && item.variants.length > 0"
+                @click.stop="showVariantModal = true"
+                class="overlay-button honey-button"
+              >
+                See Options
+              </button>
+              <button
+                v-else
+                @click.stop="addToCart(item)"
+                class="overlay-button honey-button"
+              >
+                Add To Cart
+              </button>
+              <button
+                @click.stop="goToItem(item._id)"
+                class="overlay-button honey-button"
+              >
+                View Item
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </transition>
 
       <!-- Checkmark (if added to cart) -->
       <img
@@ -150,6 +162,16 @@ const itemStore = useItemStore();
 const userStore = useUserStore();
 const router = useRouter();
 const loading = ref(true);
+
+const showOverlay = ref(false);
+
+const handleMouseEnter = () => {
+  showOverlay.value = true;
+};
+
+const handleMouseLeave = () => {
+  showOverlay.value = false;
+};
 
 onMounted(() => {
   loading.value = false;
@@ -327,14 +349,9 @@ function closeVariantModal() {
   inset: 0;
   z-index: 3;
   background-color: rgba(0, 0, 0, 0.8);
-  opacity: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: opacity 0.3s ease;
-}
-.image-container:hover .overlay {
-  opacity: 1;
 }
 
 /* Overlay Content with uniform padding, left-align, Lora font */
@@ -433,7 +450,7 @@ function closeVariantModal() {
 /* Each letter is hidden by default */
 .letter {
   display: inline-block;
-  opacity: 0;
+  opacity: 1;
 }
 
 /* 
@@ -471,25 +488,35 @@ function closeVariantModal() {
   font-size: 0.8rem;
 }
 
-@media (max-width: 768px) {
-  /* .product-card {
-    width: 12rem;
-  }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
 
-  .image-container {
-    width: 12rem;
-    height: 12rem;
-  } */
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 @media (max-width: 768px) {
-  /* .product-card {
-    width: 10rem;
+}
+
+@media (max-width: 480px) {
+  .overlay-content {
+    padding: 0.65rem;
   }
 
-  .image-container {
-    width: 100%;
-    height: auto;
-  } */
+  .overlay-title {
+    margin: 0;
+  }
+
+  .overlay-rating {
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .overlay-button {
+    padding: 5px 8px;
+  }
 }
 </style>

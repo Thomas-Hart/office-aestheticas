@@ -157,6 +157,7 @@ function closeLoginModal() {
   justify-content: space-between;
   align-items: center;
   width: 90%;
+  height: 100%;
 }
 .desktop-nav {
   display: flex;
