@@ -78,8 +78,8 @@ useSeoMeta({
     "Log in to the Nexgen Sales Portal to access your door-to-door sales courses, track your progress, and enhance your skills with our interactive training modules.",
   ogDescription:
     "Access the Nexgen Sales Portal for exclusive door-to-door sales courses, progress tracking, and more. Start learning and advancing your sales career today.",
-  ogImage: "/OAName.webp",
-  twitterCard: "/OAName.webp",
+  ogImage: "/Logos/OAName.svg",
+  twitterCard: "/Logos/OAName.svg",
 });
 
 const emit = defineEmits(["hide-loading"]);

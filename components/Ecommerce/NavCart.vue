@@ -361,8 +361,8 @@ function updateItemQuantity(item, newValue) {
 }
 
 .checkout img {
-  width: 1rem;
-  height: 1rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .item-quantity-input {
@@ -384,18 +384,41 @@ function updateItemQuantity(item, newValue) {
     width: 150px;
     height: 150px;
   }
+
+  .view-cart {
+    padding: 1rem 1.25rem;
+  }
 }
 
 @media (max-width: 768px) {
   .cart-wrapper {
     /* Fixed width for desktops, but allows responsiveness on smaller screens */
     width: 100%;
+    padding: 1.5rem;
   }
   .item-image {
     width: 180px;
     height: 180px;
     object-fit: cover;
     margin-right: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-wrapper {
+    padding: 1rem;
+  }
+  .item-image {
+    width: 150px;
+    height: 150px;
+  }
+
+  .total-price {
+    font-size: 0.5rem;
+  }
+
+  .view-cart {
+    padding: 0.75rem 1rem;
   }
 }
 </style>

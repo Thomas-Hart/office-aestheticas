@@ -239,7 +239,7 @@ emit("hide-loading");
 }
 
 .stars {
-  color: #ff8000;
+  color: #3f654c;
 }
 
 .reviews {

@@ -1,7 +1,7 @@
 <template>
   <div class="brand">
     <NuxtLink to="/" class="nav-logo-box">
-      <img src="/Logos/OAName.webp" alt="Company Logo" class="nav-logo" />
+      <img src="/Logos/OAName.svg" alt="Company Logo" class="nav-logo" />
     </NuxtLink>
   </div>
 </template>
@@ -13,7 +13,7 @@
   gap: 20px;
 }
 .nav-logo-box {
-  width: 200px;
+  width: 160px;
   height: auto;
 }
 .nav-logo {
@@ -23,7 +23,7 @@
 
 @media (max-width: 480px) {
   .nav-logo-box {
-    width: 60px;
+    /* width: 60px; */
   }
 }
 </style>

@@ -217,15 +217,16 @@
   }
 
   .background-container {
+    min-height: 500px;
     padding: 0 1.5rem; /* per your request */
   }
 
   .content-section {
     flex-direction: column;
     align-items: flex-start;
-    gap: 2rem;
+    gap: 4rem;
     width: 100%;
-    margin-top: 3rem;
+    margin-top: 1rem;
   }
 }
 
@@ -237,6 +238,10 @@
 
   .background-container {
     padding: 0 1rem; /* per your request */
+  }
+
+  .signup-offer h2 {
+    margin-bottom: 0;
   }
 
   .signup-offer h2,

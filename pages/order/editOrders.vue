@@ -280,7 +280,7 @@ function showNotification(message, type = "info") {
   border-bottom: 1px solid #ddd;
   padding: 0.75rem 10px;
   color: white;
-  background: #ff8000;
+  background: #3f654c;
 }
 
 .hero h2 {

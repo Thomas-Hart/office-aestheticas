@@ -127,7 +127,6 @@ onMounted(() => {
 
 <style scoped>
 .intro-section {
-  margin-top: 60px;
   min-height: calc(100vh - 110px); /* Full viewport height minus nav bar */
   background-image: url("/Backgrounds/OAIntroBG.jpg");
   background-size: cover;

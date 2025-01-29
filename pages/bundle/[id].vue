@@ -178,7 +178,7 @@ emit("hide-loading");
 
 .items-list li {
   font-size: 1rem;
-  background-color: #ff8000;
+  background-color: #3f654c;
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 5px;

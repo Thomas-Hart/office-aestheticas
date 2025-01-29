@@ -1,24 +1,25 @@
 <template>
   <div>
-    <!-- Dark Overlay for Top Nav -->
-    <!-- <div
-      v-if="showClickAnimation && !isDropDownVisible"
-      class="dark-overlay"
-    ></div> -->
-
-    <!-- Import the Banner Component -->
-    <!-- <NavFooterPreloadTopBanner /> -->
-
     <!-- Top Navigation Section -->
     <div class="top-nav">
       <div class="top-nav-content">
-        <!-- Brand logo -->
-        <NavFooterPreloadNavLogo />
+        <!-- MOBILE: Hamburger Menu Button (hidden on desktop) -->
+        <button class="mobile-menu-button" @click="toggleMobileNav">
+          <img src="/Graphics/NavBars.svg" alt="Menu" />
+        </button>
 
-        <NavFooterPreloadNavLinks />
+        <!-- LOGO: Always visible, but centered on mobile; left on desktop -->
+        <div class="nav-logo-container">
+          <NavFooterPreloadNavLogo />
+        </div>
 
-        <!-- Desktop Navigation Links (Hidden on Mobile) -->
-        <div class="desktop-nav">
+        <!-- DESKTOP: Navigation Links in the center (hidden on mobile) -->
+        <div class="desktop-nav-links">
+          <NavFooterPreloadNavLinks @open-shop-menu="toggleMobileNav" />
+        </div>
+
+        <!-- DESKTOP: Icons + Cart on the right (hidden on mobile) -->
+        <div class="desktop-nav-right">
           <NavFooterPreloadNavIcons
             @closeMobileNav="closeMobileNav"
             @openLoginModal="openLoginModal"
@@ -27,46 +28,27 @@
             @clicked="closeMobileNav"
             @toggle-cart="toggleCart"
           />
-
-          <!-- Pointer Animation & Text for Cart -->
-          <img
-            v-if="showClickAnimation && !isDropDownVisible"
-            src="/CartPoint.svg"
-            alt="Click Animation"
-            class="click-animation"
-          />
-          <p v-if="showClickAnimation && !isDropDownVisible" class="click-text">
-            Click here to see your cart
-          </p>
         </div>
 
-        <!-- Mobile Menu Button -->
-        <button class="mobile-menu-button" @click="toggleMobileNav">
-          <img src="/NavBars.svg" alt="Menu" />
-        </button>
-      </div>
-    </div>
-
-    <!-- Mobile Navigation Overlay -->
-    <div
-      :class="['mobile-nav-overlay', { 'is-visible': showMobileNav }]"
-      @click.self="toggleMobileNav"
-    >
-      <div class="mobile-nav-content">
-        <button class="close-button" @click="toggleMobileNav">×</button>
-        <NavFooterPreloadNavLinks
-          @closeMobileNav="toggleMobileNav"
-          @openLoginModal="openLoginModal"
-        />
+        <!-- MOBILE: Cart Button (hidden on desktop) -->
         <NavFooterPreloadNavCartButton
-          @clicked="toggleMobileNav"
+          class="mobile-cart-button"
+          @clicked="closeMobileNav"
           @toggle-cart="toggleCart"
         />
       </div>
     </div>
-    <div :class="['modal-wrapper', { 'is-visible': showLoginModal }]">
-      <NavFooterPreloadLoginModal @close="closeLoginModal" />
-    </div>
+
+    <!-- Pointer Animation & Text for Cart (Optional) -->
+    <img
+      v-if="showClickAnimation && !isDropDownVisible"
+      src="/CartPoint.svg"
+      alt="Click Animation"
+      class="click-animation"
+    />
+    <p v-if="showClickAnimation && !isDropDownVisible" class="click-text">
+      Click here to see your cart
+    </p>
   </div>
 </template>
 
@@ -74,18 +56,12 @@
 import { ref, watch } from "vue";
 
 const itemStore = useItemStore();
+
+// State variables
 const showClickAnimation = ref(false);
 const isDropDownVisible = ref(false);
-const showMobileNav = ref(false);
-const showLoginModal = ref(false);
 
-const emit = defineEmits(["toggle-cart"]);
-
-function toggleCart() {
-  emit("toggle-cart");
-}
-
-// Watch for the cart item count and trigger the click animation when it changes from 0 to 1
+// Watch cart item count to trigger a pointer animation from 0 -> 1
 watch(
   () => itemStore.getCartItemCount(),
   (newVal, oldVal) => {
@@ -95,7 +71,6 @@ watch(
   }
 );
 
-// Trigger pointer animation and overlay
 function triggerClickAnimation() {
   showClickAnimation.value = true;
   setTimeout(() => {
@@ -103,72 +78,108 @@ function triggerClickAnimation() {
   }, 3000);
 }
 
-function closeMobileNav() {
-  showMobileNav.value = false;
-  document.body.classList.remove("no-scroll");
+const emit = defineEmits([
+  "toggle-cart",
+  "toggle-mobile-nav",
+  "close-mobile-nav",
+  "open-login-modal",
+  "close-login-modal",
+]);
+
+// Emit toggle-cart event
+function toggleCart() {
+  emit("toggle-cart");
 }
 
-// Toggle mobile nav menu
+// Toggle mobile nav
 function toggleMobileNav() {
-  showMobileNav.value = !showMobileNav.value;
-  document.body.classList.toggle("no-scroll", showMobileNav.value);
+  console.log("here");
+  emit("toggle-mobile-nav");
 }
 
-// Open login modal
+function closeMobileNav() {
+  emit("close-mobile-nav");
+}
+
+// Login modal
 function openLoginModal() {
-  console.log("Opening login modal");
-  showLoginModal.value = true;
-  document.body.classList.add("no-scroll");
+  emit("open-login-modal");
 }
 
-// Close login modal
 function closeLoginModal() {
-  showLoginModal.value = false;
-  document.body.classList.remove("no-scroll");
+  emit("close-login-modal");
 }
 </script>
 
 <style scoped>
-/* Dark Overlay */
-.dark-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  z-index: 50;
-}
-
-/* Top Navigation Styles */
+/* ----------------------------------------
+   NAV WRAPPER
+---------------------------------------- */
 .top-nav {
   position: relative;
   width: 100%;
   height: 60px;
-  /* background-color: #545454; */
   background: white;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 100;
 }
+
 .top-nav-content {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   width: 90%;
   height: 100%;
+  justify-content: space-between;
 }
-.desktop-nav {
+
+/* ----------------------------------------
+   DESKTOP NAV SECTIONS
+---------------------------------------- */
+/* Middle (nav links on desktop) */
+.desktop-nav-links {
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
-/* Click Animation */
+/* Right side (icons + cart on desktop) */
+.desktop-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ----------------------------------------
+   MOBILE BUTTONS (hidden on desktop)
+---------------------------------------- */
+.mobile-menu-button {
+  display: none; /* Shown below 768px */
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-cart-button {
+  display: none; /* Shown below 768px */
+}
+
+/* ----------------------------------------
+   LOGO CONTAINER
+---------------------------------------- */
+.nav-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Desktop default. Overridden in media query below for mobile. */
+}
+
+/* ----------------------------------------
+   CART POINTER ANIMATION (optional)
+---------------------------------------- */
 .click-animation {
   position: absolute;
-  top: 6rem; /* Adjust to position under the cart icon */
+  top: 6rem; /* Adjust to position under cart icon */
   right: 5rem;
   width: 5rem;
   height: 5rem;
@@ -178,7 +189,7 @@ function closeLoginModal() {
 
 .click-text {
   position: absolute;
-  top: 12rem; /* Adjust to position the text under the pointer */
+  top: 12rem;
   right: 5rem;
   color: white;
   font-size: 1rem;
@@ -193,103 +204,59 @@ function closeLoginModal() {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px); /* Move up and down */
+    transform: translateY(-10px);
   }
 }
 
-/* Mobile Menu Button */
-.mobile-menu-button {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
 .mobile-menu-button img {
-  width: 30px;
-  height: 30px;
+  height: 1.5rem;
+  width: 1.5rem;
 }
 
-/* Mobile Navigation Overlay */
-.mobile-nav-overlay {
-  visibility: hidden;
-  opacity: 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-.mobile-nav-overlay.is-visible {
-  visibility: visible;
-  opacity: 1;
-}
-
-.mobile-nav-content {
-  width: 80%;
-  max-width: 400px;
-  padding: 1rem;
-  border-radius: 8px;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-  gap: 2rem;
-}
-
-.close-button {
-  font-size: 2rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  color: white;
-}
-
-.modal-wrapper {
-  visibility: hidden;
-  opacity: 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8); /* Background for the login modal */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-
-.modal-wrapper.is-visible {
-  visibility: visible;
-  opacity: 1;
-}
-
-/* Responsive Media Queries */
-@media (max-width: 768px) {
-  .desktop-nav {
-    display: none;
-  }
-  .mobile-menu-button {
-    display: block;
-  }
-}
-</style>
-
-<style>
-/* Prevent body scroll when mobile nav is open */
+/* Prevent body scroll when nav or modal is open */
 .no-scroll {
   overflow: hidden;
+}
+
+/* ----------------------------------------
+   RESPONSIVE QUERIES
+---------------------------------------- */
+@media (max-width: 768px) {
+  /* Hide the desktop nav links & icons on mobile */
+  .desktop-nav-links,
+  .desktop-nav-right {
+    display: none;
+  }
+
+  /* Show the mobile hamburger & mobile cart */
+  .mobile-menu-button,
+  .mobile-cart-button {
+    display: block;
+  }
+
+  /* Center the logo on mobile */
+  .nav-logo-container {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 769px) {
+  /* Hide the mobile controls on desktop */
+  .mobile-menu-button,
+  .mobile-cart-button {
+    display: none;
+  }
+
+  /* Keep everything else visible on desktop */
+  .desktop-nav-links,
+  .desktop-nav-right {
+    display: flex;
+  }
+
+  .nav-logo-container {
+    flex: 0;
+    justify-content: flex-start;
+  }
 }
 </style>

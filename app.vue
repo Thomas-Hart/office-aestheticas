@@ -60,7 +60,6 @@ const fetchUser = async () => {
   if (userStore.user && userStore.user._id) {
     try {
       const response = await $fetch(`/api/users/${userStore.user._id}`);
-      console.log("response: " + JSON.stringify(response));
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
@@ -84,7 +83,7 @@ watchEffect(() => {
 
 // Set the lang attribute and favicon via useHead
 useHead({
-  link: [{ rel: "icon", type: "image/x-icon", href: "/OAName.webp" }],
+  link: [{ rel: "icon", type: "image/x-icon", href: "/Logos/OAName.svg" }],
   htmlAttrs: {
     lang: "en",
   },

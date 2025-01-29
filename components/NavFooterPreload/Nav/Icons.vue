@@ -21,7 +21,7 @@
       </NuxtLink>
     </div>
     <div class="nav-link" v-if="hydrated && isLoggedIn">
-      <NuxtLink to="/profile?currentSection=wishlist" @click="closeMobileNav">
+      <NuxtLink to="/profile?section=wishlist" @click="closeMobileNav">
         <img src="/Graphics/Nav/heart.svg" alt="Blog Graphic" />
       </NuxtLink>
     </div>

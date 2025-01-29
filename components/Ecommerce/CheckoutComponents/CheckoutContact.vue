@@ -69,7 +69,7 @@ h2 {
 }
 
 .form-group input:focus {
-  border-color: #ff8000;
+  border-color: #3f654c;
   outline: none;
 }
 

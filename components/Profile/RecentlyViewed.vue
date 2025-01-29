@@ -34,7 +34,7 @@
     <!-- Show message and graphic when no items are in the recentlyViewedItems -->
     <div v-else class="empty-recentlyViewedItems">
       <img
-        src="/OAName.webp"
+        src="/Logos/OAName.svg"
         alt="Empty RecentlyViewedItems"
         class="empty-graphic"
       />

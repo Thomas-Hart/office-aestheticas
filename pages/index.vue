@@ -20,7 +20,7 @@
 
     <!--prettier-ignore-->
     <!-- <section class="testimonials-wrapper"> -->
-    <!-- <WebSectionsTestimonials logoPath="OAName.webp"/> -->
+    <!-- <WebSectionsTestimonials logoPath="OAName.svg"/> -->
     <!-- </section> -->
   </div>
 </template>

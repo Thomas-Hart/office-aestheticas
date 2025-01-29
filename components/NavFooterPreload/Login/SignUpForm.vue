@@ -231,7 +231,7 @@ h2 {
 
 .requirements-button {
   width: 100%;
-  background: #ff8000;
+  background: #3f654c;
   color: white;
   font-weight: bold;
   border: none;
@@ -249,7 +249,7 @@ h2 {
 .password-requirements {
   background: rgba(0, 0, 0, 0.9);
   text-shadow: none;
-  padding: 1rem 0;
+  padding: 1rem;
   /* margin-top: 1rem; */
 }
 
@@ -312,14 +312,15 @@ h2 {
   margin-top: 1.5rem;
   background: none;
   border: none;
-  color: #ff8000;
+  color: #3f654c;
   cursor: pointer;
   font-size: 1rem;
   font-weight: bolder;
 }
 
 .switch-button:hover {
-  color: white;
+  color: #2e5e2f;
+  text-decoration: underline;
 }
 
 @media (max-width: 480px) {

@@ -85,7 +85,7 @@
 
         <!-- Show placeholder if no ticket is selected -->
         <div v-else class="no-ticket-placeholder">
-          <img src="/OAName.webp" alt="No Ticket Selected" />
+          <img src="/Logos/OAName.svg" alt="No Ticket Selected" />
           <p>Please select a ticket to view its details or create a new one!</p>
         </div>
       </div>
@@ -259,7 +259,7 @@ const formatDateTime = (date) =>
   background-color: #f7f7f7;
   padding: 0.75rem 10px;
   color: white;
-  background: #ff8000;
+  background: #3f654c;
 }
 
 .hero h2 {
@@ -285,7 +285,7 @@ const formatDateTime = (date) =>
 }
 
 .create-ticket-button {
-  background-color: #ff8000;
+  background-color: #3f654c;
   color: white;
   padding: 10px 15px;
   border: none;
@@ -409,7 +409,7 @@ textarea {
 }
 
 button {
-  background-color: #ff8000;
+  background-color: #3f654c;
   color: white;
   padding: 10px 15px;
   border: none;

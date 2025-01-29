@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     }
 
     await disconnectDB(); // Disconnect from DB after fetching data
-    console.log(JSON.stringify(user));
+    // console.log(JSON.stringify(user));
     return user;
   } catch (error) {
     console.error('Error fetching user:', error);

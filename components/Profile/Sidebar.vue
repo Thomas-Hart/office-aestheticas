@@ -2,7 +2,7 @@
   <transition name="slid">
     <div v-if="isSidebarVisible" class="sidebar">
       <!-- <div class="logo-wrapper">
-        <img src="/OAName.webp" alt="Logo" />
+        <img src="/OAName.svg" alt="Logo" />
       </div> -->
       <!-- Use computedSections and apply the active class similar to the first component -->
       <div

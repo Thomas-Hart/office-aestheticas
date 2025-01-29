@@ -170,7 +170,7 @@ watch(
 
 .thumbnail.active,
 .thumbnail:hover {
-  border-color: #ff8000;
+  border-color: #3f654c;
 }
 
 .scroll-arrow {

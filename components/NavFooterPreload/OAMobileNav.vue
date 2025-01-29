@@ -1,146 +1,168 @@
 <template>
-  <div class="mobile-nav-buttons">
-    <!-- prettier-ignore -->
-    <div class="link" v-for="(link, index) in navPaths" :key="index">
-      <NuxtLink :to="getRoute(link)" class="" @click.native="$emit('toggleMobileNav')">{{ link.charAt(0).toUpperCase() + link.slice(1) }}</NuxtLink>
-    </div>
-    <!-- prettier-ignore -->
-    <div class="shopping-cart" @click="goToRoute('/cart')">
-          <h2>Cart</h2>
-          <p>({{ store.getCartItemCount() }})</p>
-        </div>
-    <div class="ex">
-      <img
-        :src="resolvedExImgPath()"
-        alt="x"
-        @click="$emit('toggleMobileNav')"
-      />
+  <!-- Full-screen overlay -->
+  <div class="overlay" @click.self="closeNav">
+    <!-- Slide-out menu on the left -->
+    <div class="mobile-nav-content">
+      <!-- Close button in top-left -->
+      <div class="mobile-nav-header">
+        <button class="close-button" @click="$emit('close')">&times;</button>
+      </div>
+      <!-- (Optional) Logo or brand name near the top -->
+      <div class="mobile-nav-logo">
+        <img class="logo" src="/Logos/OAName.svg" alt="" />
+      </div>
+
+      <!-- Category list -->
+      <ul class="mobile-category-list">
+        <li
+          v-for="(cat, i) in categories"
+          :key="i"
+          @click="onCategoryClick(cat)"
+        >
+          {{ cat }}
+        </li>
+      </ul>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useRouter } from "vue-router";
+
+// Props
 const props = defineProps({
-  navPaths: Array,
-  exImgPath: String,
+  visible: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const store = useItemStore();
+// Events
+const emit = defineEmits(["close"]);
 
-function resolvedExImgPath() {
-  return "/" + props.exImgPath;
+// We’ll push this array of categories into the side menu
+const categories = [
+  "Desks and Tables",
+  "Chairs and Seating",
+  "Computers and Electronics",
+  "Office Supplies",
+  "Ergonomic Accessories",
+  "Lighting",
+  "Decor and Comfort",
+  "Communication",
+  "Health and Wellness",
+  "Networking and Security",
+  "Cleaning and Maintenance",
+  "Storage Solutions",
+];
+
+// Router instance
+const router = useRouter();
+
+/**
+ * Handle category click:
+ *   1. Update URL query (e.g. ?tab=All&category=Lighting)
+ *   2. Close the mobile nav
+ */
+function onCategoryClick(category) {
+  router.push({
+    path: "/",
+    query: {
+      tab: "All",
+      category,
+    },
+  });
+  closeNav();
 }
 
-function getRoute(link) {
-  return link === "home" ? "/" : `/${link}`;
-}
-
-function goToRoute(link) {
-  useRouter().push(`/${link}`);
+// Emit close event to parent
+function closeNav() {
+  emit("close");
 }
 </script>
 
 <style scoped>
-.mobile-nav-buttons {
-  display: none;
+/* Dark, full-screen overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* dims rest of the screen */
+  display: flex;
+  justify-content: flex-start;
+  z-index: 1000;
+  padding: 1rem;
 }
 
-@media (max-width: 768px) {
-  .mobile-nav-buttons {
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    background: black;
-    padding: 25px;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 5;
-    height: 100vh;
-    width: 100%;
-    box-shadow: 0 0 5px black;
-    transition: transform 0.5s, opacity 0.5s;
-    align-items: right;
-  }
+/* The slide-out container */
+.mobile-nav-content {
+  width: 20rem;
+  max-width: 100%;
+  height: 100%;
+  background-color: #fff;
+  padding: 2rem;
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 
-  .mobile-nav-buttons.hide {
-    transform: translateY(10%);
-    opacity: 0;
-    z-index: -1;
-  }
+  /* Font and Spacing Consistency */
+  font-family: "Montserrat", sans-serif;
+  line-height: 1.4;
+}
 
-  a,
-  .link {
-    text-decoration: none;
-    font-size: 40px;
-    transition: color 0.5s;
-    margin-bottom: 2rem;
-  }
+.mobile-nav-header {
+  display: flex;
+  justify-content: flex-end;
+}
 
-  a:hover,
-  .link:hover {
-    color: white;
-  }
+/* Close Button */
+.mobile-nav-header .close-button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+}
 
-  /* Router link animations */
-  a.router-link-exact-active {
-    transition: color 0.6s;
-    color: white;
-  }
+/* Logo container near the top */
+.mobile-nav-logo {
+  display: flex;
+  /* justify-content: center; */
+}
 
-  .shopping-cart {
-    height: 3rem;
-    display: flex;
-    justify-content: center;
-  }
+.logo {
+  height: 8rem;
+}
 
-  .shopping-cart h2 {
-    font-weight: normal;
-    font-size: 40px;
-  }
+/* Category list */
+.mobile-category-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 
-  .shopping-cart p {
-    font-size: 30px;
-    margin-left: 1rem;
-  }
+.mobile-category-list li {
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  /* Adjust spacing/styling as desired */
+}
 
-  .ex {
-    height: 2rem;
-    width: 2rem;
-    position: absolute;
-    object-fit: cover;
-    right: 30px;
-    top: 30px;
-  }
-
-  .ex img {
-    height: auto;
-    width: 100%;
-  }
+.mobile-category-list li:hover {
+  font-weight: bold;
 }
 
 @media (max-width: 480px) {
-  a,
-  .link {
-    font-size: 2rem;
+  .mobile-category-list li {
+    margin-bottom: 0.7rem;
   }
 
-  .shopping-cart h2 {
-    font-weight: normal;
-    font-size: 2rem;
-  }
-
-  .shopping-cart p {
-    font-size: 25px;
-  }
-
-  .ex {
-    height: 1.5rem;
-    width: 1.5rem;
+  .logo {
+    /* height: 7.5rem; */
   }
 }
 </style>

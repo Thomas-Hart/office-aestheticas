@@ -443,7 +443,7 @@ emit("hide-loading");
 }
 
 .item-quantity button:hover {
-  background: #ff8000;
+  background: #3f654c;
 }
 
 .notify-wrapper {
@@ -477,7 +477,7 @@ emit("hide-loading");
 
 .notify-button {
   padding: 8px 16px;
-  background-color: #ff8000;
+  background-color: #3f654c;
   color: black;
   border: none;
   border-radius: 4px;
@@ -491,7 +491,7 @@ emit("hide-loading");
 
 .add-to-cart-button {
   padding: 12px 20px;
-  background-color: #ff8000; /* Button background color */
+  background-color: #3f654c; /* Button background color */
   color: black; /* Default text color */
   border: none;
   border-radius: 4px;

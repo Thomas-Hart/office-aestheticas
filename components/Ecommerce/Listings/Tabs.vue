@@ -80,7 +80,7 @@
       </div>
 
       <div v-else>
-        <img class="logo" src="/Logos/OAName.webp" alt="" />
+        <img class="logo" src="/Logos/OAName.svg" alt="" />
         <h2 class="no-items-message">No items match the current selection</h2>
         <p>Choose another option</p>
       </div>
@@ -420,8 +420,8 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
 }
 
 .logo {
-  height: 18rem;
-  margin-bottom: -6rem;
+  height: 10rem;
+  margin-bottom: 0rem;
   width: auto;
 }
 
@@ -496,14 +496,22 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
+}
 
+@media (max-width: 480px) {
   .section-title {
     font-size: 1.5rem;
+  }
+
+  .logo {
+    height: 8rem;
+    margin-bottom: 0rem;
+    width: auto;
   }
 
   .title-underline {

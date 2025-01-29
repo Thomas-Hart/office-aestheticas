@@ -22,7 +22,7 @@ const duplicatedItems = ref([...items.value, ...items.value]); // Duplicate item
   <style scoped>
 /* Banner Styles */
 .top-banner {
-  background-color: #ff8000;
+  background-color: #3f654c;
   /* background: #545454; */
   color: white;
   padding: 10px 0;

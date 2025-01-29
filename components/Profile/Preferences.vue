@@ -14,7 +14,7 @@
         <div class="profile-image-wrapper" @click="triggerFileInput">
           <img
             class="profile-image"
-            :src="userStore.user.profilePicture || '/OAName.webp'"
+            :src="userStore.user.profilePicture || '/Logos/OAName.svg'"
             alt="Profile Image"
           />
           <div class="edit-icon">
@@ -384,7 +384,7 @@ const showNotification = (message, type) => {
 /* Banner Styles */
 .manage-account-banner,
 .section-banner {
-  background-color: #ff8000;
+  background-color: #3f654c;
   color: white;
   text-align: left;
   padding: 0.5rem 1rem;

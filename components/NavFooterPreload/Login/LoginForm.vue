@@ -173,13 +173,14 @@ label {
   margin-top: 1.5rem;
   background: none;
   border: none;
-  color: #ff8000;
+  color: #3f654c;
   cursor: pointer;
   font-size: 1rem;
   font-weight: bolder;
 }
 
 .switch-button:hover {
-  color: white;
+  color: #2e5e2f;
+  text-decoration: underline;
 }
 </style>
