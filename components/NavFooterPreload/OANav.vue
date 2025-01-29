@@ -1,57 +1,59 @@
 <template>
-  <!-- Top Navigation Section -->
-  <div class="top-nav">
-    <div class="top-nav-content">
-      <!-- MOBILE: Hamburger Menu Button (hidden on desktop) -->
-      <button class="mobile-menu-button" @click="toggleMobileNav">
-        <!-- Explicit width/height to prevent layout shift -->
-        <img src="/Graphics/NavBars.svg" alt="Menu" width="24" height="24" />
-      </button>
+  <div>
+    <!-- Top Navigation Section -->
+    <div class="top-nav">
+      <div class="top-nav-content">
+        <!-- MOBILE: Hamburger Menu Button (hidden on desktop) -->
+        <button class="mobile-menu-button" @click="toggleMobileNav">
+          <!-- Explicit width/height to prevent layout shift -->
+          <img src="/Graphics/NavBars.svg" alt="Menu" width="24" height="24" />
+        </button>
 
-      <!-- LOGO: If possible, define width/height in your logo component or here -->
-      <div class="nav-logo-container">
-        <NavFooterPreloadNavLogo />
-      </div>
+        <!-- LOGO: If possible, define width/height in your logo component or here -->
+        <div class="nav-logo-container">
+          <NavFooterPreloadNavLogo />
+        </div>
 
-      <!-- DESKTOP: Navigation Links in the center (hidden on mobile) -->
-      <div class="desktop-nav-links">
-        <NavFooterPreloadNavLinks @open-shop-menu="toggleMobileNav" />
-      </div>
+        <!-- DESKTOP: Navigation Links in the center (hidden on mobile) -->
+        <div class="desktop-nav-links">
+          <NavFooterPreloadNavLinks @open-shop-menu="toggleMobileNav" />
+        </div>
 
-      <!-- DESKTOP: Icons + Cart on the right (hidden on mobile) -->
-      <div class="desktop-nav-right">
-        <NavFooterPreloadNavIcons
-          @closeMobileNav="closeMobileNav"
-          @openLoginModal="openLoginModal"
-        />
+        <!-- DESKTOP: Icons + Cart on the right (hidden on mobile) -->
+        <div class="desktop-nav-right">
+          <NavFooterPreloadNavIcons
+            @closeMobileNav="closeMobileNav"
+            @openLoginModal="openLoginModal"
+          />
+          <NavFooterPreloadNavCartButton
+            @clicked="closeMobileNav"
+            @toggle-cart="toggleCart"
+          />
+        </div>
+
+        <!-- MOBILE: Cart Button (hidden on desktop) -->
         <NavFooterPreloadNavCartButton
+          class="mobile-cart-button"
           @clicked="closeMobileNav"
           @toggle-cart="toggleCart"
         />
       </div>
-
-      <!-- MOBILE: Cart Button (hidden on desktop) -->
-      <NavFooterPreloadNavCartButton
-        class="mobile-cart-button"
-        @clicked="closeMobileNav"
-        @toggle-cart="toggleCart"
-      />
     </div>
-  </div>
 
-  <!-- Pointer Animation & Text for Cart (Optional) -->
-  <!-- Also add fixed width/height here if needed -->
-  <img
-    v-if="showClickAnimation && !isDropDownVisible"
-    src="/CartPoint.svg"
-    alt="Click Animation"
-    class="click-animation"
-    width="80"
-    height="80"
-  />
-  <p v-if="showClickAnimation && !isDropDownVisible" class="click-text">
-    Click here to see your cart
-  </p>
+    <!-- Pointer Animation & Text for Cart (Optional) -->
+    <!-- Also add fixed width/height here if needed -->
+    <img
+      v-if="showClickAnimation && !isDropDownVisible"
+      src="/CartPoint.svg"
+      alt="Click Animation"
+      class="click-animation"
+      width="80"
+      height="80"
+    />
+    <p v-if="showClickAnimation && !isDropDownVisible" class="click-text">
+      Click here to see your cart
+    </p>
+  </div>
 </template>
 
 <script setup>

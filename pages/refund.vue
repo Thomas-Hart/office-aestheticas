@@ -1,7 +1,7 @@
 <template>
-  <!-- prettier-ignore -->
   <div class="body">
-      <div class="terms">
+    <!-- prettier-ignore -->
+    <div class="terms">
         <h1>Refund Policy</h1>
   
   <p>At <strong>Office Aestheticas</strong>, we stand by the quality of our luxury home office products. Due to the premium nature of our offerings, our refund policy is designed to ensure fairness while protecting our business from misuse.</p>
@@ -56,7 +56,7 @@
   
   <p>Last updated: Jan. 29th, 2025</p>
       </div>
-    </div>
+  </div>
 </template>
   
   <script setup>

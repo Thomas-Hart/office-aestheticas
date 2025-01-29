@@ -59,7 +59,6 @@ const toggleCartVisibility = () => {
 
 // Toggle mobile nav
 function toggleMobileNav() {
-  console.log("here2");
   showMobileNav.value = !showMobileNav.value;
   // Prevent scrolling in background when nav is open
   document.body.classList.toggle("no-scroll", showMobileNav.value);

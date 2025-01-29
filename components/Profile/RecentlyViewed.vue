@@ -44,7 +44,6 @@
 </template>
   
   <script setup>
-console.log("HIIIIIIIIIIIIIIIIIIIIIII");
 const userStore = useUserStore();
 const router = useRouter();
 

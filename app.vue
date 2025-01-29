@@ -49,10 +49,7 @@ router.beforeEach((to, from, next) => {
     next();
     return;
   }
-  console.log("switching...");
   showLoadingScreen();
-  console.log("Done!");
-  console.log("isLoading: " + isLoading.value);
   next();
 });
 

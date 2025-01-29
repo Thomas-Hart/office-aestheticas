@@ -45,11 +45,13 @@ onMounted(() => {
     canvas.height = window.innerHeight;
 
     const lampIcon = document.querySelector(".lamp-icon");
-    const bounds = lampIcon.getBoundingClientRect();
-    lampCenter = {
-      x: bounds.left + bounds.width / 2 + window.scrollX + 8, // Account for horizontal scroll
-      y: bounds.top + bounds.height * 0.25 + window.scrollY, // Account for vertical scroll
-    };
+    if (lampIcon) {
+      const bounds = lampIcon.getBoundingClientRect();
+      lampCenter = {
+        x: bounds.left + bounds.width / 2 + window.scrollX + 8,
+        y: bounds.top + bounds.height * 0.25 + window.scrollY,
+      };
+    }
   }
 
   function drawGlow(bloom) {

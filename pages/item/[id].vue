@@ -300,8 +300,6 @@ const removeFromCart = (itemId, variantId) => {
 onMounted(addToRecentlyViewedItems);
 
 async function addToRecentlyViewedItems() {
-  console.log("here");
-
   // console.log("Item: " + JSON.stringify(item));
 
   const recentlyViewedItem = {
@@ -324,7 +322,6 @@ async function addToRecentlyViewedItems() {
           body: { recentlyViewedItem },
         }
       );
-      console.log("here2");
       userStore.setUser(userResponse);
     } catch (error) {
       console.log("error......");
