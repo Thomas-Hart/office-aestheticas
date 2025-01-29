@@ -3,8 +3,8 @@
     <!-- Top black bar with links -->
     <nav class="top-nav">
       <div class="nav-buttons">
-        <NuxtLink to="#">Refund Policy</NuxtLink>
-        <NuxtLink to="#">Privacy Policy</NuxtLink>
+        <NuxtLink to="/refund">Refund Policy</NuxtLink>
+        <NuxtLink to="/privacy">Privacy Policy</NuxtLink>
       </div>
     </nav>
 
@@ -28,10 +28,9 @@
         <div class="more-resources">
           <h2>More Resources</h2>
           <ul>
-            <li><NuxtLink to="#">Contact us</NuxtLink></li>
-            <li><NuxtLink to="#">About us</NuxtLink></li>
-            <li><NuxtLink to="#">Terms of Service</NuxtLink></li>
-            <li><NuxtLink to="#">Start a Return</NuxtLink></li>
+            <li><NuxtLink to="/">About us</NuxtLink></li>
+            <li><NuxtLink to="/terms">Terms of Service</NuxtLink></li>
+            <!-- <li><NuxtLink to="#">Start a Return</NuxtLink></li> -->
           </ul>
         </div>
       </div>

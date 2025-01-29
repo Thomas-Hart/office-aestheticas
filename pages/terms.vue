@@ -4,7 +4,7 @@
     <div class="terms">
       <h1>Terms of Service</h1>
 
-<p>Welcome to <strong>National Auto Hub</strong>! These <strong>Terms of Service</strong> ("Terms") govern your access to and use of the <strong>National Auto Hub</strong> website ("<strong>Site</strong>"), including any content, functionality, and services offered on or through the Site. Please read these Terms carefully before using the Site.</p>
+<p>Welcome to <strong>Office Aestheticas</strong>! These <strong>Terms of Service</strong> ("Terms") govern your access to and use of the <strong>Office Aestheticas</strong> website ("<strong>Site</strong>"), including any content, functionality, and services offered on or through the Site. Please read these Terms carefully before using the Site.</p>
 
 <h2>1. General Conditions</h2>
 
@@ -14,7 +14,7 @@
 
 <h2>2. Products and Services</h2>
 
-<p>2.1. <strong>National Auto Hub</strong> offers preworkout honey and other merchandise ("<strong>Products</strong>") for sale on the Site.</p>
+<p>2.1. <strong>Office Aestheticas</strong> offers luxury home office equipment and accessories ("<strong>Products</strong>") for sale on the Site.</p>
 
 <p>2.2. All descriptions of Products or Product pricing are subject to change at any time without notice, at our sole discretion.</p>
 
@@ -36,13 +36,13 @@
 
 <h2>5. Intellectual Property</h2>
 
-<p>5.1. The Site and its original content, features, and functionality are owned by <strong>National Auto Hub</strong> and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.</p>
+<p>5.1. The Site and its original content, features, and functionality are owned by <strong>Office Aestheticas</strong> and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.</p>
 
 <p>5.2. You may not use our trademarks, logos, or service marks without our prior written consent.</p>
 
 <h2>6. Limitation of Liability</h2>
 
-<p>6.1. In no event shall <strong>National Auto Hub</strong>, its directors, officers, employees, affiliates, agents, contractors, or licensors be liable for any direct, indirect, incidental, special, consequential, or punitive damages, including but not limited to, damages for loss of profits, goodwill, use, data, or other intangible losses resulting from your use of the Site or Products.</p>
+<p>6.1. In no event shall <strong>Office Aestheticas</strong>, its directors, officers, employees, affiliates, agents, contractors, or licensors be liable for any direct, indirect, incidental, special, consequential, or punitive damages, including but not limited to, damages for loss of profits, goodwill, use, data, or other intangible losses resulting from your use of the Site or Products.</p>
 
 <h2>7. Governing Law</h2>
 
@@ -54,11 +54,11 @@
 
 <h2>9. Contact Information</h2>
 
-<p>9.1. If you have any questions about these Terms, please contact us at sales@buzzed-honey.com.</p>
+<p>9.1. If you have any questions about these Terms, please contact us at support@officeaestheticas.com.</p>
 
-<p>By using the <strong>National Auto Hub</strong> website, you agree to abide by these <strong>Terms of Service</strong>. Thank you for visiting <strong>National Auto Hub</strong>!</p>
+<p>By using the <strong>Office Aestheticas</strong> website, you agree to abide by these <strong>Terms of Service</strong>. Thank you for visiting <strong>Office Aestheticas</strong>!</p>
 
-<p>Last updated: Feb. 7th, 2024</p>
+<p>Last updated: Jan. 29th, 2025</p>
     </div>
   </div>
 </template>
@@ -66,12 +66,14 @@
 <script setup>
 // SEO ADJUST
 useSeoMeta({
-  title: "post.value.mainTitle",
-  ogTitle: "post.value.mainTitle",
-  description: "post.value.preview",
-  ogDescription: "post.value.preview",
-  ogImage: "post.value.thumbnail",
-  twitterCard: "post.value.thumbnail",
+  title: "Terms of Service | Office Aestheticas",
+  ogTitle: "Terms of Service | Office Aestheticas",
+  description:
+    "Review the terms and conditions for using Office Aestheticas' website and purchasing our luxury home office products.",
+  ogDescription:
+    "Review the terms and conditions for using Office Aestheticas' website and purchasing our luxury home office products.",
+  ogImage: "https://www.officeaestheticas.com/og-image.jpg",
+  twitterCard: "summary_large_image",
 });
 
 const emit = defineEmits(["hide-loading"]);
@@ -99,7 +101,6 @@ emit("hide-loading");
 h1 {
   font-size: 2rem;
   font-weight: bold;
-  font-style: normal !important;
   margin-bottom: 2rem;
 }
 
