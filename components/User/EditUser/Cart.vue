@@ -53,8 +53,6 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from "vue";
-
 const props = defineProps({
   selectedUser: Object,
 });

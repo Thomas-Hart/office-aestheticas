@@ -24,8 +24,6 @@
 </template>
   
   <script setup>
-import { ref, computed } from "vue";
-
 const props = defineProps({ orders: Array });
 const emit = defineEmits(["orderSelected"]);
 const selectedOrderId = ref("");

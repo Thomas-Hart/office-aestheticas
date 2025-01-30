@@ -22,9 +22,6 @@
 
 
 <script setup>
-import { onMounted, ref } from "vue";
-import { useRouter, useRoute } from "vue-router";
-
 const glowCanvas = ref(null);
 let mousePos = { x: 0, y: 0 };
 

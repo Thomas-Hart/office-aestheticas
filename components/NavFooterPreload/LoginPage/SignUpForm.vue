@@ -85,8 +85,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-
 const props = defineProps({
   isLoading: {
     type: Boolean,

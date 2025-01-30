@@ -43,9 +43,6 @@
 </template>
   
 <script setup>
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router"; // Import router to handle routes
-
 const router = useRouter();
 const dropdowns = ref({});
 const userStore = useUserStore();

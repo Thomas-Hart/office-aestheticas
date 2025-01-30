@@ -80,8 +80,6 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from "vue";
-
 const props = defineProps({
   items: Array, // List of all items to get item names
 });

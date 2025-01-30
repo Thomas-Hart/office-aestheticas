@@ -64,11 +64,6 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "nuxt/app";
-import { useItemStore } from "~/stores/itemStore";
-import { useUserStore } from "~/stores/userStore";
-
 const router = useRouter();
 const itemStore = useItemStore();
 const userStore = useUserStore();

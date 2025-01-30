@@ -32,8 +32,6 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-
 const props = defineProps({
   selectedItem: Object,
 });

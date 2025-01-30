@@ -41,7 +41,6 @@
 </template>
   
   <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 const store = useItemStore();
 const loading = ref(true);
 

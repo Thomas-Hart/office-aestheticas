@@ -28,9 +28,6 @@
 </template>
   
   <script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-
 const props = defineProps({
   itemIds: {
     type: Array,

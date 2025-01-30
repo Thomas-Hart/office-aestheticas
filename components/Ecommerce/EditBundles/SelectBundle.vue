@@ -19,8 +19,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-
 const props = defineProps({
   bundles: Array, // Array of available bundles
 });

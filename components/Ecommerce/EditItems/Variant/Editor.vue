@@ -238,8 +238,6 @@
 </template>
     
 <script setup>
-import { ref, onMounted, watch } from "vue";
-
 const props = defineProps({
   variant: Object,
 });

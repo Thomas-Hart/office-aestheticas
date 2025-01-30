@@ -11,8 +11,6 @@
 </template>
   
   <script setup>
-import { ref } from "vue";
-
 const textContent = "#1 National Auto Hub";
 const dotContent = "•";
 const items = ref(Array(5).fill([textContent, dotContent]).flat());

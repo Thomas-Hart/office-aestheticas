@@ -114,8 +114,6 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
-
 // Define props to receive blogs array and the selectedBlog from the parent
 const props = defineProps({
   blogs: Array,

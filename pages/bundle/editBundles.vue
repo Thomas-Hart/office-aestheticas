@@ -41,8 +41,6 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-
 // State management
 const selectedBundle = ref({
   name: "",

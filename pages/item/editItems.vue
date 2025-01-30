@@ -159,8 +159,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-
 // State management
 const selectedItem = ref({
   name: "",

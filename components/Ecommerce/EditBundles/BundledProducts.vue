@@ -43,8 +43,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-
 const props = defineProps({
   selectedBundle: Object,
   items: Array,

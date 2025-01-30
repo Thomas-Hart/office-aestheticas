@@ -41,8 +41,6 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
-
 const props = defineProps({
   selectedItem: Object,
 });

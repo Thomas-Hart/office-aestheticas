@@ -49,8 +49,6 @@
   
 
   <script setup>
-import { ref, computed } from "vue";
-
 const email = ref("");
 const message = ref("");
 const isLoading = ref(false);

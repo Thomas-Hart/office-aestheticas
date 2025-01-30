@@ -117,9 +117,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import { useFetch } from "#app";
-
 const { data: initialTickets, error: ticketsError } = await useFetch(
   "/api/tickets"
 );

@@ -50,10 +50,6 @@
 </template>
   
 <script setup>
-import { ref, computed } from "vue";
-import { useRoute } from "vue-router";
-import { useUserStore } from "~/stores/userStore";
-
 const newPassword = ref("");
 const confirmPassword = ref("");
 const message = ref("");

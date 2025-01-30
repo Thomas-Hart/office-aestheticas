@@ -13,7 +13,6 @@
 </template>
   
   <script setup>
-import { useRouter } from "vue-router";
 const emit = defineEmits(["switchToLinks", "close-mobile-nav"]);
 
 const mobileView = ref(false);

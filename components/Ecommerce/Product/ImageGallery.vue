@@ -34,8 +34,6 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted } from "vue";
-
 const props = defineProps({
   image: {
     type: String,

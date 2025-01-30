@@ -46,10 +46,6 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useItemStore } from "~/stores/itemStore";
-
 const itemStore = useItemStore();
 const router = useRouter();
 

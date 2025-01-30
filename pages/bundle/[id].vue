@@ -41,10 +41,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import Bundle from "~/server/models/Bundle";
-import Item from "~/server/models/Item";
-
 const { data: bundle } = await useFetch(
   `/api/bundles?_id=${useRoute().params.id}`
 );

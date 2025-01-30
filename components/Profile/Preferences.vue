@@ -152,8 +152,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-
 const userStore = useUserStore();
 const fileInput = ref(null);
 const password = ref("");

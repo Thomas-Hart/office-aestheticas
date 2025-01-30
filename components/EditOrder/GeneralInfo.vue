@@ -123,8 +123,6 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from "vue";
-
 const props = defineProps({
   selectedOrder: Object,
 });

@@ -13,7 +13,6 @@
 </template>
   
   <script setup>
-import { ref } from "vue";
 const itemStore = useItemStore();
 const userStore = useUserStore();
 const showClickAnimation = ref(false);

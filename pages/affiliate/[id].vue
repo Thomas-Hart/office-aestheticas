@@ -42,9 +42,6 @@
 </template>
   
   <script setup>
-import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
-
 const affiliate = ref(null);
 
 onMounted(async () => {

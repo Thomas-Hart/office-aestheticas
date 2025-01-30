@@ -95,8 +95,6 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from "vue";
-
 const props = defineProps({
   invalidAddress: String,
   invalidFirstName: String,

@@ -46,8 +46,6 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-
 const affiliates = ref([]);
 const selectedAffiliate = ref({
   name: "",

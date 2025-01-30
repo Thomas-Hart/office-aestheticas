@@ -60,8 +60,6 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
-
 // Props
 const props = defineProps({
   orders: {

@@ -29,7 +29,6 @@
 </template>
   
   <script setup>
-import { ref, computed } from "vue";
 const hydrated = ref(false); // Assume hydrated flag is passed as prop
 const userStore = useUserStore();
 const isLoggedIn = computed(() => !!userStore.token);

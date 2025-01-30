@@ -43,7 +43,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
 import { GoogleSignInButton } from "vue3-google-signin";
 
 const config = useRuntimeConfig();

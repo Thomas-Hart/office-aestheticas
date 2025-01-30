@@ -42,8 +42,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-
 // Sorting and filtering state
 const sortBy = ref(null);
 const isLargeScreen = ref(true); // Default value, will be updated on client-side

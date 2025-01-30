@@ -24,8 +24,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-
 const props = defineProps({ users: Array });
 const emit = defineEmits(["userSelected"]);
 const selectedUserId = ref("");
