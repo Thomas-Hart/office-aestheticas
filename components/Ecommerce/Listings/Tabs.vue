@@ -457,14 +457,7 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
   color: white;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1300px) {
-  .product-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (max-width: 992px) {
+@media (max-width: 1024px) {
   .product-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -480,7 +473,7 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
 
 @media (max-width: 768px) {
   .product-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
   }
 
@@ -500,14 +493,12 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
   }
 }
 
-@media (max-width: 560px) {
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-}
-
 @media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.5rem;
+  }
+
   .section-title {
     font-size: 1.5rem;
   }
@@ -522,20 +513,6 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
     width: 200px;
     height: 4px;
   }
-
-  /* .tabs {
-    gap: 8px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .tabs button {
-    font-size: 0.8rem;
-    padding: 6px 12px;
-    width: 100%;
-    min-width: 130px;
-    height: 2.5rem;
-  } */
 
   .star-rating-filter .star {
     font-size: 1.2rem;

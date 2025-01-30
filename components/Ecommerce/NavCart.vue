@@ -11,70 +11,71 @@
         </button>
       </div>
 
-      <!-- Cart items -->
-      <div
-        v-for="(item, index) in activeCart"
-        :key="item._id + (item.variantId || '')"
-        class="cart-item"
-      >
-        <img
-          :src="resolvedItemImg(item.image)"
-          alt="item image"
-          class="item-image"
-        />
-        <div class="item-details">
-          <p class="item-name">{{ item.name }}</p>
-          <p class="item-price">
-            <span v-if="item.originalPrice" class="original-price"
-              >${{ item.originalPrice.toFixed(2) }}</span
-            >
-            <span class="current-price">${{ item.price.toFixed(2) }}</span>
-          </p>
-          <p class="item-color">{{ item.color }}</p>
-        </div>
-        <div class="item-actions">
-          <!-- Now a number input field for quantity -->
-          <input
-            class="item-quantity-input"
-            type="number"
-            min="1"
-            :value="item.quantity"
-            @change="(e) => updateItemQuantity(item, e.target.value)"
+      <!-- Scrollable cart items -->
+      <div class="cart-items">
+        <div
+          v-for="(item, index) in activeCart"
+          :key="item._id + (item.variantId || '')"
+          class="cart-item"
+        >
+          <img
+            :src="resolvedItemImg(item.image)"
+            alt="item image"
+            class="item-image"
           />
+          <div class="item-details">
+            <p class="item-name">{{ item.name }}</p>
+            <p class="item-price">
+              <span v-if="item.originalPrice" class="original-price"
+                >${{ item.originalPrice.toFixed(2) }}</span
+              >
+              <span class="current-price">${{ item.price.toFixed(2) }}</span>
+            </p>
+            <p class="item-color">{{ item.color }}</p>
+          </div>
+          <div class="item-actions">
+            <input
+              class="item-quantity-input"
+              type="number"
+              min="1"
+              :value="item.quantity"
+              @change="(e) => updateItemQuantity(item, e.target.value)"
+            />
 
-          <button
-            class="remove-button"
-            @click="removeCartItem(item._id, item.variantId)"
-          >
-            Remove
+            <button
+              class="remove-button"
+              @click="removeCartItem(item._id, item.variantId)"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cart total and actions -->
+      <div class="cart-bottom">
+        <div class="cart-total">
+          <div class="total-text">
+            <p>Total</p>
+            <span class="total-price"
+              >Taxes and shipping calculated at checkout</span
+            >
+          </div>
+          <p>${{ calculateTotal().toFixed(2) }}</p>
+        </div>
+
+        <div class="cart-actions">
+          <button class="view-cart" @click="setTab('Featured')">
+            Keep Shopping
+          </button>
+          <button class="checkout">
+            <img src="/Graphics/CartCheckout/security.svg" alt="" />Checkout
           </button>
         </div>
-      </div>
-
-      <!-- Cart total -->
-      <div class="cart-total">
-        <div class="total-text">
-          <p>Total</p>
-          <span class="total-price"
-            >Taxes and shipping calculated at checkout</span
-          >
-        </div>
-        <p>${{ calculateTotal().toFixed(2) }}</p>
-      </div>
-
-      <!-- Cart actions -->
-      <div class="cart-actions">
-        <button class="view-cart" @click="setTab('Featured')">
-          Keep Shopping
-        </button>
-        <button class="checkout">
-          <img src="/Graphics/CartCheckout/security.svg" alt="" />Checkout
-        </button>
       </div>
     </div>
   </div>
 </template>
-
 
 <script setup>
 const userStore = useUserStore();
@@ -167,7 +168,6 @@ function updateItemQuantity(item, newValue) {
 
 /* Cart Wrapper */
 .cart-wrapper {
-  /* Fixed width for desktops, but allows responsiveness on smaller screens */
   width: 40%;
   max-width: 100%;
   height: 100%;
@@ -176,11 +176,36 @@ function updateItemQuantity(item, newValue) {
   box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-
-  /* Font and Spacing Consistency */
+  overflow: hidden;
   font-family: "Montserrat", sans-serif;
   line-height: 1.4;
+}
+
+/* Scrollable Cart Items */
+.cart-items {
+  flex-grow: 1;
+  overflow-y: auto;
+  scrollbar-width: thin; /* For modern browsers */
+  scrollbar-color: #bbb transparent; /* Colors */
+  padding-right: 0.5rem;
+}
+
+/* Custom Scrollbar for Webkit */
+.cart-items::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cart-items::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 4px;
+}
+
+.cart-items::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}
+
+.cart-items::-webkit-scrollbar-track {
+  background-color: transparent;
 }
 
 /* Cart Header */
@@ -188,13 +213,12 @@ function updateItemQuantity(item, newValue) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* ~50px height, so spacing around works well */
   padding-bottom: 1rem;
   margin-bottom: 1rem;
 }
 
 .cart-header h1 {
-  font-size: 1.3rem; /* more prominent title */
+  font-size: 1.3rem;
   margin: 0;
   font-weight: bold;
 }
@@ -230,11 +254,9 @@ function updateItemQuantity(item, newValue) {
   width: 100%;
   padding-bottom: 1rem;
   display: flex;
-  /* align-items: center; */
-  margin-bottom: 1rem; /* space between items */
+  margin-bottom: 1rem;
 }
 
-/* Item Image */
 .item-image {
   width: 150px;
   height: 150px;
@@ -242,9 +264,8 @@ function updateItemQuantity(item, newValue) {
   margin-right: 1rem;
 }
 
-/* Item Details */
 .item-details {
-  width: 60%; /* roughly 60% to accommodate image and actions */
+  width: 60%;
 }
 
 .item-name {
@@ -260,13 +281,13 @@ function updateItemQuantity(item, newValue) {
 
 .item-price .original-price {
   text-decoration: line-through;
-  color: #888; /* gray for de-emphasis */
+  color: #888;
   margin-right: 0.5rem;
   font-size: 1.1rem;
 }
 
 .item-price .current-price {
-  color: #3f654c; /* green for emphasis */
+  color: #3f654c;
   font-weight: light;
   font-family: "Lora";
 }
@@ -276,38 +297,43 @@ function updateItemQuantity(item, newValue) {
   color: #555;
 }
 
-/* Actions (Quantity + Remove) */
 .item-actions {
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* align to the right side */
+  align-items: flex-end;
   justify-content: space-between;
 }
 
-.item-quantity {
+.item-quantity-input {
+  width: 60px;
+  padding: 0.3rem;
   font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
   margin-bottom: 0.5rem;
 }
 
 .remove-button {
   font-size: 0.9rem;
-  color: #636363; /* red for deletion emphasis */
+  color: #636363;
   background: none;
   border: none;
   cursor: pointer;
   text-decoration: underline;
 }
 
-/* Cart Total Section */
-.cart-total {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.2rem; /* slightly larger for emphasis */
-  font-weight: bold;
+/* Cart Bottom Section */
+.cart-bottom {
   border-top: 1px solid black;
   padding-top: 1rem;
-  margin-top: auto; /* pushes this section to the bottom if content is short */
+}
+
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.2rem;
+  font-weight: bold;
   margin-bottom: 1rem;
 }
 
@@ -317,14 +343,12 @@ function updateItemQuantity(item, newValue) {
   font-size: 0.9rem;
 }
 
-/* Cart Actions */
 .cart-actions {
   display: flex;
-  gap: 1rem; /* space between the two buttons */
+  gap: 1rem;
   justify-content: space-between;
 }
 
-/* View Cart Button */
 .view-cart {
   background: #3f654c;
   color: #fff;
@@ -336,11 +360,11 @@ function updateItemQuantity(item, newValue) {
   transition: background 0.2s ease-in-out;
   width: 48%;
 }
+
 .view-cart:hover {
-  background: #2e5e2f; /* slight darkening on hover */
+  background: #2e5e2f;
 }
 
-/* Checkout Button */
 .checkout {
   background: #000;
   color: #fff;
@@ -356,8 +380,9 @@ function updateItemQuantity(item, newValue) {
   align-items: center;
   gap: 0.5rem;
 }
+
 .checkout:hover {
-  background: #333; /* slight darkening on hover */
+  background: #333;
 }
 
 .checkout img {
@@ -365,19 +390,8 @@ function updateItemQuantity(item, newValue) {
   height: 1.5rem;
 }
 
-.item-quantity-input {
-  width: 60px;
-  padding: 0.3rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px; /* <-- Desired border radius */
-  text-align: center; /* Center the numeric text */
-  margin-bottom: 0.5rem;
-}
-
 @media (max-width: 1024px) {
   .cart-wrapper {
-    /* Fixed width for desktops, but allows responsiveness on smaller screens */
     width: 50%;
   }
   .item-image {
@@ -392,15 +406,12 @@ function updateItemQuantity(item, newValue) {
 
 @media (max-width: 768px) {
   .cart-wrapper {
-    /* Fixed width for desktops, but allows responsiveness on smaller screens */
     width: 100%;
     padding: 1.5rem;
   }
   .item-image {
     width: 180px;
     height: 180px;
-    object-fit: cover;
-    margin-right: 1rem;
   }
 }
 
@@ -409,8 +420,8 @@ function updateItemQuantity(item, newValue) {
     padding: 1rem;
   }
   .item-image {
-    width: 150px;
-    height: 150px;
+    width: 100px;
+    height: 100px;
   }
 
   .total-price {
@@ -422,5 +433,3 @@ function updateItemQuantity(item, newValue) {
   }
 }
 </style>
-
-  

@@ -188,37 +188,20 @@ form button {
 
 <style>
 @import "./css/Dividers/PointBot.css";
-@import "./css/ButtonStyles/DarkButton.css";
-@import "./css/ButtonStyles/ResonateButtonDark.css";
-@import "./css/ButtonStyles/BubbleButton.css";
-@import "./css/ButtonStyles/OrangeButton.css";
 @import "./css/Transitions/Fade.css";
-@import "./css/Transitions/Slide.css";
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: "Source Sans Pro", Montserrat, sans-serif, "HelveticaNeue-Light",
-    "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande",
-    sans-serif;
+  font-family: "Source Sans Pro", Montserrat, sans-serif;
 }
 
-body {
+/* body {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p {
-  margin: 0;
-}
+} */
 
 a:visited,
 a:link,

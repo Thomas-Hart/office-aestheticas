@@ -36,49 +36,11 @@
           <div class="overlay-content">
             <!-- TITLE (word-by-word, letter-by-letter) -->
             <h3 class="overlay-title">
-              <template
-                v-for="(word, wIndex) in titleWords"
-                :key="'tw' + wIndex"
-              >
-                <span class="word">
-                  <span
-                    v-for="(char, cIndex) in word"
-                    :key="cIndex"
-                    class="letter title-letter"
-                    :style="{
-                      '--char-index': cIndex,
-                      '--char-count': word.length,
-                    }"
-                  >
-                    {{ char }}
-                  </span>
-                </span>
-                <!-- Visible space after each word, except the last -->
-                <span v-if="wIndex < titleWords.length - 1">&nbsp;</span>
-              </template>
+              {{ item.name }}
             </h3>
 
-            <!-- DESCRIPTION (word-by-word, letter-by-letter, clamped with ellipsis) -->
             <p class="overlay-description">
-              <template
-                v-for="(word, wIndex) in descriptionWords"
-                :key="'dw' + wIndex"
-              >
-                <span class="word">
-                  <span
-                    v-for="(char, cIndex) in word"
-                    :key="cIndex"
-                    class="letter desc-letter"
-                    :style="{
-                      '--char-index': cIndex,
-                      '--char-count': word.length,
-                    }"
-                  >
-                    {{ char }}
-                  </span>
-                </span>
-                <span v-if="wIndex < descriptionWords.length - 1">&nbsp;</span>
-              </template>
+              {{ item.description }}
             </p>
 
             <!-- Star Rating -->
@@ -97,20 +59,20 @@
               <button
                 v-if="item.variants && item.variants.length > 0"
                 @click.stop="showVariantModal = true"
-                class="overlay-button honey-button"
+                class="overlay-add-button"
               >
                 See Options
               </button>
               <button
                 v-else
                 @click.stop="addToCart(item)"
-                class="overlay-button honey-button"
+                class="overlay-add-button"
               >
                 Add To Cart
               </button>
               <button
                 @click.stop="goToItem(item._id)"
-                class="overlay-button honey-button"
+                class="overlay-view-button"
               >
                 View Item
               </button>
@@ -385,7 +347,7 @@ function closeVariantModal() {
   flex-direction: column;
   gap: 8px;
 }
-.overlay-button {
+.overlay-add-button {
   border: none;
   border-radius: 0;
   cursor: pointer;
@@ -396,8 +358,25 @@ function closeVariantModal() {
   font-weight: 600;
   transition: background-color 0.2s ease;
 }
-.overlay-button:hover {
+
+.overlay-view-button {
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  padding: 8px 12px;
+  background-color: white;
+  color: #000;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.overlay-add-button:hover {
   background-color: #2f4a39;
+}
+
+.overlay-view-button:hover {
+  background-color: #ddd;
 }
 
 /* Checkmark if added to cart */
@@ -429,7 +408,7 @@ function closeVariantModal() {
 .old-price {
   font-size: 1.1rem;
   text-decoration: line-through;
-  color: #999;
+  color: #667;
 }
 .new-price {
   font-size: 1.1rem;
@@ -475,15 +454,12 @@ function closeVariantModal() {
   }
 }
 
-/* 
- * Clamp description to 3 lines, show ellipsis if it overflows 
- */
 .overlay-description {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
+  display: -webkit-box; /* Use flex-like box for clamping */
+  -webkit-line-clamp: 2; /* Change this to how many lines you want */
   -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: hidden; /* Clip overflow */
+  text-overflow: ellipsis; /* Show "..." */
   margin-bottom: 0rem;
   font-size: 0.8rem;
 }
@@ -502,7 +478,7 @@ function closeVariantModal() {
 }
 
 @media (max-width: 768px) {
-  .overlay-content {
+  /* .overlay-content {
     padding: 0.65rem;
   }
 
@@ -517,6 +493,6 @@ function closeVariantModal() {
 
   .overlay-button {
     padding: 5px 8px;
-  }
+  } */
 }
 </style>
