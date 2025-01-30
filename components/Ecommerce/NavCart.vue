@@ -18,7 +18,7 @@
           :key="item._id + (item.variantId || '')"
           class="cart-item"
         >
-          <img
+          <NuxtImg
             :src="resolvedItemImg(item.image)"
             alt="item image"
             class="item-image"
