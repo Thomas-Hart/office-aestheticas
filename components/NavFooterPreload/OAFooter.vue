@@ -87,7 +87,7 @@
 /* 2) BACKGROUND CONTAINER + OVERLAY */
 .background-container {
   position: relative;
-  background: url("/Backgrounds/OfficePic5.jpg") center center no-repeat;
+  background: url("/Backgrounds/OfficePic5.webp") center center no-repeat;
   background-size: cover;
   /* A moderate min-height to mimic the original design’s scale */
   min-height: 600px;

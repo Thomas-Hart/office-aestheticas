@@ -29,7 +29,7 @@
 
     <!-- Show message and graphic when no items are in the wishlist -->
     <div v-else class="empty-wishlist">
-      <img src="/Logos/OAName.svg" alt="Empty Wishlist" class="empty-graphic" />
+      <img src="/Logos/OALogo.svg" alt="Empty Wishlist" class="empty-graphic" />
       <p class="empty-message">Your wishlist is currently empty!</p>
     </div>
   </div>

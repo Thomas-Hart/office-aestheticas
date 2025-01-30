@@ -130,7 +130,7 @@ onMounted(() => {
 <style scoped>
 .intro-section {
   min-height: calc(100vh - 110px); /* Full viewport height minus nav bar */
-  background-image: url("/Backgrounds/OAIntroBG.jpg");
+  background-image: url("/Backgrounds/OAIntroBG.webp");
   background-size: cover;
   background-position: center;
   display: flex;

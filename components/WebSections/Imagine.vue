@@ -8,7 +8,7 @@
       </p>
     </div>
     <div class="image-container">
-      <img src="/Backgrounds/OfficePic2.jpg" alt="Office Aesthetic" />
+      <img src="/Backgrounds/OfficePic2.webp" alt="Office Aesthetic" />
     </div>
   </div>
 </template>

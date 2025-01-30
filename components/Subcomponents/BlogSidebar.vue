@@ -50,7 +50,7 @@ const resolvedImgPath = (path) => {
   if (path) {
     return "/BlogPics/" + path;
   }
-  return "/HARTECHOLogo.webp";
+  return "/OALogo.svg";
 };
 
 const lastScrollTop = ref(0);

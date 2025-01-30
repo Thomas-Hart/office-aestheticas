@@ -73,7 +73,7 @@ useSeoMeta({
     "Review the terms and conditions for using Office Aestheticas' website and purchasing our luxury home office products.",
   ogDescription:
     "Review the terms and conditions for using Office Aestheticas' website and purchasing our luxury home office products.",
-  ogImage: "https://www.officeaestheticas.com/og-image.jpg",
+  ogImage: "https://www.officeaestheticas.com/OAIntroBG.webp",
   twitterCard: "summary_large_image",
 });
 

@@ -66,7 +66,7 @@ useSeoMeta({
     "Learn how Office Aestheticas collects, uses, and protects your personal information when you shop on our website.",
   ogDescription:
     "Learn how Office Aestheticas collects, uses, and protects your personal information when you shop on our website.",
-  ogImage: "https://www.officeaestheticas.com/og-image.jpg",
+  ogImage: "https://www.officeaestheticas.com/Backgrounds/OAIntroBG.webp",
   twitterCard: "summary_large_image",
 });
 

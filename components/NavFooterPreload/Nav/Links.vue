@@ -24,7 +24,7 @@ const openShopMenu = () => {
 </script>
   
   <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400&display=swap"); /* Importing lighter weights */
+/* @import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400&display=swap"); Importing lighter weights */
 
 .nav-links {
   display: flex;

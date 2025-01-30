@@ -50,6 +50,7 @@ export default defineNuxtConfig({
       'Source+Sans+Pro': [400, 500, 700], // Loads only the specified weights
       'Montserrat': [400, 700], // Loads only the specified weights
       'Lora': [400, 700], // Add Lora with the specified weights
+      'Inter': [400]
     },    
     display: 'swap', // Ensures text remains visible during webfont load
     preconnect: true // Enables DNS-prefetching for Google Fonts domains

@@ -68,7 +68,7 @@ useSeoMeta({
     "Review our stringent refund policy to understand eligibility, return procedures, and processing details for refunds at Office Aestheticas.",
   ogDescription:
     "Review our stringent refund policy to understand eligibility, return procedures, and processing details for refunds at Office Aestheticas.",
-  ogImage: "https://www.officeaestheticas.com/og-image.jpg",
+  ogImage: "https://www.officeaestheticas.com/OAIntroBG.webp",
   twitterCard: "summary_large_image",
 });
 

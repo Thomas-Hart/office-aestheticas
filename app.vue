@@ -83,7 +83,7 @@ watchEffect(() => {
 
 // Set the lang attribute and favicon via useHead
 useHead({
-  link: [{ rel: "icon", type: "image/x-icon", href: "/Logos/OAName.svg" }],
+  link: [{ rel: "icon", type: "image/x-icon", href: "/Logos/OALogo.svg" }],
   htmlAttrs: {
     lang: "en",
   },

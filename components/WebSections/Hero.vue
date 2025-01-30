@@ -3,7 +3,7 @@
     <div class="collection-wrapper">
       <!-- Left Image -->
       <div class="image-container left-image">
-        <img src="/Backgrounds/OfficePic2.jpg" alt="Left Collection Image" />
+        <img src="/Backgrounds/OfficePic2.webp" alt="Left Collection Image" />
       </div>
 
       <!-- Text Layer in the Center -->
@@ -14,7 +14,7 @@
 
       <!-- Right Image -->
       <div class="image-container right-image">
-        <img src="/Backgrounds/OfficePic4.jpg" alt="Right Collection Image" />
+        <img src="/Backgrounds/OfficePic4.webp" alt="Right Collection Image" />
       </div>
     </div>
   </section>

@@ -9,7 +9,7 @@
 
         <div class="blog-metadata">
           <NuxtImg
-            src="/HARTECHOLogo.webp"
+            src="/Logos/OALogo.svg"
             alt="Author image"
             class="author-image"
           />
@@ -127,7 +127,7 @@ watchEffect(() => {
       link: [
         {
           rel: "canonical",
-          href: `https://www.nationalautohub.com/blog/${post.value._id}`,
+          href: `https://www.aestheticas.com/blog/${post.value._id}`,
         },
       ],
       script: [

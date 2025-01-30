@@ -14,7 +14,7 @@
         <div class="profile-image-wrapper" @click="triggerFileInput">
           <img
             class="profile-image"
-            :src="userStore.user.profilePicture || '/Logos/OAName.svg'"
+            :src="userStore.user.profilePicture || '/Logos/OALogo.svg'"
             alt="Profile Image"
           />
           <div class="edit-icon">

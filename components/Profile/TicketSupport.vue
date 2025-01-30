@@ -85,7 +85,7 @@
 
         <!-- Show placeholder if no ticket is selected -->
         <div v-else class="no-ticket-placeholder">
-          <img src="/Logos/OAName.svg" alt="No Ticket Selected" />
+          <img src="/Logos/OALogo.svg" alt="No Ticket Selected" />
           <p>Please select a ticket to view its details or create a new one!</p>
         </div>
       </div>

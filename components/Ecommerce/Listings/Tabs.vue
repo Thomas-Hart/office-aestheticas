@@ -80,7 +80,7 @@
       </div>
 
       <div v-else>
-        <img class="logo" src="/Logos/OAName.svg" alt="" />
+        <img class="logo" src="/Logos/OALogo.svg" alt="" />
         <h2 class="no-items-message">No items match the current selection</h2>
         <p class="choose-another">Choose another option</p>
       </div>
