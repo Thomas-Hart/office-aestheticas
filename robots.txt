@@ -1,4 +1,3 @@
 User-agent: *
-Disallow: 
-Disallow: /cgi-bin/
+
 Sitemap: https://www.aestheticas.com/sitemap.xml
