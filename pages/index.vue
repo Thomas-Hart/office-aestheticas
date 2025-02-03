@@ -26,19 +26,22 @@
 </template>
 
 <script setup>
-// SEO ADJUST
+// SEO META DATA
 useSeoMeta({
-  title: "post.value.mainTitle",
-  ogTitle: "post.value.mainTitle",
-  description: "post.value.preview",
-  ogDescription: "post.value.preview",
-  ogImage: "post.value.thumbnail",
-  twitterCard: "post.value.thumbnail",
+  title: "Office Aestheticas | Luxury Home Office Equipment",
+  ogTitle: "Office Aestheticas | Luxury Home Office Equipment",
+  description:
+    "Discover high-end home office furniture and accessories designed for luxury, comfort, and productivity. Elevate your workspace with Office Aestheticas.",
+  ogDescription:
+    "Upgrade your workspace with premium office chairs, elegant desks, and refined accessories. Experience the perfect blend of aesthetics and functionality.",
+  ogImage: "/Logos/OALogo.svg",
+  twitterCard: "summary_large_image",
 });
 
 const emit = defineEmits(["hide-loading"]);
 emit("hide-loading");
 </script>
+
 
 <style scoped media="screen">
 .home {

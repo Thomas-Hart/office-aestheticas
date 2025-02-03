@@ -1,5 +1,15 @@
 <template>
   <div v-if="activeCart.length > 0" class="overlay">
+    <!-- Checkout panel (absolutely positioned inside the overlay, behind the cart) -->
+    <div class="checkout-panel" :class="{ visible: showCheckout }">
+      <div class="checkout-header">
+        <h2>Checkout</h2>
+        <button class="close-checkout" @click="closeCheckout">&times;</button>
+      </div>
+      <EcommercePaypalCheckout />
+    </div>
+
+    <!-- Original Cart (unchanged styling) -->
     <div class="cart-wrapper">
       <div class="cart-header">
         <div class="cart-count">
@@ -26,10 +36,10 @@
           <div class="item-details">
             <p class="item-name">{{ item.name }}</p>
             <p class="item-price">
-              <span v-if="item.originalPrice" class="original-price"
-                >${{ item.originalPrice.toFixed(2) }}</span
-              >
-              <span class="current-price">${{ item.price.toFixed(2) }}</span>
+              <span v-if="item.originalPrice" class="original-price">
+                ${{ item.originalPrice.toFixed(2) }}
+              </span>
+              <span class="current-price"> ${{ item.price.toFixed(2) }} </span>
             </p>
             <p class="item-color">{{ item.color }}</p>
           </div>
@@ -41,7 +51,6 @@
               :value="item.quantity"
               @change="(e) => updateItemQuantity(item, e.target.value)"
             />
-
             <button
               class="remove-button"
               @click="removeCartItem(item._id, item.variantId)"
@@ -57,9 +66,9 @@
         <div class="cart-total">
           <div class="total-text">
             <p>Total</p>
-            <span class="total-price"
-              >Taxes and shipping calculated at checkout</span
-            >
+            <span class="total-price">
+              Taxes and shipping calculated at checkout
+            </span>
           </div>
           <p>${{ calculateTotal().toFixed(2) }}</p>
         </div>
@@ -68,7 +77,7 @@
           <button class="view-cart" @click="setTab('Featured')">
             Keep Shopping
           </button>
-          <button class="checkout">
+          <button class="checkout" @click="openCheckout">
             <img src="/Graphics/CartCheckout/security.svg" alt="" />Checkout
           </button>
         </div>
@@ -82,16 +91,11 @@ const userStore = useUserStore();
 const itemStore = useItemStore();
 const router = useRouter();
 const route = useRoute();
-const isLoggedIn = computed(() => !!userStore.user);
 
 const emit = defineEmits(["close-cart"]);
+const isLoggedIn = computed(() => !!userStore.user);
 
-function setTab(tab) {
-  emit("close-cart");
-  router.push({ query: { ...route.query, tab } });
-}
-
-// Show either user cart (if logged in) or item store cart (if not)
+// Use the user cart if logged in, otherwise use the local store cart
 const activeCart = computed(() => {
   return isLoggedIn.value ? userStore.user.cart : itemStore.cart;
 });
@@ -100,7 +104,7 @@ const totalItemCount = computed(() => {
   return activeCart.value.reduce((total, item) => total + item.quantity, 0);
 });
 
-// Resolve the item's image path
+// Resolve the image path for an item
 const resolvedItemImg = (img) => `/ItemPics/${img}`;
 
 // Remove an item from the cart
@@ -112,7 +116,7 @@ const removeCartItem = (itemId, variantId) => {
   }
 };
 
-// Calculate total price
+// Calculate the total price
 const calculateTotal = () => {
   return activeCart.value.reduce(
     (total, item) => total + item.price * item.quantity,
@@ -121,19 +125,15 @@ const calculateTotal = () => {
 };
 
 /**
- * Update item quantity via a number input
- * - If newQuantity < 1, remove item
- * - Otherwise, update store quantity
+ * Update the item quantity via the number input.
+ * If the new quantity is less than 1, remove the item.
  */
 function updateItemQuantity(item, newValue) {
   const newQuantity = parseInt(newValue, 10);
-
-  // If user enters 0 or something invalid, remove item
   if (isNaN(newQuantity) || newQuantity < 1) {
     removeCartItem(item._id, item.variantId);
     return;
   }
-
   if (isLoggedIn.value) {
     userStore.updateQuantity({
       itemId: item._id,
@@ -148,25 +148,38 @@ function updateItemQuantity(item, newValue) {
     });
   }
 }
+
+// Controls the checkout panel visibility
+const showCheckout = ref(false);
+function openCheckout() {
+  showCheckout.value = true;
+}
+function closeCheckout() {
+  showCheckout.value = false;
+}
+
+function setTab(tab) {
+  emit("close-cart");
+  router.push({ query: { ...route.query, tab } });
+}
 </script>
 
-  
 <style scoped>
-/* Overall Overlay */
+/* ---------- Overlay ---------- */
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.6); /* dims rest of the screen */
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: flex-end;
   z-index: 1000;
-  padding: 1rem;
+  padding: 1rem; /* ensures space between the content and the edge */
 }
 
-/* Cart Wrapper */
+/* ---------- Original Cart Styles (unchanged) ---------- */
 .cart-wrapper {
   width: 40%;
   max-width: 100%;
@@ -179,36 +192,32 @@ function updateItemQuantity(item, newValue) {
   overflow: hidden;
   font-family: "Montserrat", sans-serif;
   line-height: 1.4;
+  position: relative;
+  z-index: 2; /* higher than checkout-panel */
 }
 
-/* Scrollable Cart Items */
 .cart-items {
   flex-grow: 1;
   overflow-y: auto;
-  scrollbar-width: thin; /* For modern browsers */
-  scrollbar-color: #bbb transparent; /* Colors */
+  scrollbar-width: thin;
+  scrollbar-color: #bbb transparent;
   padding-right: 0.5rem;
 }
 
-/* Custom Scrollbar for Webkit */
 .cart-items::-webkit-scrollbar {
   width: 8px;
 }
-
 .cart-items::-webkit-scrollbar-thumb {
   background-color: #bbb;
   border-radius: 4px;
 }
-
 .cart-items::-webkit-scrollbar-thumb:hover {
   background-color: #999;
 }
-
 .cart-items::-webkit-scrollbar-track {
   background-color: transparent;
 }
 
-/* Cart Header */
 .cart-header {
   display: flex;
   justify-content: space-between;
@@ -216,19 +225,16 @@ function updateItemQuantity(item, newValue) {
   padding-bottom: 1rem;
   margin-bottom: 1rem;
 }
-
 .cart-header h1 {
   font-size: 1.3rem;
   margin: 0;
   font-weight: bold;
 }
-
 .cart-count {
   display: flex;
   align-items: center;
   font-weight: bold;
 }
-
 .num-circle {
   margin-left: 0.5rem;
   width: 1.5em;
@@ -240,8 +246,6 @@ function updateItemQuantity(item, newValue) {
   justify-content: center;
   align-items: center;
 }
-
-/* Close Button */
 .cart-header .close-button {
   background: none;
   border: none;
@@ -249,61 +253,51 @@ function updateItemQuantity(item, newValue) {
   cursor: pointer;
 }
 
-/* Cart Items */
 .cart-item {
   width: 100%;
   padding-bottom: 1rem;
   display: flex;
   margin-bottom: 1rem;
 }
-
 .item-image {
   width: 150px;
   height: 150px;
   object-fit: cover;
   margin-right: 1rem;
 }
-
 .item-details {
   width: 60%;
 }
-
 .item-name {
   font-size: 1.1rem;
   font-weight: bold;
 }
-
 .item-price {
   margin: 0;
   font-size: 1rem;
   line-height: 1.5;
 }
-
 .item-price .original-price {
   text-decoration: line-through;
   color: #888;
   margin-right: 0.5rem;
   font-size: 1.1rem;
 }
-
 .item-price .current-price {
   color: #3f654c;
   font-weight: light;
   font-family: "Lora";
 }
-
 .item-color {
   font-size: 0.9rem;
   color: #555;
 }
-
 .item-actions {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   justify-content: space-between;
 }
-
 .item-quantity-input {
   width: 60px;
   padding: 0.3rem;
@@ -313,7 +307,6 @@ function updateItemQuantity(item, newValue) {
   text-align: center;
   margin-bottom: 0.5rem;
 }
-
 .remove-button {
   font-size: 0.9rem;
   color: #636363;
@@ -323,12 +316,10 @@ function updateItemQuantity(item, newValue) {
   text-decoration: underline;
 }
 
-/* Cart Bottom Section */
 .cart-bottom {
   border-top: 1px solid black;
   padding-top: 1rem;
 }
-
 .cart-total {
   display: flex;
   justify-content: space-between;
@@ -336,19 +327,16 @@ function updateItemQuantity(item, newValue) {
   font-weight: bold;
   margin-bottom: 1rem;
 }
-
 .total-text span {
   color: #636363;
   font-weight: lighter;
   font-size: 0.9rem;
 }
-
 .cart-actions {
   display: flex;
   gap: 1rem;
   justify-content: space-between;
 }
-
 .view-cart {
   background: #3f654c;
   color: #fff;
@@ -360,11 +348,9 @@ function updateItemQuantity(item, newValue) {
   transition: background 0.2s ease-in-out;
   width: 48%;
 }
-
 .view-cart:hover {
   background: #2e5e2f;
 }
-
 .checkout {
   background: #000;
   color: #fff;
@@ -380,56 +366,47 @@ function updateItemQuantity(item, newValue) {
   align-items: center;
   gap: 0.5rem;
 }
-
 .checkout:hover {
   background: #333;
 }
-
 .checkout img {
   width: 1.5rem;
   height: 1.5rem;
 }
 
-@media (max-width: 1024px) {
-  .cart-wrapper {
-    width: 50%;
-  }
-  .item-image {
-    width: 150px;
-    height: 150px;
-  }
-
-  .view-cart {
-    padding: 1rem 1.25rem;
-  }
+/* ---------- Checkout Panel Styles ---------- */
+/* The checkout panel is absolutely positioned within the overlay so that it respects the overlay’s padding.
+   It is the same width as the cart (40%) and, by default, sits exactly behind the cart.
+   When activated (with the "visible" class), it slides left by 100% of its width. */
+.checkout-panel {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  width: 30%;
+  background-color: #fff;
+  padding: 2rem;
+  border-right: 1px solid #ddd;
+  z-index: 1;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+.checkout-panel.visible {
+  transform: translateX(-133%);
 }
 
-@media (max-width: 768px) {
-  .cart-wrapper {
-    width: 100%;
-    padding: 1.5rem;
-  }
-  .item-image {
-    width: 180px;
-    height: 180px;
-  }
+.checkout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #ddd;
 }
-
-@media (max-width: 480px) {
-  .cart-wrapper {
-    padding: 1rem;
-  }
-  .item-image {
-    width: 100px;
-    height: 100px;
-  }
-
-  .total-price {
-    font-size: 0.5rem;
-  }
-
-  .view-cart {
-    padding: 0.75rem 1rem;
-  }
+.close-checkout {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
 }
 </style>

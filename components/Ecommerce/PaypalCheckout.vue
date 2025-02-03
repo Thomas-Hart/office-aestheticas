@@ -1,106 +1,35 @@
 <template>
   <div class="wrapper">
-    <!-- prettier-ignore -->
     <div class="checkout-form">
-        <div>  
-          <!-- PayPal Button -->
-          <div class="paypal-button">
-            <EcommerceCheckoutComponentsPayPalButton
-            @validateForms="validateForms()"
-            @sendConfirmationEmail="sendConfirmationEmail"
-            @processOrder="processOrderPaypal"
-            @sendFailureEmail="sendFailureEmail()"
-          />
-          </div>
+      <div class="paypal-wrapper">
+        <div v-if="loading" class="loading">
+          Loading… if this takes too long, refresh the page.
         </div>
-        <div>
-          <EcommerceBasicCart :checkout="true" :userLocation="shippingAddress" />
-        </div>
+        <div id="paypal-button-container"></div>
       </div>
+    </div>
   </div>
 </template>
-  
-  <script setup>
-// import { KlaviyoClient } from "klaviyo-api";
 
-// const klaviyo = new KlaviyoClient({
-//   apiKey: "pk_e6c4ee31b20f43f9d07873a294f52af153",
-// });
+<script setup>
+import { ref, onMounted } from "vue";
+import { loadScript } from "@paypal/paypal-js";
 
 const router = useRouter();
 const itemStore = useItemStore();
 const userStore = useUserStore();
 
-// Form fields
 const userEmail = ref("");
-const fullName = ref("");
-const billingFirstName = ref("");
-const lastName = ref("");
-const billingLastName = ref("");
-const shippingAddress = ref({
-  streetAddress: "",
-  secondaryAddress: "",
-  city: "",
-  state: "",
-  urbanization: "",
-  ZIPCode: "",
-  ZIPPlus4: "",
-});
-const billingAddress = ref({
-  streetAddress: "",
-  secondaryAddress: "",
-  city: "",
-  state: "",
-  urbanization: "",
-  ZIPCode: "",
-  ZIPPlus4: "",
-});
+const loading = ref(true);
+const totalPrice = ref(0);
+const paypalReady = ref(false);
 
-const pricingInfo = ref({
-  originZIPCode: "84109",
-  destinationZIPCode: "84097",
-  weight: 1,
-  length: 4,
-  width: 4,
-  height: 4,
-  mailClass: "USPS_RETAIL_GROUND",
-  priceType: "RETAIL",
-});
-
-const packageDescription = ref({
-  weight: 1,
-  length: 4,
-  width: 4,
-  height: 4,
-  mailClass: "USPS_RETAIL_GROUND",
-  rateIndicator: "SP",
-  processingCategory: "MACHINABLE",
-  destinationEntryFacilityType: "NONE",
-  mailingData: "",
-});
-
-const labelFromAddress = ref({
-  streetAddress: "1229 s 1100 e",
-  city: "Orem",
-  state: "UT",
-  ZIPCode: "84097",
-});
-
-// Fix this
 async function processOrderPaypal(order) {
   try {
     console.log("Starting processOrderPaypal function.");
+    console.log("Received Order Object:", order);
 
-    // Log the entire order object
-    console.log("Received Order Object:", JSON.stringify(order, null, 2));
-
-    // Log the purchase units
-    console.log(
-      "Purchase Units:",
-      JSON.stringify(order.purchase_units, null, 2)
-    );
-
-    // Initialize labelToAddress with actual business information
+    // Business (seller) address info
     const labelToAddress = {
       firstName: "National",
       lastName: "Auto Hub",
@@ -113,21 +42,13 @@ async function processOrderPaypal(order) {
       ZIPCode: "84097",
       ZIPPlus4: "",
     };
-    console.log(
-      "Initialized labelToAddress:",
-      JSON.stringify(labelToAddress, null, 2)
-    );
 
-    // Format the current date
     const currentDate = new Date();
     const formattedDate = `${currentDate.getFullYear()}-${String(
       currentDate.getMonth() + 1
     ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
-    console.log("Formatted Current Date:", formattedDate);
 
-    // THIS IS NOT WORKING. PAYER.ADDRESS ONLY HAS COUNTRY CODE. SWITCH BUYERS BILLING ADDRESS TO OPTIONAL??
-    const buyersBillingAddress = null;
-
+    // Use the payer’s shipping details from PayPal
     const buyersShippingAddress = {
       firstName: order.payer.name.given_name,
       lastName: order.payer.name.surname,
@@ -142,14 +63,9 @@ async function processOrderPaypal(order) {
         order.purchase_units[0].shipping.address?.country_code || "",
     };
 
-    console.log(
-      "Constructed buyersBillingAddress:",
-      JSON.stringify(buyersBillingAddress, null, 2)
-    );
-
-    // Construct taxInfo object
+    // Construct the tax info for your backend
     const taxInfo = {
-      invoiceNumber: "INV-" + Date.now(), // Generate a unique invoice number
+      invoiceNumber: "INV-" + Date.now(),
       orderDate: formattedDate,
       totalCost: parseFloat(order.purchase_units[0].amount.value),
       itemizedList: itemStore.cart.map((item) => ({
@@ -161,90 +77,48 @@ async function processOrderPaypal(order) {
         price: item.price,
         quantity: item.quantity,
       })),
-      salesTax: 0, // You may want to calculate this based on totalCost and salesTaxRate
-      salesTaxRate: 0, // Define appropriate tax rate if applicable
-      buyersBillingAddress: buyersBillingAddress, // Updated with complete address
-      buyersShippingAddress: buyersShippingAddress,
+      salesTax: 0,
+      salesTaxRate: 0,
+      buyersBillingAddress: null,
+      buyersShippingAddress,
       sellersBusinessInformation: {
-        businessName: "National Auto Hub",
+        businessName: "Office Aestheticas",
         address: labelToAddress,
-        taxIDNum: "YOUR_TAX_ID_HERE", // Replace with your actual Tax ID if required
+        taxIDNum: "YOUR_TAX_ID_HERE",
       },
       paymentMethod: "PAYPAL",
       status: "Pending",
-      userId: userStore.user?._id || null, // Ensure user is authenticated
+      userId: userStore.user?._id || null,
       shippedDate: null,
       expectedDeliveryDate: null,
       deliveryDate: null,
       trackingNumber: "",
       associatedEmail: order.payer.email,
     };
-    console.log(
-      "Constructed taxInfo Object:",
-      JSON.stringify(taxInfo, null, 2)
-    );
 
-    // Log the itemized list
-    console.log(
-      "Itemized List:",
-      JSON.stringify(taxInfo.itemizedList, null, 2)
-    );
-
-    // Send POST request to /api/tax
-    console.log("Sending POST request to /api/tax with taxInfo.");
     const taxResponse = await $fetch("/api/tax", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: taxInfo,
     });
-    console.log("Received taxResponse:", JSON.stringify(taxResponse, null, 2));
-
-    // Extract orderId from taxResponse
     const orderId = taxResponse._id;
-    console.log("Extracted Order ID:", orderId);
     if (!orderId) throw new Error("Order ID not found in tax response.");
 
-    // Clear the cart
-    console.log("Clearing the cart.");
     itemStore.clearCart();
-    console.log("Cart cleared successfully.");
-
-    // Attempt to update the user's cart in the database
-    try {
-      const currentUser = userStore.user;
-      console.log("Current User:", JSON.stringify(currentUser, null, 2));
-      if (currentUser) {
-        const updatedUser = { ...currentUser, cart: [] };
-        console.log(
-          "Updated User Object for PUT Request:",
-          JSON.stringify(updatedUser, null, 2)
-        );
-        console.log(
-          `Sending PUT request to /api/users/${currentUser._id} to update user cart.`
-        );
-        await $fetch(`/api/users/${currentUser._id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: updatedUser,
-        });
-        console.log("User cart updated successfully.");
-      } else {
-        console.log("No current user found. Skipping user cart update.");
-      }
-    } catch (error) {
-      console.error("Error clearing user cart:", error);
+    if (userStore.user) {
+      const updatedUser = { ...userStore.user, cart: [] };
+      await $fetch(`/api/users/${userStore.user._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: updatedUser,
+      });
     }
-
-    // Redirect to the order page
-    console.log(`Redirecting to /order/${orderId}.`);
     router.push({ path: `/order/${orderId}` });
-    console.log("Redirection successful.");
   } catch (error) {
     console.error("Error in processOrderPaypal:", error);
   }
 }
 
-// -------------------- ORDER & EMAIL METHODS -------------------- //
 async function sendFailureEmail() {
   try {
     const response = await fetch(
@@ -254,10 +128,10 @@ async function sendFailureEmail() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           to: userEmail.value,
-          from: "beau@nationalautohub.com",
+          from: "support@aestheticas.com",
           message:
             "There was a problem processing your order. Please try again. If this continues, please contact us through the contact page on our website.",
-          company: "National Auto Hub",
+          company: "Office Aestheticas",
         }),
       }
     );
@@ -267,146 +141,123 @@ async function sendFailureEmail() {
   }
 }
 
-// async function sendConfirmationEmailAndSMS(order) {
-//   try {
-//     // Extract user details from the order
-//     const userEmail = order.payer.email_address;
-//     const userPhone = order.purchase_units[0]?.shipping?.address?.phone || null; // Update this if phone data is stored elsewhere
-
-//     const emailResponse = await klaviyo.apiRequest({
-//       method: "POST",
-//       endpoint: "/v1/send-email",
-//       body: {
-//         to: userEmail,
-//         subject: "Order Confirmation",
-//         fromEmail: "no-reply@nationalautohub.com",
-//         content: `Hello ${order.payer.name.given_name}, your order has been placed!`,
-//       },
-//     });
-
-//     console.log("Email Response:", emailResponse);
-
-//     if (userPhone) {
-//       const smsResponse = await klaviyo.apiRequest({
-//         method: "POST",
-//         endpoint: "/v1/send-sms",
-//         body: {
-//           to: userPhone,
-//           body: `Hi ${order.payer.name.given_name}, your order #${order.id} has been confirmed!`,
-//         },
-//       });
-
-//       console.log("SMS Response:", smsResponse);
-//     }
-//   } catch (error) {
-//     console.error("Error sending confirmation email or SMS:", error);
-//   }
-// }
-
-// Custom email through Lambda or google cloud functions
-async function sendConfirmationEmail() {
-  // try {
-  //   const response = await fetch(
-  //     "https://jf32m0961a.execute-api.us-east-2.amazonaws.com/first/send-custom-email",
-  //     {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         to: userEmail.value,
-  //         from: "sales@hartecho.com",
-  //         message:
-  //           "Your order has been placed! Order details will be sent after your order is processed.",
-  //         company: "National Auto Hub",
-  //       }),
-  //     }
-  //   );
-  //   if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-  // } catch (error) {
-  //   console.log("Error in sendConfirmationEmail()");
-  // }
+async function sendConfirmationEmail(order) {
+  // Currently disabled.
 }
+
+onMounted(async () => {
+  loading.value = true;
+  try {
+    const total = await $fetch("/api/cart/total", {
+      method: "POST",
+      body: { cartItems: itemStore.cart },
+    });
+    totalPrice.value = total;
+    const paypal = await loadScript({
+      "client-id":
+        "AdtQ4QIhyiTH7owmy8BaLN1wuguwU3mksMpaJOKiGutiCmcFUeXfsZby3QrQaLYgtLUIWgONxU0YNvmf",
+      currency: "USD",
+      components: "buttons",
+    });
+    if (!paypal) {
+      console.error("PayPal SDK failed to load.");
+      return;
+    }
+    paypalReady.value = true;
+    renderPayPalButton();
+  } catch (error) {
+    console.error(
+      "Error initializing PayPal SDK or fetching total price",
+      error
+    );
+  } finally {
+    loading.value = false;
+  }
+});
+
+const renderPayPalButton = () => {
+  if (!paypalReady.value) {
+    console.warn("PayPal is not ready. Aborting button render.");
+    return;
+  }
+  window.paypal
+    .Buttons({
+      // This ensures only the standard PayPal button is shown.
+      fundingSource: window.paypal.FUNDING.PAYPAL,
+      style: {
+        layout: "vertical",
+        tagline: false, // Hides "Powered by PayPal" text
+        label: "pay", // Renders a single "Pay" button
+      },
+      createOrder: async (data, actions) => {
+        try {
+          return await actions.order.create({
+            purchase_units: [
+              {
+                amount: { value: totalPrice.value },
+              },
+            ],
+          });
+        } catch (err) {
+          console.error("Error creating PayPal order", err);
+          throw err;
+        }
+      },
+      onApprove: async (data, actions) => {
+        try {
+          const order = await actions.order.capture();
+          await sendConfirmationEmail(order);
+          await processOrderPaypal(order);
+        } catch (error) {
+          console.error("Error capturing PayPal payment", error);
+        }
+      },
+      onError: (err) => {
+        console.error("PayPal button error", err);
+        sendFailureEmail();
+      },
+    })
+    .render("#paypal-button-container")
+    .then(() => console.log("PayPal button rendered successfully."))
+    .catch((renderError) =>
+      console.error("Error rendering PayPal button", renderError)
+    );
+};
 </script>
-  
-  <style scoped>
+
+<style scoped>
 .wrapper {
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .checkout-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: 2rem;
-  padding: 2rem;
-  color: white;
-  height: auto;
-  background: rgba(58, 58, 59, 0.95);
-  border-radius: 0px;
-  /* box-shadow: 0px 0px 2px rgba(255, 255, 255, 1); */
-}
-
-.divider {
-  display: flex;
-  align-items: center;
-  margin: 2rem 0;
-  text-align: center;
-}
-
-.divider span {
-  flex: 1;
-  color: white;
-  font-size: 1rem;
-  font-weight: bold;
-  border-top: 1px solid rgba(255, 255, 255, 0.5);
-  line-height: 0.1rem;
-  margin: 0 1rem;
-}
-
-.divider span::before,
-.divider span::after {
-  content: "";
-  flex: 1;
-  border-top: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.paypal-button {
-  text-align: center;
-}
-
-.paypal img {
-  width: auto;
-  height: 50px;
-}
-
-.paypal {
+  width: 100%;
+  display: block;
   background: none;
-  border: none;
-  cursor: pointer;
+  padding: 0;
+}
+
+.paypal-wrapper {
+  width: 100%;
+}
+
+.loading {
+  margin-bottom: 1rem;
+}
+
+#paypal-button-container {
+  margin-top: 1rem;
 }
 
 @media (max-width: 768px) {
   .wrapper {
     padding: 0;
   }
-
   .checkout-form {
-    display: flex;
-    flex-direction: column-reverse;
-    padding: 1rem;
-    border-radius: 0;
-    height: 100%;
-    box-shadow: none;
-    margin-bottom: 5rem;
-  }
-
-  .checkout-form > div:first-child {
-    flex: 1 1 auto;
-  }
-
-  .checkout-form > div:last-child {
-    flex: 0 0 auto;
+    padding: 0;
+    margin-bottom: 0;
   }
 }
 </style>
-  
