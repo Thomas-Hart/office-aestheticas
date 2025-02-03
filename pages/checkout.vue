@@ -27,7 +27,7 @@ const emit = defineEmits(["hide-loading"]);
 emit("hide-loading");
 </script>
 
-<style>
+<style scoped>
 .checkout-section {
   min-height: 75rem;
   padding: 4rem 0 8rem 0;

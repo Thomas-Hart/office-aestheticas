@@ -187,9 +187,6 @@ form button {
 </style>
 
 <style>
-@import "./css/Dividers/PointBot.css";
-@import "./css/Transitions/Fade.css";
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -212,7 +209,7 @@ a:active {
   background: none;
   color: inherit;
   box-shadow: none;
-  -webkit-tap-highlight-color: transparent; /* Removes tap highlight color in mobile browsers */
+  -webkit-tap-highlight-color: transparent;
 }
 
 p {
