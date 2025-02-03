@@ -213,6 +213,6 @@ a:active {
 }
 
 p {
-  line-height: 1.5;
+  line-height: 1.51;
 }
 </style>
