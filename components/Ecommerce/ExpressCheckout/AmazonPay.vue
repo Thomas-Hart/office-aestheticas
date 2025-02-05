@@ -125,7 +125,7 @@ function renderAmazonButton() {
   }
 
   new window.OffAmazonPayments.Widgets.Button({
-    sellerId: "YOUR_AMAZON_PAY_SELLER_ID", // Replace with your actual Seller ID
+    sellerId: process.env.AMAZON_PAY_SELLER_ID, // Replace with your actual Seller ID
     design: {
       size: "large",
       color: "Gold",
