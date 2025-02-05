@@ -82,6 +82,7 @@ export default defineNuxtConfig({
       
     public: {
       // DB_URI: process.env.DB_URI,
+      AMAZON_PAY_SELLER_ID: process.env.AMAZON_PAY_SELLER_ID,
     }
   },
 

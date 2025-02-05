@@ -124,8 +124,12 @@ function renderAmazonButton() {
     return;
   }
 
+  const config = useRuntimeConfig();
+
+  console.log("Seller id: " + config.public.AMAZON_PAY_SELLER_ID);
+
   new window.OffAmazonPayments.Widgets.Button({
-    sellerId: process.env.AMAZON_PAY_SELLER_ID, // Replace with your actual Seller ID
+    sellerId: config.public.AMAZON_PAY_SELLER_ID, // Replace with your actual Seller ID
     design: {
       size: "large",
       color: "Gold",
