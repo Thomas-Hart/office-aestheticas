@@ -25,7 +25,6 @@ export const useUserStore = defineStore(
     const logout = () => {
       token.value = null;
       user.value = null;
-      user.value.cart = []; // Clear cart on logout
     };
 
     // ----------------------
@@ -277,7 +276,7 @@ export const useUserStore = defineStore(
     persist: {
       key: 'user-store-key-OA',
       storage: typeof localStorage !== 'undefined' ? localStorage : null,
-      paths: ['token', 'user', 'cart'], // Persist cart in user store
+      paths: ['token', 'user'], // Persist cart in user store
     },
   }
 );

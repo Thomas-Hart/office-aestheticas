@@ -6,7 +6,12 @@
         <h2>Checkout</h2>
         <button class="close-checkout" @click="closeCheckout">&times;</button>
       </div>
-      <EcommercePaypalCheckout />
+      <!-- Render the checkout panel that shows all payment methods -->
+      <EcommerceCheckoutPanel
+        :totalAmount="totalPrice"
+        @orderCompleted="handleOrderCompleted"
+        @close="closeCheckout"
+      />
     </div>
 
     <!-- Original Cart (unchanged styling) -->
@@ -70,7 +75,7 @@
               Taxes and shipping calculated at checkout
             </span>
           </div>
-          <p>${{ calculateTotal().toFixed(2) }}</p>
+          <p>${{ totalPrice.toFixed(2) }}</p>
         </div>
 
         <div class="cart-actions">
@@ -104,7 +109,35 @@ const totalItemCount = computed(() => {
   return activeCart.value.reduce((total, item) => total + item.quantity, 0);
 });
 
-// Resolve the image path for an item
+// This reactive variable will hold the total amount from the API call.
+const totalPrice = ref(0);
+
+// Fetch the total price from the API based on whether the user is logged in
+async function fetchCartTotal() {
+  try {
+    let total;
+    if (isLoggedIn.value) {
+      total = await $fetch("/api/cart/total", {
+        method: "POST",
+        body: { cartItems: userStore.user.cart },
+      });
+    } else {
+      total = await $fetch("/api/cart/total", {
+        method: "POST",
+        body: { cartItems: itemStore.cart },
+      });
+    }
+    totalPrice.value = parseFloat(total);
+  } catch (error) {
+    console.error("Error fetching cart total:", error);
+  }
+}
+
+// Call the API on mount and also whenever the activeCart changes
+onMounted(fetchCartTotal);
+watch(activeCart, fetchCartTotal, { deep: true });
+
+// Utility function to resolve image path for an item
 const resolvedItemImg = (img) => `/ItemPics/${img}`;
 
 // Remove an item from the cart
@@ -116,18 +149,7 @@ const removeCartItem = (itemId, variantId) => {
   }
 };
 
-// Calculate the total price
-const calculateTotal = () => {
-  return activeCart.value.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
-};
-
-/**
- * Update the item quantity via the number input.
- * If the new quantity is less than 1, remove the item.
- */
+// Update the total price API call when item quantity changes
 function updateItemQuantity(item, newValue) {
   const newQuantity = parseInt(newValue, 10);
   if (isNaN(newQuantity) || newQuantity < 1) {
@@ -147,6 +169,8 @@ function updateItemQuantity(item, newValue) {
       quantity: newQuantity,
     });
   }
+  // Re-fetch total after updating quantity
+  fetchCartTotal();
 }
 
 // Controls the checkout panel visibility
@@ -161,6 +185,105 @@ function closeCheckout() {
 function setTab(tab) {
   emit("close-cart");
   router.push({ query: { ...route.query, tab } });
+}
+
+// Handle order completion coming from the payment components
+async function handleOrderCompleted(orderData) {
+  console.log("Order Completed:", JSON.stringify(orderData));
+  try {
+    // Call the backend order service (e.g., /api/tax) to process and save the order.
+    // This endpoint should enrich and record the order (calculating taxes, assigning an invoice number, etc.).
+    const savedOrder = await $fetch("/api/tax", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: orderData,
+    });
+
+    console.log("Order saved:", savedOrder);
+
+    // Clear the cart depending on the login status.
+    if (isLoggedIn.value) {
+      userStore.clearCart();
+    } else {
+      itemStore.clearCart();
+    }
+
+    // Send a confirmation email using the saved order details.
+    await sendConfirmationEmail(savedOrder);
+
+    // Navigate to the order confirmation page.
+    router.push({ path: `/order/${savedOrder._id}` });
+  } catch (error) {
+    console.error("Error finalizing order:", error);
+    // Fallback: Create an incomplete order record.
+    const partialOrder = {
+      orderId: orderData.orderId,
+      paymentMethod: orderData.paymentMethod,
+      orderDate: new Date().toISOString(),
+      totalCost: orderData.totalCost,
+      buyersShippingAddress: orderData.buyersShippingAddress,
+      associatedEmail: orderData.associatedEmail,
+      rawOrder: orderData.rawOrder,
+      orderStatus: "incomplete",
+      // Optionally, include a failure reason or error message.
+      errorMessage: error.message || "Unknown error during order finalization.",
+    };
+    // Save this partial order via a dedicated API endpoint, e.g., /api/orders/fallback.
+    const fallbackOrder = await $fetch("/api/orders/fallback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: partialOrder,
+    });
+    console.log("Fallback order created:", fallbackOrder);
+    // Optionally, notify admin/support for manual intervention.
+  } finally {
+    closeCheckout();
+  }
+}
+
+async function sendConfirmationEmail(order) {
+  try {
+    const response = await fetch(
+      "https://jf32m0961a.execute-api.us-east-2.amazonaws.com/first/send-custom-email",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: order.associatedEmail,
+          orderId: order._id, // Order ID or any unique identifier.
+          invoiceNumber: order.invoiceNumber, // Useful for the customer.
+          from: "support@aestheticas.com",
+          message: "Thank you for choosing Office Aestheticas.",
+          company: "Office Aestheticas",
+        }),
+      }
+    );
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  } catch (error) {
+    console.log("Error in sendFailureEmail()");
+  }
+}
+
+async function sendFailureEmail(order) {
+  try {
+    const response = await fetch(
+      "https://jf32m0961a.execute-api.us-east-2.amazonaws.com/first/send-custom-email",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: userEmail.value,
+          from: "support@aestheticas.com",
+          message:
+            "There was a problem processing your order. Please try again. If this continues, please contact us through the contact page on our website.",
+          company: "Office Aestheticas",
+        }),
+      }
+    );
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  } catch (error) {
+    console.log("Error in sendFailureEmail()");
+  }
 }
 </script>
 
@@ -375,9 +498,6 @@ function setTab(tab) {
 }
 
 /* ---------- Checkout Panel Styles ---------- */
-/* The checkout panel is absolutely positioned within the overlay so that it respects the overlay’s padding.
-   It is the same width as the cart (40%) and, by default, sits exactly behind the cart.
-   When activated (with the "visible" class), it slides left by 100% of its width. */
 .checkout-panel {
   position: absolute;
   top: 1rem;
@@ -400,8 +520,7 @@ function setTab(tab) {
   justify-content: space-between;
   align-items: center;
   padding-bottom: 1rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #ddd;
+  margin-bottom: 0rem;
 }
 .close-checkout {
   background: none;
