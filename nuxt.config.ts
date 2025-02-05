@@ -79,10 +79,18 @@ export default defineNuxtConfig({
     NUXT_AWS_SECRET_KEY: process.env.NUXT_AWS_SECRET_KEY,
     NUXT_AWS_REGION: process.env.NUXT_AWS_REGION,
     NUXT_S3_BUCKET: process.env.NUXT_S3_BUCKET,
+    AMAZON_PAY_CHECKOUT_RETURN_URL: process.env.AMAZON_PAY_CHECKOUT_RETURN_URL,
+    AMAZON_PAY_SELLER_ID: process.env.AMAZON_PAY_SELLER_ID,    // Also Merchant ID
+    AMAZON_PAY_PUBLIC_KEY_ID: process.env.AMAZON_PAY_PUBLIC_KEY_ID,
+    AMAZON_PAY_CLIENT_ID: process.env.AMAZON_PAY_CLIENT_ID, // Also Store ID
+    AMAZON_PAY_CLIENT_SECRET: process.env.AMAZON_PAY_CLIENT_SECRET,
       
     public: {
       // DB_URI: process.env.DB_URI,
-      AMAZON_PAY_SELLER_ID: process.env.AMAZON_PAY_SELLER_ID,
+      AMAZON_PAY_CHECKOUT_RETURN_URL: process.env.AMAZON_PAY_CHECKOUT_RETURN_URL,
+      AMAZON_PAY_SELLER_ID: process.env.AMAZON_PAY_SELLER_ID,    // Also Merchant ID
+      AMAZON_PAY_PUBLIC_KEY_ID: process.env.AMAZON_PAY_PUBLIC_KEY_ID,
+      AMAZON_PAY_CLIENT_ID: process.env.AMAZON_PAY_CLIENT_ID, // Also Store ID
     }
   },
 
