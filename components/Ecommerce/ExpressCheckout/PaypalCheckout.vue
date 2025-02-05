@@ -93,18 +93,26 @@ async function renderPayPalButton() {
   }
   window.paypal
     .Buttons({
-      // Force only the default PayPal button.
-      fundingSource: window.paypal.FUNDING.PAYPAL,
+      // Allow both PayPal and Venmo funding sources.
+      funding: {
+        allowed: [window.paypal.FUNDING.PAYPAL, window.paypal.FUNDING.VENMO],
+        disallowed: [window.paypal.FUNDING.PAYLATER],
+      },
       style: {
         layout: "vertical",
         tagline: false,
         label: "pay",
       },
+      style: {
+        layout: "horizontal", // displays the buttons side by side
+        tagline: false, // Hides "Powered by PayPal" text
+        label: "pay", // Button label
+      },
       createOrder: async (data, actions) => {
         try {
           // Reset the tax patch flag for a new order.
           taxPatched.value = false;
-          return await actions.order.create({
+          const orderPayload = {
             purchase_units: [
               {
                 reference_id: "default",
@@ -121,7 +129,12 @@ async function renderPayPalButton() {
                 },
               },
             ],
-          });
+          };
+          console.log(
+            "Creating PayPal order with payload:",
+            JSON.stringify(orderPayload, null, 2)
+          );
+          return await actions.order.create(orderPayload);
         } catch (err) {
           console.error("Error creating PayPal order", err);
           throw err;

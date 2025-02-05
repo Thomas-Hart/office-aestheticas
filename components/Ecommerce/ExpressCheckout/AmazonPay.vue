@@ -3,11 +3,14 @@
     <div v-if="loading" class="loading">
       Loading… if this takes too long, refresh the page.
     </div>
-    <div id="amazon-pay-button-container"></div>
+    <!-- Wrap the button container in a wrapper and use a dynamic key -->
+    <div id="amazon-pay-button-wrapper">
+      <div :key="buttonKey" id="amazon-pay-button-container"></div>
+    </div>
   </div>
 </template>
-  
-  <script setup>
+
+<script setup>
 import { ref, onMounted, watch, defineProps, defineEmits } from "vue";
 import { useRuntimeConfig } from "#app";
 
@@ -22,15 +25,17 @@ const emit = defineEmits(["orderCompleted"]);
 // State variables.
 const loading = ref(true);
 const amazonPayScriptLoaded = ref(false);
+const buttonKey = ref(Date.now()); // unique key for forcing re-render of the button container
 
 // Retrieve Amazon Pay settings from runtime config.
 const runtimeConfig = useRuntimeConfig();
 console.log(
   "Runtime config in component: " + JSON.stringify(runtimeConfig, null, 2)
 );
-const amazonPayMerchantId = runtimeConfig.public.AMAZON_PAY_SELLER_ID; // Seller and merchant IDs same
+
+const amazonPayMerchantId = runtimeConfig.public.AMAZON_PAY_SELLER_ID; // Seller and merchant IDs (if they are the same)
 const amazonPayPublicKeyId = runtimeConfig.public.AMAZON_PAY_PUBLIC_KEY_ID;
-const amazonPayStoreId = runtimeConfig.public.AMAZON_PAY_STORE_ID;
+const amazonPayStoreId = runtimeConfig.public.AMAZON_PAY_STORE_ID; // if applicable; if not, you can omit it from payload
 const checkoutReviewReturnUrl =
   runtimeConfig.public.AMAZON_PAY_CHECKOUT_RETURN_URL;
 const ledgerCurrency = runtimeConfig.public.AMAZON_PAY_LEDGER_CURRENCY || "USD";
@@ -71,7 +76,7 @@ function generateCheckoutSessionPayload() {
     webCheckoutDetails: {
       checkoutReviewReturnUrl: checkoutReviewReturnUrl,
     },
-    storeId: amazonPayStoreId,
+    storeId: amazonPayStoreId, // include if required by your integration
     scopes: ["name", "email", "phoneNumber", "billingAddress"],
   };
   console.log(
@@ -80,7 +85,7 @@ function generateCheckoutSessionPayload() {
   return JSON.stringify(payload);
 }
 
-// Secure the payload by fetching its signature from the backend.
+// Secure the payload by fetching its signature from your backend.
 async function fetchSignature(payloadJSON) {
   try {
     console.log(
@@ -93,14 +98,7 @@ async function fetchSignature(payloadJSON) {
     });
     console.log(
       "Response from signature API: " +
-        JSON.stringify(
-          {
-            status: response.status,
-            ok: response.ok,
-          },
-          null,
-          2
-        )
+        JSON.stringify({ status: response.status, ok: response.ok }, null, 2)
     );
     if (!response.ok) {
       const errorBody = await response.text();
@@ -135,9 +133,15 @@ async function renderAmazonPayButton() {
     console.log("Signature obtained: " + JSON.stringify(signature, null, 2));
     console.log("Total Amount: " + props.totalAmount.toFixed(2));
 
+    // Check that the amount is greater than 0.
+    if (parseFloat(props.totalAmount) <= 0) {
+      console.error("Total amount must be greater than 0.");
+      return;
+    }
+
     // Render the Amazon Pay button.
     if (window.amazon && window.amazon.Pay) {
-      amazon.Pay.renderButton("#amazon-pay-button-container", {
+      window.amazon.Pay.renderButton("#amazon-pay-button-container", {
         merchantId: amazonPayMerchantId,
         publicKeyId: amazonPayPublicKeyId,
         ledgerCurrency: ledgerCurrency,
@@ -185,16 +189,14 @@ onMounted(() => {
 watch(
   () => props.totalAmount,
   () => {
-    const container = document.getElementById("amazon-pay-button-container");
-    if (container) {
-      container.innerHTML = "";
-      renderAmazonPayButton();
-    }
+    // Update buttonKey to force creation of a new container element.
+    buttonKey.value = Date.now();
+    renderAmazonPayButton();
   }
 );
 </script>
-  
-  <style scoped>
+
+<style scoped>
 .amazonpay-checkout {
   width: 100%;
 }
@@ -202,4 +204,3 @@ watch(
   margin-bottom: 1rem;
 }
 </style>
-  

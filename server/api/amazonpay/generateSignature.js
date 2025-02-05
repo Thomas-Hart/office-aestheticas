@@ -1,4 +1,5 @@
 import { AmazonPayClient } from '@amazonpay/amazon-pay-api-sdk-nodejs';
+import fs from 'fs';
 
 export default defineEventHandler(async (event) => {
   try {
@@ -16,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
     const config = {
       publicKeyId: runtimeConfig.AMAZON_PAY_PUBLIC_KEY_ID,
-      privateKey: runtimeConfig.AMAZON_PAY_CLIENT_SECRET,
+      privateKey: fs.readFileSync(process.env.AMAZON_PAY_PRIVATE_KEY_PATH),
       region: runtimeConfig.AMAZON_PAY_REGION || 'US',
       sandbox: runtimeConfig.AMAZON_PAY_SANDBOX !== 'false',
       algorithm: 'AMZN-PAY-RSASSA-PSS-V2',

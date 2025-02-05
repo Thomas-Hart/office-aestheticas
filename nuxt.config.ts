@@ -84,6 +84,7 @@ export default defineNuxtConfig({
     AMAZON_PAY_PUBLIC_KEY_ID: process.env.AMAZON_PAY_PUBLIC_KEY_ID,
     AMAZON_PAY_CLIENT_ID: process.env.AMAZON_PAY_CLIENT_ID, // Also Store ID
     AMAZON_PAY_CLIENT_SECRET: process.env.AMAZON_PAY_CLIENT_SECRET,
+    AMAZON_PAY_PRIVATE_KEY_PATH: process.env.AMAZON_PAY_PRIVATE_KEY_PATH,
       
     public: {
       // DB_URI: process.env.DB_URI,
