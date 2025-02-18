@@ -29,9 +29,9 @@ const buttonKey = ref(Date.now()); // unique key for forcing re-render of the bu
 
 // Retrieve Amazon Pay settings from runtime config.
 const runtimeConfig = useRuntimeConfig();
-console.log(
-  "Runtime config in component: " + JSON.stringify(runtimeConfig, null, 2)
-);
+// console.log(
+//   "Runtime config in component: " + JSON.stringify(runtimeConfig, null, 2)
+// );
 
 const amazonPayMerchantId = runtimeConfig.public.AMAZON_PAY_SELLER_ID; // Seller and merchant IDs (if they are the same)
 const amazonPayPublicKeyId = runtimeConfig.public.AMAZON_PAY_PUBLIC_KEY_ID;

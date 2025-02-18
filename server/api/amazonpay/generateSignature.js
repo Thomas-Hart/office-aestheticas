@@ -4,7 +4,7 @@ import fs from 'fs';
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event);
-    console.log('Received request body:', JSON.stringify(body));
+    // console.log('Received request body:', JSON.stringify(body));
 
     const payload = body.payload;
     if (!payload) {
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const runtimeConfig = useRuntimeConfig();
-    console.log('Runtime configuration:', JSON.stringify(runtimeConfig));
+    // console.log('Runtime configuration:', JSON.stringify(runtimeConfig));
 
     const config = {
       publicKeyId: runtimeConfig.AMAZON_PAY_PUBLIC_KEY_ID,
@@ -22,13 +22,13 @@ export default defineEventHandler(async (event) => {
       sandbox: runtimeConfig.AMAZON_PAY_SANDBOX !== 'false',
       algorithm: 'AMZN-PAY-RSASSA-PSS-V2',
     };
-    console.log('Amazon Pay client configuration:', JSON.stringify(config));
+    // console.log('Amazon Pay client configuration:', JSON.stringify(config));
 
     const client = new AmazonPayClient(config);
-    console.log('AmazonPayClient initialized successfully.');
+    // console.log('AmazonPayClient initialized successfully.');
 
     const signature = client.generateButtonSignature(payload);
-    console.log('Generated signature:', signature);
+    // console.log('Generated signature:', signature);
 
     return { signature };
   } catch (error) {

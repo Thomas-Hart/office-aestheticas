@@ -65,7 +65,7 @@ const props = defineProps({
 const emit = defineEmits(["view-blog", "update:loadedImages"]);
 
 function resolvedImgPath(path) {
-  return path ? `/${path}` : "/HARTECHOLogo.webp";
+  return path ? `/BlogPics/${path}` : "/HARTECHOLogo.webp";
 }
 
 const generatePlaceholderUrl = (url) => {

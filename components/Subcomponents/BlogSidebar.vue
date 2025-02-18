@@ -59,13 +59,13 @@ const loadedImages = ref({});
 
 //  THIS WILL ADJUST THE STICKY POSITIONING IF THE NAV SHIFTS ON SCROLL
 const handleScroll = () => {
-  // const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  // if (scrollTop > lastScrollTop.value) {
-  //   isLarge.value = false;
-  // } else {
-  //   isLarge.value = true;
-  // }
-  // lastScrollTop.value = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  if (scrollTop > lastScrollTop.value) {
+    isLarge.value = false;
+  } else {
+    isLarge.value = true;
+  }
+  lastScrollTop.value = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
 };
 
 const onImageLoad = (index) => {
@@ -89,11 +89,11 @@ onMounted(() => {
 }
 
 .sidebar.large {
-  top: 5rem;
+  top: 5.5rem;
 }
 
 .sidebar.small {
-  top: 5rem;
+  top: 2rem;
 }
 
 .sidebar h2 {

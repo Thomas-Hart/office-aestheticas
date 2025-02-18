@@ -4,7 +4,7 @@
       <button @click="closeModal" class="close-button">✖</button>
       <div class="left">
         <EcommerceProductImageGallery
-          v-if="selectedVariant"
+          v-if="selectedVariant && selectedVariant.image"
           :image="selectedVariant.image"
           :images="item.moreImages"
         />
@@ -107,30 +107,53 @@ function notifyMe() {
 
 // Computed property for checking if item is in cart
 const itemInCart = computed(() => {
-  return store.cart.find(
-    (cartItem) =>
-      cartItem._id === props.item?._id &&
-      cartItem.variantId === selectedVariant.value?._id
-  );
+  if (!isLoggedIn.value) {
+    return itemStore.cart.find(
+      (cartItem) =>
+        cartItem._id === props.item?._id &&
+        cartItem.variantId === selectedVariant.value?._id
+    );
+  } else {
+    return userStore.user.cart.find(
+      (cartItem) =>
+        cartItem._id === props.item?._id &&
+        cartItem.variantId === selectedVariant.value?._id
+    );
+  }
 });
 
 const increaseQuantity = () => {
   if (selectedVariant.value) {
     if (itemInCart.value) {
-      store.updateQuantity({
-        itemId: props.item._id,
-        variantId: selectedVariant.value._id,
-        quantity: itemInCart.value.quantity + 1,
-      });
+      if (!isLoggedIn.value) {
+        itemStore.updateQuantity({
+          itemId: props.item._id,
+          variantId: selectedVariant.value._id,
+          quantity: itemInCart.value.quantity + 1,
+        });
+      } else {
+        userStore.updateQuantity({
+          itemId: props.item._id,
+          variantId: selectedVariant.value._id,
+          quantity: itemInCart.value.quantity + 1,
+        });
+      }
     } else {
       addToCart(props.item, selectedVariant.value._id);
     }
   } else {
     if (itemInCart.value) {
-      store.updateQuantity({
-        itemId: props.item._id,
-        quantity: itemInCart.value.quantity + 1,
-      });
+      if (!isLoggedIn.value) {
+        itemStore.updateQuantity({
+          itemId: props.item._id,
+          quantity: itemInCart.value.quantity + 1,
+        });
+      } else {
+        userStore.updateQuantity({
+          itemId: props.item._id,
+          quantity: itemInCart.value.quantity + 1,
+        });
+      }
     } else {
       addToCart(props.item);
     }
@@ -140,20 +163,35 @@ const increaseQuantity = () => {
 const decreaseQuantity = () => {
   if (selectedVariant.value) {
     if (itemInCart.value && itemInCart.value.quantity > 1) {
-      store.updateQuantity({
-        itemId: props.item._id,
-        variantId: selectedVariant.value._id,
-        quantity: itemInCart.value.quantity - 1,
-      });
+      if (!isLoggedIn) {
+        itemStore.updateQuantity({
+          itemId: props.item._id,
+          variantId: selectedVariant.value._id,
+          quantity: itemInCart.value.quantity - 1,
+        });
+      } else {
+        userStore.updateQuantity({
+          itemId: props.item._id,
+          variantId: selectedVariant.value._id,
+          quantity: itemInCart.value.quantity - 1,
+        });
+      }
     } else if (itemInCart.value && itemInCart.value.quantity === 1) {
       removeFromCart(props.item._id, selectedVariant.value._id);
     }
   } else {
     if (itemInCart.value && itemInCart.value.quantity > 1) {
-      store.updateQuantity({
-        itemId: props.item._id,
-        quantity: itemInCart.value.quantity - 1,
-      });
+      if (!isLoggedIn) {
+        itemStore.updateQuantity({
+          itemId: props.item._id,
+          quantity: itemInCart.value.quantity - 1,
+        });
+      } else {
+        userStore.updateQuantity({
+          itemId: props.item._id,
+          quantity: itemInCart.value.quantity - 1,
+        });
+      }
     } else if (itemInCart.value && itemInCart.value.quantity === 1) {
       removeFromCart(props.item._id);
     }
@@ -161,14 +199,18 @@ const decreaseQuantity = () => {
 };
 
 const removeFromCart = (itemId, variantId) => {
-  store.removeFromCart(itemId, variantId);
+  if (!isLoggedIn.value) {
+    itemStore.removeFromCart(itemId, variantId);
+  } else {
+    userStore.removeFromCart(itemId, variantId);
+  }
 };
 
 function addToCart() {
-  if (isLoggedIn.value) {
-    userStore.addToCart(props.item, selectedVariant.value);
-  } else {
+  if (!isLoggedIn.value) {
     itemStore.addToCart(props.item, selectedVariant.value);
+  } else {
+    userStore.addToCart(props.item, selectedVariant.value);
   }
 }
 
@@ -193,14 +235,15 @@ function closeModal() {
 }
 
 .modal-content {
-  background: rgba(74, 74, 74, 0.9);
-  box-shadow: 0px 0px 8px black;
+  /* background: rgba(74, 74, 74, 0.9); */
+  background: white;
+  /* box-shadow: 0px 0px 8px black; */
   padding: 2rem;
-  border-radius: 8px;
+  /* border-radius: 8px; */
   min-width: 1300px;
   width: auto;
   /* min-height: 40rem; */
-  height: 40rem;
+  /* height: 40rem; */
   overflow-y: auto; /* Scroll inside modal if content is too large */
   position: relative;
   display: flex;
@@ -209,7 +252,7 @@ function closeModal() {
 .close-button {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 15px;
   background: none;
   border: none;
   font-size: 1.5rem;
@@ -226,7 +269,7 @@ function closeModal() {
 
 h3 {
   margin-bottom: 1rem;
-  color: white;
+  color: black;
 }
 
 .item-quantity {
@@ -234,7 +277,7 @@ h3 {
   gap: 1rem;
   align-items: center;
   text-align: center;
-  color: white;
+  color: black;
   margin-top: 1rem;
 }
 
@@ -315,7 +358,7 @@ h3 {
 }
 
 .new-price {
-  color: white; /* Price text color */
+  color: black; /* Price text color */
   font-weight: bold;
 }
 

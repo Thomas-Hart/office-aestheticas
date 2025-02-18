@@ -27,13 +27,13 @@ const lastScrollTop = ref(0);
 const isLarge = ref(true);
 
 const handleScroll = () => {
-  // const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  // if (scrollTop > lastScrollTop.value) {
-  //   isLarge.value = false;
-  // } else {
-  //   isLarge.value = true;
-  // }
-  // lastScrollTop.value = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  if (scrollTop > lastScrollTop.value) {
+    isLarge.value = false;
+  } else {
+    isLarge.value = true;
+  }
+  lastScrollTop.value = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
 };
 
 onMounted(() => {
@@ -57,7 +57,7 @@ onMounted(() => {
 }
 
 .cta-sidebar.small {
-  top: 5rem;
+  top: 2rem;
 }
 
 h3 {

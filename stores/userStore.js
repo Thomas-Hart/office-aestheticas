@@ -38,32 +38,37 @@ export const useUserStore = defineStore(
      */
     const addToCart = async (item, selectedVariant = null) => {
       // Build the item object
+      // In addToCart (user store example)
       const cartItem = selectedVariant
-        ? {
-            _id: item._id,
-            name: item.name,
-            price: selectedVariant.price,
-            image: selectedVariant.image,
-            variantId: selectedVariant._id,
-            color: selectedVariant.color,
-            size: selectedVariant.size,
-            material: selectedVariant.material,
-            style: selectedVariant.style,
-            capacity: selectedVariant.capacity,
-            flavor: selectedVariant.flavor,
-            scent: selectedVariant.scent,
-            power: selectedVariant.power,
-            length: selectedVariant.length,
-            region: selectedVariant.region,
-            quantity: 1,
-          }
-        : {
-            _id: item._id,
-            name: item.name,
-            price: item.price,
-            image: item.image,
-            quantity: 1,
-          };
+      ? {
+          _id: item._id,
+          name: item.name,
+          price: selectedVariant.price || item.price,
+          oldPrice: selectedVariant.oldPrice || item.oldPrice, // Use oldPrice here
+          image: selectedVariant.image || item.image,
+          variantId: selectedVariant._id,
+          color: selectedVariant.color?.name || '',
+          size: selectedVariant.size,
+          material: selectedVariant.material,
+          style: selectedVariant.style,
+          capacity: selectedVariant.capacity,
+          flavor: selectedVariant.flavor,
+          scent: selectedVariant.scent,
+          power: selectedVariant.power,
+          length: selectedVariant.length,
+          region: selectedVariant.region,
+          quantity: 1,
+        }
+      : {
+          _id: item._id,
+          name: item.name,
+          price: item.price,
+          oldPrice: item.oldPrice, // Use oldPrice here as well
+          image: item.image,
+          quantity: 1,
+        };
+    
+
 
       // Check if the item already exists in local cart
       const existingItem = user.value.cart.find((i) =>
@@ -150,32 +155,49 @@ export const useUserStore = defineStore(
         }
 
         // If variant, verify it's still valid
-        if (cartItem.variantId) {
-          const selectedVariant = correspondingItem.variants.find(
-            (variant) => variant._id === cartItem.variantId
-          );
-          if (selectedVariant) {
-            return {
-              ...cartItem,
-              name: correspondingItem.name,
-              price: selectedVariant.price,
-              image: selectedVariant.image,
-            };
-          } else {
-            console.warn(
-              `Variant with ID ${cartItem.variantId} is no longer available for item ${cartItem.name}`
-            );
-            return cartItem; // Keep original data if variant is missing
-          }
-        } else {
-          // No variant, just update name/price/image from DB
-          return {
-            ...cartItem,
-            name: correspondingItem.name,
-            price: correspondingItem.price,
-            image: correspondingItem.image,
-          };
-        }
+        // In itemStore.validateCartItems for a variant item
+if (cartItem.variantId) {
+  const selectedVariant = correspondingItem.variants.find(
+    variant => variant._id === cartItem.variantId
+  );
+  if (selectedVariant) {
+    validatedItem = {
+      _id: correspondingItem._id,
+      name: correspondingItem.name,
+      price: selectedVariant.price,
+      originalPrice: selectedVariant.oldPrice || correspondingItem.oldPrice, // NEW
+      image: selectedVariant.image,
+      variantId: selectedVariant._id,
+      color: selectedVariant.color,
+      size: selectedVariant.size,
+      material: selectedVariant.material,
+      style: selectedVariant.style,
+      capacity: selectedVariant.capacity,
+      flavor: selectedVariant.flavor,
+      scent: selectedVariant.scent,
+      power: selectedVariant.power,
+      length: selectedVariant.length,
+      region: selectedVariant.region,
+      quantity: cartItem.quantity,
+    };
+  } else {
+    console.warn(
+      `Variant with ID ${cartItem.variantId} is no longer available for item ${cartItem.name}`
+    );
+    return cartItem;
+  }
+} else {
+  // For non-variant items, include originalPrice as well
+  validatedItem = {
+    _id: correspondingItem._id,
+    name: correspondingItem.name,
+    price: correspondingItem.price,
+    originalPrice: correspondingItem.oldPrice, // NEW
+    image: correspondingItem.image,
+    quantity: cartItem.quantity,
+  };
+}
+
       });
     };
 

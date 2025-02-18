@@ -16,21 +16,21 @@
       <!-- Transition wrapper for switching between Links and Categories -->
       <!-- Added mode="out-in" and keys to each component -->
       <transition name="fade" mode="out-in">
+        <!-- Categories View -->
+        <NavFooterPreloadShopCategories
+          v-if="activeView !== 'links'"
+          key="categories"
+          @switchToLinks="switchToLinks"
+          @close-mobile-nav="closeNav"
+        />
+
         <!-- Links View -->
         <NavFooterPreloadMobileNavLinks
-          v-if="activeView === 'links'"
+          v-else
           key="links"
           @switchToCategories="switchToCategories"
           @open-shop-menu="activeView = 'menu'"
           @closeNav="closeNav"
-        />
-
-        <!-- Categories View -->
-        <NavFooterPreloadShopCategories
-          v-else
-          key="categories"
-          @switchToLinks="switchToLinks"
-          @close-mobile-nav="closeNav"
         />
       </transition>
     </div>
@@ -40,7 +40,7 @@
 <script setup>
 const emit = defineEmits(["close"]);
 
-const activeView = ref("links");
+const activeView = ref("");
 
 function closeNav() {
   emit("close");

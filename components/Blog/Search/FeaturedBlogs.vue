@@ -63,7 +63,7 @@ const goToBlog = (blogId) => {
 };
 
 function resolvedImgPath(path) {
-  return path ? `/${path}` : "/HARTECHOLogo.webp";
+  return path ? `/BlogPics/${path}` : "/HARTECHOLogo.webp";
 }
 
 const generatePlaceholderUrl = (url) => {

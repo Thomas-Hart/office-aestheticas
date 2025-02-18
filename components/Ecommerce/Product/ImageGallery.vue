@@ -3,7 +3,7 @@
     <div class="main-image">
       <img
         v-if="activeImage"
-        :src="getImagePath(activeImage)"
+        :src="`/ItemPics/${activeImage}`"
         alt="Product Image"
       />
       <div class="thumbnails-overlay">
@@ -34,6 +34,7 @@
 </template>
 
 <script setup>
+console.log("Image gallery here");
 const props = defineProps({
   image: {
     type: String,
@@ -49,10 +50,9 @@ const activeImage = ref(props.image);
 const thumbnailContainer = ref(null);
 const scrollPosition = ref(0);
 
-function getImagePath(img) {
-  // console.log("Image: " + img);
+const getImagePath = computed((img) => {
   return "/ItemPics/" + img;
-}
+});
 
 function hoverImage(img) {
   activeImage.value = img;

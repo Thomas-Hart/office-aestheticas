@@ -46,8 +46,21 @@
               </span>
               <span class="current-price"> ${{ item.price.toFixed(2) }} </span>
             </p>
-            <p class="item-color">{{ item.color }}</p>
+            <!-- Display variant details if a variant is associated with the cart item -->
+            <div v-if="item.variantId" class="variant-details">
+              <p v-if="item.color">{{ item.color }}</p>
+              <p v-if="item.size">Size: {{ item.size }}</p>
+              <p v-if="item.material">Material: {{ item.material }}</p>
+              <p v-if="item.style">Style: {{ item.style }}</p>
+              <p v-if="item.capacity">Capacity: {{ item.capacity }}</p>
+              <p v-if="item.flavor">Flavor: {{ item.flavor }}</p>
+              <p v-if="item.scent">Scent: {{ item.scent }}</p>
+              <p v-if="item.power">Power: {{ item.power }}</p>
+              <p v-if="item.length">Length: {{ item.length }}</p>
+              <p v-if="item.region">Region: {{ item.region }}</p>
+            </div>
           </div>
+
           <div class="item-actions">
             <input
               class="item-quantity-input"

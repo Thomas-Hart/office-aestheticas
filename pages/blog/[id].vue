@@ -47,7 +47,7 @@
         <div class="blog-post" v-if="post">
           <div class="left">
             <BlogImageWrapper
-              :imageSrc="post.image"
+              :imageSrc="`/BlogPics/${post.image}`"
               :altText="post.mainTitle + ' picture'"
               class="blog-image"
             />

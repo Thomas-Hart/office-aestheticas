@@ -435,7 +435,7 @@
               >
                 <div class="variant-preview">
                   <NuxtImg
-                    v-if="`/ItemPics/${variant.image}`"
+                    v-if="variant.image"
                     :src="`/ItemPics/${variant.image}`"
                     alt="Variant Image"
                     width="80"
@@ -450,6 +450,8 @@
                       v-model="variant.image"
                       type="text"
                       placeholder="Enter variant image URL"
+                      @input="markDirty"
+                      @blur="updateVariantSKU(index)"
                     />
                   </div>
                   <div class="input-inline">
@@ -459,6 +461,18 @@
                       type="number"
                       step="0.01"
                       required
+                      @input="markDirty"
+                      @blur="updateVariantSKU(index)"
+                    />
+                  </div>
+                  <div class="input-inline">
+                    <label>Old Price</label>
+                    <input
+                      v-model.number="variant.oldPrice"
+                      type="number"
+                      step="0.01"
+                      @input="markDirty"
+                      @blur="updateVariantSKU(index)"
                     />
                   </div>
                   <div class="input-inline">
@@ -468,6 +482,7 @@
                       type="number"
                       min="0"
                       required
+                      @input="markDirty"
                     />
                   </div>
                   <div class="input-inline" v-if="variant.sku">
@@ -488,10 +503,14 @@
                         <input
                           v-model="variant.color.name"
                           placeholder="Color Name"
+                          @input="markDirty"
+                          @blur="updateVariantSKU(index)"
                         />
                         <input
                           v-model="variant.color.hex"
                           placeholder="Color Hex"
+                          @input="markDirty"
+                          @blur="updateVariantSKU(index)"
                         />
                       </template>
                       <template v-else>
@@ -513,7 +532,12 @@
                           "
                         >
                           <label>{{ capitalize(attr) }}</label>
-                          <input v-model="variant[attr]" type="text" />
+                          <input
+                            v-model="variant[attr]"
+                            type="text"
+                            @input="markDirty"
+                            @blur="updateVariantSKU(index)"
+                          />
                         </template>
                         <template v-else>
                           <button
@@ -748,7 +772,6 @@ async function submitNewItemModal() {
 }
 
 // --- Dynamic Form Sections Schema ---
-// (Removed redundant AR & Sales Channels sections)
 const formSections = [
   {
     id: "general-info",
@@ -996,6 +1019,78 @@ function handleNestedInput(section, subKey, field, event) {
   updateNestedValue(section, subKey, field.model, value);
 }
 
+// --- Variants Management ---
+function addVariant() {
+  selectedItem.variants.push({
+    color: { name: "", hex: "" },
+    size: "",
+    material: "",
+    style: "",
+    capacity: "",
+    flavor: "",
+    scent: "",
+    power: "",
+    length: "",
+    region: "",
+    price: 0,
+    oldPrice: 0,
+    savingsAmount: 0,
+    savingsPercentage: "",
+    image: "",
+    stock: 0,
+    sku: "",
+    dimensions: { length: 0, width: 0, height: 0 },
+  });
+  markDirty();
+}
+function removeVariant(index) {
+  selectedItem.variants.splice(index, 1);
+  markDirty();
+}
+const variantAttributes = [
+  "size",
+  "material",
+  "style",
+  "capacity",
+  "flavor",
+  "scent",
+  "power",
+  "length",
+  "region",
+];
+const variantExpanded = reactive({});
+function expandVariantAttribute(index, attr) {
+  if (!variantExpanded[index]) variantExpanded[index] = {};
+  variantExpanded[index][attr] = true;
+}
+function isVariantAttributeExpanded(index, attr) {
+  return variantExpanded[index] && variantExpanded[index][attr];
+}
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+// Update the SKU for a variant based on its attributes and the item name
+function updateVariantSKU(index) {
+  const variant = selectedItem.variants[index];
+  const attributes = [
+    variant.color?.name || "",
+    variant.size || "",
+    variant.material || "",
+    variant.style || "",
+    variant.capacity || "",
+    variant.flavor || "",
+    variant.scent || "",
+    variant.power || "",
+    variant.region || "",
+  ]
+    .filter(Boolean)
+    .join("-");
+  variant.sku = `${selectedItem.name.replace(/\s+/g, "").toUpperCase()}-${
+    attributes || "BASE"
+  }-${index + 1}`;
+  markDirty();
+}
+
 // --- API and Item Selection ---
 async function fetchItems() {
   try {
@@ -1062,55 +1157,6 @@ function clearSelectedItem() {
   });
   structuredDataEntries.value = [];
   hasUnsavedChanges.value = false;
-}
-
-// --- Variants Management ---
-function addVariant() {
-  selectedItem.variants.push({
-    color: { name: "", hex: "" },
-    size: "",
-    material: "",
-    style: "",
-    capacity: "",
-    flavor: "",
-    scent: "",
-    power: "",
-    length: "",
-    region: "",
-    price: 0,
-    oldPrice: 0,
-    savingsAmount: 0,
-    savingsPercentage: "",
-    image: "",
-    stock: 0,
-    sku: "",
-    dimensions: { length: 0, width: 0, height: 0 },
-  });
-}
-function removeVariant(index) {
-  selectedItem.variants.splice(index, 1);
-}
-const variantAttributes = [
-  "size",
-  "material",
-  "style",
-  "capacity",
-  "flavor",
-  "scent",
-  "power",
-  "length",
-  "region",
-];
-const variantExpanded = reactive({});
-function expandVariantAttribute(index, attr) {
-  if (!variantExpanded[index]) variantExpanded[index] = {};
-  variantExpanded[index][attr] = true;
-}
-function isVariantAttributeExpanded(index, attr) {
-  return variantExpanded[index] && variantExpanded[index][attr];
-}
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // --- Form Submission & API Calls ---
@@ -1197,7 +1243,7 @@ body {
   padding: 20px;
 }
 
-/* Header Bar (Sleek, full‑width, no border radius) */
+/* Header Bar */
 .header {
   width: 100%;
   background: #111;
