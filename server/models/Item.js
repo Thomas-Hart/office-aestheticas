@@ -17,14 +17,14 @@ const colorSchema = new mongoose.Schema({
 const variantSchema = new mongoose.Schema({
   color: colorSchema,    // Variant color (e.g., Red, Blue)
   size: String,     // Size (e.g., Small, Medium, Large)
-  material: String, // Material (e.g., Cotton, Polyester)
-  style: String,    // Style (e.g., Modern, Classic)
-  capacity: String, // Capacity/Volume (e.g., 500ml, 1L)
-  flavor: String,   // Flavor or scent (e.g., Vanilla, Mint)
-  scent: String,    // Scent (e.g., Air Sprays, Candles)
-  power: String,    // Power rating for electronics (e.g., 500W, 1000W)
-  length: String,   // Length variant (e.g., 1m, 2m for cables or ropes)
-  region: String,   // Region (e.g., US, EU for regional variants)
+  //material: String, // Material (e.g., Cotton, Polyester)
+  //style: String,    // Style (e.g., Modern, Classic)
+  //capacity: String, // Capacity/Volume (e.g., 500ml, 1L)
+  //flavor: String,   // Flavor or scent (e.g., Vanilla, Mint)
+  //scent: String,    // Scent (e.g., Air Sprays, Candles)
+  //power: String,    // Power rating for electronics (e.g., 500W, 1000W)
+  //length: String,   // Length variant (e.g., 1m, 2m for cables or ropes)
+  //region: String,   // Region (e.g., US, EU for regional variants)
   
   price: { type: Number, required: true },   // Price for the variant
   oldPrice: { type: Number },                // Original price before discount
@@ -50,13 +50,6 @@ const subscriptionOptionsSchema = new mongoose.Schema({
   interval: { type: String, enum: ['daily', 'weekly', 'monthly', 'yearly'] },
   price: Number,
   discountPercentage: Number,
-}, { _id: false });
-
-// Return Policy Sub-Schema
-const returnPolicySchema = new mongoose.Schema({
-  isReturnable: { type: Boolean, default: true },
-  returnPeriod: { type: Number, default: 30 }, // in days
-  restockingFeePercentage: Number,
 }, { _id: false });
 
 // Gift Options Sub-Schema
@@ -99,25 +92,6 @@ const productVideoSchema = new mongoose.Schema({
   description: String,
 }, { _id: false });
 
-// Pre-Order Sub-Schema
-const preOrderSchema = new mongoose.Schema({
-  available: { type: Boolean, default: false },
-  estimatedShippingDate: Date,
-}, { _id: false });
-
-// External Links Sub-Schema
-const externalLinkSchema = new mongoose.Schema({
-  title: String,
-  url: String,
-}, { _id: false });
-
-// Customer Support Sub-Schema
-const customerSupportSchema = new mongoose.Schema({
-  supportEmail: String,
-  supportPhone: String,
-  supportHours: String, // e.g., "Mon-Fri 9am-5pm EST"
-}, { _id: false });
-
 // Main Item Schema
 const itemSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -127,9 +101,6 @@ const itemSchema = new mongoose.Schema({
   savingsPercentage: { type: String }, // Calculated: ((savingsAmount / oldPrice) * 100) + '%'
   preview: String,
   description: String,
-  metaTitle: String,
-  metaDescription: String,
-  structuredData: Object,
   image: String,
   moreImages: [String],
   tags: [String],
@@ -141,7 +112,6 @@ const itemSchema = new mongoose.Schema({
   },
   variants: [variantSchema],
   subscriptionOptions: [subscriptionOptionsSchema],
-  returnPolicy: returnPolicySchema,
   giftOptions: giftOptionsSchema,
   affiliateInfo: [affiliateInfoSchema],
   ageRestriction: ageRestrictionSchema,
@@ -149,13 +119,8 @@ const itemSchema = new mongoose.Schema({
   shippingInfo: shippingInfoSchema,
   frequentlyBoughtTogether: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Item' }],
   productVideos: [productVideoSchema],
-  arLinks: [String], // Augmented Reality links
-  model3DLinks: [String], // 3D Model links
-  preOrder: preOrderSchema,
-  externalLinks: [externalLinkSchema],
   lifecycleStatus: { type: String, enum: ['Active', 'Discontinued', 'Coming Soon'], default: 'Active' },
-  customerSupport: customerSupportSchema,
-  salesChannels: [String], // e.g., ['online', 'retail', 'wholesale']
+  // salesChannels: [String], // e.g., ['online', 'retail', 'wholesale']
   reviewCount: {
     type: Number,
     default: 0
@@ -201,13 +166,13 @@ itemSchema.pre('save', function (next) {
         const attributes = [
           variant.color?.name || '',
           variant.size || '',
-          variant.material || '',
-          variant.style || '',
-          variant.capacity || '',
-          variant.flavor || '',
-          variant.scent || '',
-          variant.power || '',
-          variant.region || '',
+          // variant.material || '',
+          // variant.style || '',
+          // variant.capacity || '',
+          // variant.flavor || '',
+          // variant.scent || '',
+          // variant.power || '',
+          // variant.region || '',
         ].filter(Boolean).join('-');
 
         // Ensure SKU is unique for each variant

@@ -28,8 +28,24 @@ let mousePos = { x: 0, y: 0 };
 const router = useRouter();
 const route = useRoute();
 
+const isLocalhost = () =>
+  process.client &&
+  (window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1");
+
 function setTab(tab) {
   router.push({ query: { ...route.query, tab } });
+  const { $fbq, $klaviyo } = useNuxtApp();
+  $klaviyo("track", "ViewContent", {
+    content_type: "product",
+    content_category: "Home Office Essentials",
+  });
+  if (!isLocalhost()) {
+    $fbq("track", "ViewContent", {
+      content_type: "product",
+      content_category: "Home Office Essentials",
+    });
+  }
 }
 
 onMounted(() => {

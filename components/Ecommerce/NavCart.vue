@@ -1,12 +1,12 @@
 <template>
   <div v-if="activeCart.length > 0" class="overlay">
-    <!-- Checkout panel (absolutely positioned inside the overlay, behind the cart) -->
+    <!-- Checkout panel (desktop: right‑side; mobile: bottom drawer) -->
     <div class="checkout-panel" :class="{ visible: showCheckout }">
       <div class="checkout-header">
         <h2>Checkout</h2>
         <button class="close-checkout" @click="closeCheckout">&times;</button>
       </div>
-      <!-- Render the checkout panel that shows all payment methods -->
+      <!-- Payment methods component -->
       <EcommerceCheckoutPanel
         :totalAmount="totalPrice"
         @orderCompleted="handleOrderCompleted"
@@ -14,7 +14,7 @@
       />
     </div>
 
-    <!-- Original Cart (unchanged styling) -->
+    <!-- Original Cart (desktop: right side; mobile: top panel) -->
     <div class="cart-wrapper">
       <div class="cart-header">
         <div class="cart-count">
@@ -44,23 +44,22 @@
               <span v-if="item.originalPrice" class="original-price">
                 ${{ item.originalPrice.toFixed(2) }}
               </span>
-              <span class="current-price"> ${{ item.price.toFixed(2) }} </span>
+              <span class="current-price">${{ item.price.toFixed(2) }}</span>
             </p>
-            <!-- Display variant details if a variant is associated with the cart item -->
+            <!-- Variant details if available -->
             <div v-if="item.variantId" class="variant-details">
-              <p v-if="item.color">{{ item.color }}</p>
+              <p v-if="item.color">Color: {{ item.color }}</p>
               <p v-if="item.size">Size: {{ item.size }}</p>
-              <p v-if="item.material">Material: {{ item.material }}</p>
+              <!-- <p v-if="item.material">Material: {{ item.material }}</p>
               <p v-if="item.style">Style: {{ item.style }}</p>
               <p v-if="item.capacity">Capacity: {{ item.capacity }}</p>
               <p v-if="item.flavor">Flavor: {{ item.flavor }}</p>
               <p v-if="item.scent">Scent: {{ item.scent }}</p>
               <p v-if="item.power">Power: {{ item.power }}</p>
               <p v-if="item.length">Length: {{ item.length }}</p>
-              <p v-if="item.region">Region: {{ item.region }}</p>
+              <p v-if="item.region">Region: {{ item.region }}</p> -->
             </div>
           </div>
-
           <div class="item-actions">
             <input
               class="item-quantity-input"
@@ -113,7 +112,7 @@ const route = useRoute();
 const emit = defineEmits(["close-cart"]);
 const isLoggedIn = computed(() => !!userStore.user);
 
-// Use the user cart if logged in, otherwise use the local store cart
+// Use the user cart if logged in; otherwise use the local store cart.
 const activeCart = computed(() => {
   return isLoggedIn.value ? userStore.user.cart : itemStore.cart;
 });
@@ -122,10 +121,10 @@ const totalItemCount = computed(() => {
   return activeCart.value.reduce((total, item) => total + item.quantity, 0);
 });
 
-// This reactive variable will hold the total amount from the API call.
+// This reactive variable holds the total amount from the API.
 const totalPrice = ref(0);
 
-// Fetch the total price from the API based on whether the user is logged in
+// Fetch the total price from the API.
 async function fetchCartTotal() {
   try {
     let total;
@@ -146,14 +145,11 @@ async function fetchCartTotal() {
   }
 }
 
-// Call the API on mount and also whenever the activeCart changes
 onMounted(fetchCartTotal);
 watch(activeCart, fetchCartTotal, { deep: true });
 
-// Utility function to resolve image path for an item
 const resolvedItemImg = (img) => `/ItemPics/${img}`;
 
-// Remove an item from the cart
 const removeCartItem = (itemId, variantId) => {
   if (isLoggedIn.value) {
     userStore.removeFromCart(itemId, variantId);
@@ -162,7 +158,6 @@ const removeCartItem = (itemId, variantId) => {
   }
 };
 
-// Update the total price API call when item quantity changes
 function updateItemQuantity(item, newValue) {
   const newQuantity = parseInt(newValue, 10);
   if (isNaN(newQuantity) || newQuantity < 1) {
@@ -182,11 +177,9 @@ function updateItemQuantity(item, newValue) {
       quantity: newQuantity,
     });
   }
-  // Re-fetch total after updating quantity
   fetchCartTotal();
 }
 
-// Controls the checkout panel visibility
 const showCheckout = ref(false);
 function openCheckout() {
   showCheckout.value = true;
@@ -200,35 +193,24 @@ function setTab(tab) {
   router.push({ query: { ...route.query, tab } });
 }
 
-// Handle order completion coming from the payment components
 async function handleOrderCompleted(orderData) {
   console.log("Order Completed:", JSON.stringify(orderData));
   try {
-    // Call the backend order service (e.g., /api/tax) to process and save the order.
-    // This endpoint should enrich and record the order (calculating taxes, assigning an invoice number, etc.).
     const savedOrder = await $fetch("/api/tax", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: orderData,
     });
-
     console.log("Order saved:", savedOrder);
-
-    // Clear the cart depending on the login status.
     if (isLoggedIn.value) {
       userStore.clearCart();
     } else {
       itemStore.clearCart();
     }
-
-    // Send a confirmation email using the saved order details.
     await sendConfirmationEmail(savedOrder);
-
-    // Navigate to the order confirmation page.
     router.push({ path: `/order/${savedOrder._id}` });
   } catch (error) {
     console.error("Error finalizing order:", error);
-    // Fallback: Create an incomplete order record.
     const partialOrder = {
       orderId: orderData.orderId,
       paymentMethod: orderData.paymentMethod,
@@ -238,17 +220,14 @@ async function handleOrderCompleted(orderData) {
       associatedEmail: orderData.associatedEmail,
       rawOrder: orderData.rawOrder,
       orderStatus: "incomplete",
-      // Optionally, include a failure reason or error message.
       errorMessage: error.message || "Unknown error during order finalization.",
     };
-    // Save this partial order via a dedicated API endpoint, e.g., /api/orders/fallback.
     const fallbackOrder = await $fetch("/api/orders/fallback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: partialOrder,
     });
     console.log("Fallback order created:", fallbackOrder);
-    // Optionally, notify admin/support for manual intervention.
   } finally {
     closeCheckout();
   }
@@ -263,8 +242,8 @@ async function sendConfirmationEmail(order) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           to: order.associatedEmail,
-          orderId: order._id, // Order ID or any unique identifier.
-          invoiceNumber: order.invoiceNumber, // Useful for the customer.
+          orderId: order._id,
+          invoiceNumber: order.invoiceNumber,
           from: "support@aestheticas.com",
           message: "Thank you for choosing Office Aestheticas.",
           company: "Office Aestheticas",
@@ -301,7 +280,7 @@ async function sendFailureEmail(order) {
 </script>
 
 <style scoped>
-/* ---------- Overlay ---------- */
+/* ---------- Desktop Styles ---------- */
 .overlay {
   position: fixed;
   top: 0;
@@ -312,10 +291,9 @@ async function sendFailureEmail(order) {
   display: flex;
   justify-content: flex-end;
   z-index: 1000;
-  padding: 1rem; /* ensures space between the content and the edge */
+  padding: 1rem;
 }
 
-/* ---------- Original Cart Styles (unchanged) ---------- */
 .cart-wrapper {
   width: 40%;
   max-width: 100%;
@@ -329,7 +307,7 @@ async function sendFailureEmail(order) {
   font-family: "Montserrat", sans-serif;
   line-height: 1.4;
   position: relative;
-  z-index: 2; /* higher than checkout-panel */
+  z-index: 2;
 }
 
 .cart-items {
@@ -339,7 +317,6 @@ async function sendFailureEmail(order) {
   scrollbar-color: #bbb transparent;
   padding-right: 0.5rem;
 }
-
 .cart-items::-webkit-scrollbar {
   width: 8px;
 }
@@ -353,7 +330,6 @@ async function sendFailureEmail(order) {
 .cart-items::-webkit-scrollbar-track {
   background-color: transparent;
 }
-
 .cart-header {
   display: flex;
   justify-content: space-between;
@@ -388,7 +364,6 @@ async function sendFailureEmail(order) {
   font-size: 2rem;
   cursor: pointer;
 }
-
 .cart-item {
   width: 100%;
   padding-bottom: 1rem;
@@ -424,10 +399,6 @@ async function sendFailureEmail(order) {
   font-weight: light;
   font-family: "Lora";
 }
-.item-color {
-  font-size: 0.9rem;
-  color: #555;
-}
 .item-actions {
   display: flex;
   flex-direction: column;
@@ -451,7 +422,6 @@ async function sendFailureEmail(order) {
   cursor: pointer;
   text-decoration: underline;
 }
-
 .cart-bottom {
   border-top: 1px solid black;
   padding-top: 1rem;
@@ -527,7 +497,6 @@ async function sendFailureEmail(order) {
 .checkout-panel.visible {
   transform: translateX(-133%);
 }
-
 .checkout-header {
   display: flex;
   justify-content: space-between;
@@ -540,5 +509,60 @@ async function sendFailureEmail(order) {
   border: none;
   font-size: 2rem;
   cursor: pointer;
+}
+
+/* ---------- Responsive Mobile Styles ---------- */
+@media (max-width: 768px) {
+  .overlay {
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    padding: 0;
+  }
+  .checkout-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 40%;
+    padding: 1rem;
+    border: none;
+    border-top: 1px solid #ddd;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 1100;
+  }
+  .checkout-panel.visible {
+    transform: translateY(0);
+  }
+  .cart-wrapper {
+    width: 100%;
+    height: 60%;
+    padding: 1rem;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.2);
+    border-top: 1px solid #ddd;
+  }
+  .cart-header h1 {
+    font-size: 1.5rem;
+  }
+  .cart-count .num-circle {
+    width: 1.2em;
+    height: 1.2em;
+    font-size: 0.8rem;
+  }
+  .cart-items {
+    overflow-y: auto;
+  }
+  .cart-actions button,
+  .fixed-actions button {
+    font-size: 1.2rem;
+    padding: 1rem;
+  }
+  .item-image {
+    width: 100px;
+    height: 100px;
+    margin-right: 0.5rem;
+  }
 }
 </style>

@@ -129,30 +129,30 @@ function formatVariantDetails(variantDetails) {
   if (variantDetails.size) {
     details.push(`Size: ${variantDetails.size}`);
   }
-  if (variantDetails.material) {
-    details.push(`Material: ${variantDetails.material}`);
-  }
-  if (variantDetails.style) {
-    details.push(`Style: ${variantDetails.style}`);
-  }
-  if (variantDetails.capacity) {
-    details.push(`Capacity: ${variantDetails.capacity}`);
-  }
-  if (variantDetails.flavor) {
-    details.push(`Flavor: ${variantDetails.flavor}`);
-  }
-  if (variantDetails.scent) {
-    details.push(`Scent: ${variantDetails.scent}`);
-  }
-  if (variantDetails.power) {
-    details.push(`Power: ${variantDetails.power}`);
-  }
-  if (variantDetails.length) {
-    details.push(`Length: ${variantDetails.length}`);
-  }
-  if (variantDetails.region) {
-    details.push(`Region: ${variantDetails.region}`);
-  }
+  // if (variantDetails.material) {
+  //   details.push(`Material: ${variantDetails.material}`);
+  // }
+  // if (variantDetails.style) {
+  //   details.push(`Style: ${variantDetails.style}`);
+  // }
+  // if (variantDetails.capacity) {
+  //   details.push(`Capacity: ${variantDetails.capacity}`);
+  // }
+  // if (variantDetails.flavor) {
+  //   details.push(`Flavor: ${variantDetails.flavor}`);
+  // }
+  // if (variantDetails.scent) {
+  //   details.push(`Scent: ${variantDetails.scent}`);
+  // }
+  // if (variantDetails.power) {
+  //   details.push(`Power: ${variantDetails.power}`);
+  // }
+  // if (variantDetails.length) {
+  //   details.push(`Length: ${variantDetails.length}`);
+  // }
+  // if (variantDetails.region) {
+  //   details.push(`Region: ${variantDetails.region}`);
+  // }
   // Add other variant details as needed
 
   return details.join(", ");

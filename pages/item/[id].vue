@@ -131,14 +131,6 @@
         v-if="item.productVideos && item.productVideos.length"
         :videos="item.productVideos"
       /> -->
-    <!-- <EcommerceProductARLinks
-        v-if="item.arLinks && item.arLinks.length"
-        :arLinks="item.arLinks"
-      /> -->
-    <!-- <EcommerceProduct3DModelLinks
-        v-if="item.model3DLinks && item.model3DLinks.length"
-        :modelLinks="item.model3DLinks"
-      /> -->
     <!-- </section> -->
 
     <!-- External Links and Support -->

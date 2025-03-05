@@ -69,29 +69,41 @@ export default defineNuxtConfig({
 
   runtimeConfig: {    
     // Public keys that are exposed to the client
+    // Database
+    DB_URI: process.env.DB_URI,
+
+    // Google Sign In
     JWT_SECRET: process.env.JWT_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    DB_URI: process.env.DB_URI,
     GOOGLE_LOGIN_URI: process.env.GOOGLE_LOGIN_URI,
     GOOGLE_LOGIN_URI_TEST: process.env.GOOGLE_LOGIN_URI_TEST,
+
+    // AWS
     NUXT_AWS_ACCESS_KEY: process.env.NUXT_AWS_ACCESS_KEY,
     NUXT_AWS_SECRET_KEY: process.env.NUXT_AWS_SECRET_KEY,
     NUXT_AWS_REGION: process.env.NUXT_AWS_REGION,
     NUXT_S3_BUCKET: process.env.NUXT_S3_BUCKET,
-    AMAZON_PAY_CHECKOUT_RETURN_URL: process.env.AMAZON_PAY_CHECKOUT_RETURN_URL,
-    AMAZON_PAY_SELLER_ID: process.env.AMAZON_PAY_SELLER_ID,    // Also Merchant ID
-    AMAZON_PAY_PUBLIC_KEY_ID: process.env.AMAZON_PAY_PUBLIC_KEY_ID,
-    AMAZON_PAY_CLIENT_ID: process.env.AMAZON_PAY_CLIENT_ID, // Also Store ID
+
+    // Amazon Pay
     AMAZON_PAY_CLIENT_SECRET: process.env.AMAZON_PAY_CLIENT_SECRET,
     AMAZON_PAY_PRIVATE_KEY_PATH: process.env.AMAZON_PAY_PRIVATE_KEY_PATH,
       
     public: {
-      // DB_URI: process.env.DB_URI,
+      // Amazon Pay
       AMAZON_PAY_CHECKOUT_RETURN_URL: process.env.AMAZON_PAY_CHECKOUT_RETURN_URL,
       AMAZON_PAY_SELLER_ID: process.env.AMAZON_PAY_SELLER_ID,    // Also Merchant ID
       AMAZON_PAY_PUBLIC_KEY_ID: process.env.AMAZON_PAY_PUBLIC_KEY_ID,
       AMAZON_PAY_CLIENT_ID: process.env.AMAZON_PAY_CLIENT_ID, // Also Store ID
+
+      // Klaviyo
+      TEST_KLAVIYO_PUBLIC_KEY: process.env.TEST_KLAVIYO_PUBLIC_KEY,
+      TEST_KLAVIYO_WAITLIST_ID: process.env.TEST_KLAVIYO_WAITLIST_ID,
+      KLAVIYO_PUBLIC_KEY: process.env.KLAVIYO_PUBLIC_KEY,
+      KLAVIYO_WAITLIST_ID: process.env.KLAVIYO_WAITLIST_ID,
+
+      // META PIXEL
+      META_PIXEL_ID: process.env.META_PIXEL_ID
     }
   },
 
