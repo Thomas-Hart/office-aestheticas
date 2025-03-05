@@ -102,7 +102,9 @@ const itemSchema = new mongoose.Schema({
   preview: String,
   description: String,
   image: String,
-  moreImages: [String],
+  moreImages: {type: [String],
+    default: [],
+  },
   tags: [String],
   stock: {
     type: Number,

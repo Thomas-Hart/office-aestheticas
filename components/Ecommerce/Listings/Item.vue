@@ -246,7 +246,7 @@ async function removeFromWishlistOnServer(itemId) {
 }
 
 function goToItem(itemId) {
-  // router.push(`/item/${itemId}`);
+  router.push(`/item/${itemId}`);
 }
 
 function closeVariantModal() {

@@ -251,10 +251,12 @@ if (cartItem.variantId) {
      * - Returns total quantity of all items in the cart
      */
     const getCartItemCount = () => {
+      if (user.value && user.value.cart) {
       return user.value.cart.reduce(
         (count, item) => count + item.quantity,
         0
       );
+    }
     };
 
     /**

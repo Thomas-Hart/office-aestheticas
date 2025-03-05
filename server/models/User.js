@@ -74,7 +74,10 @@ const userSchema = new mongoose.Schema({
       isPrimary: { type: Boolean, default: false },
     },
   ],
-  cart: [cartItemSchema],
+  cart: {
+    type: [cartItemSchema],
+    default: [],
+  },
   wishlist: [
     {
       _id: false, // Add this line
