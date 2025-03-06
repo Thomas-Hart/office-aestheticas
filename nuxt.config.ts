@@ -49,6 +49,7 @@ export default defineNuxtConfig({
       // Specify each family and the variations you want to load
       'Source+Sans+Pro': [400, 500, 700], // Loads only the specified weights
       'Montserrat': [400, 700], // Loads only the specified weights
+      'Poppins': [400, 700], // Loads only the specified weights
       'Lora': [400, 700], // Add Lora with the specified weights
       'Inter': [400]
     },    
@@ -99,6 +100,7 @@ export default defineNuxtConfig({
       // Klaviyo
       TEST_KLAVIYO_PUBLIC_KEY: process.env.TEST_KLAVIYO_PUBLIC_KEY,
       TEST_KLAVIYO_WAITLIST_ID: process.env.TEST_KLAVIYO_WAITLIST_ID,
+      TEST_KLAVIYO_OA_USERS_ID: process.env.TEST_KLAVIYO_OA_USERS_ID,
       KLAVIYO_PUBLIC_KEY: process.env.KLAVIYO_PUBLIC_KEY,
       KLAVIYO_WAITLIST_ID: process.env.KLAVIYO_WAITLIST_ID,
 

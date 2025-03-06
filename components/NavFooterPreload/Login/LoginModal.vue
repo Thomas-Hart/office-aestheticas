@@ -49,7 +49,26 @@ const switchToLogin = () => {
   showSignUp.value = false;
 };
 
+const isLocalhost = () =>
+  process.client &&
+  (window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1");
+
 const handleEmailLogin = async (loginData) => {
+  const { $fbq, $klaviyo } = useNuxtApp();
+  $klaviyo("identify", { email: loginData.email });
+  $klaviyo("track", "LoggedIn", {
+    source: "Login Modal",
+    content_name: "Office Aestheticas Email Login",
+    email: loginData.email,
+  });
+  if (!isLocalhost()) {
+    $fbq("track", "LoggedIn", {
+      source: "Login Modal",
+      content_name: "Office Aestheticas Email Login",
+      email: loginData.email,
+    });
+  }
   isLoading.value = true;
   loginError.value = {};
   try {
@@ -71,6 +90,8 @@ const handleEmailLogin = async (loginData) => {
 };
 
 const handleGoogleLogin = async (response) => {
+  console.log("Google login response: " + JSON.stringify(response));
+  const { $fbq, $klaviyoClientApi, $klaviyo } = useNuxtApp();
   const { credential } = response;
   if (credential) {
     try {
@@ -81,6 +102,25 @@ const handleGoogleLogin = async (response) => {
       userStore.setToken(response.token);
       userStore.setUser(response.user);
       closeModal();
+      $klaviyo("identify", { email: response.user.email });
+      $klaviyo("track", "LoggedIn", {
+        source: "Login Modal",
+        content_name: "Office Aestheticas Google Login",
+        email: response.user.email,
+      });
+      await $klaviyoClientApi.subscribe(
+        useRuntimeConfig().public.TEST_KLAVIYO_OA_USERS_ID, // Replace with your Klaviyo list ID
+        response.user.email,
+        null,
+        "Office Aestheticas Google Signup"
+      );
+      if (!isLocalhost()) {
+        $fbq("track", "LoggedIn", {
+          source: "Login Modal",
+          content_name: "Office Aestheticas Email Login",
+          email: response.user.email,
+        });
+      }
       // updateUserCart();
     } catch (error) {
       loginError.value = {
@@ -112,6 +152,22 @@ const handleLoginError = (error) => {
 };
 
 const handleSignUp = async (signUpData) => {
+  const { $fbq, $klaviyoClientApi } = useNuxtApp();
+
+  await $klaviyoClientApi.subscribe(
+    useRuntimeConfig().public.TEST_KLAVIYO_OA_USERS_ID, // Replace with your Klaviyo list ID
+    signUpData.email,
+    null,
+    "Office Aestheticas Email Signup"
+  );
+  $klaviyo("identify", { email: signUpData.email });
+  if (!isLocalhost()) {
+    $fbq("track", "CompleteRegistration", {
+      source: "Login Modal",
+      content_name: "Office Aestheticas Email Signup",
+      email: signUpData.email,
+    });
+  }
   isLoading.value = true;
   signUpError.value = {};
   if (signUpData.password !== signUpData.passwordConfirm) {

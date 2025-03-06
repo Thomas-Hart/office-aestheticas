@@ -18,7 +18,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       ],
     });
 
-    const publicApiKey = useRuntimeConfig().public.KLAVIYO_PUBLIC_KEY;
+    const publicApiKey = useRuntimeConfig().public.TEST_KLAVIYO_PUBLIC_KEY;
     if (!publicApiKey) {
       console.warn('Klaviyo public API key not found in runtime config. Tracking will not function.');
       nuxtApp.provide('klaviyo', defaultKlaviyoWrapper);

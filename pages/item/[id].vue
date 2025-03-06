@@ -58,10 +58,45 @@
               </span>
               <span v-else>No Reviews</span>
             </div>
-            <p class="product-description">
+            <div v-if="item.variants && item.variants.length" class="pricing">
+              <h2 class="new">${{ selectedVariant.price }}</h2>
+              <h2 v-if="selectedVariant.oldPrice" class="old">
+                ${{ selectedVariant.oldPrice }}
+              </h2>
+            </div>
+            <div v-else class="pricing">
+              <h2 class="new">${{ item.price }}</h2>
+              <h2 v-if="item.oldPrice" class="old">${{ item.oldPrice }}</h2>
+            </div>
+            <!-- <p class="product-description">
               {{ item.description }}
-            </p>
+            </p> -->
           </div>
+
+          <p
+            v-if="
+              selectedVariant &&
+              selectedVariant.savingsAmount &&
+              selectedVariant.savingsPercentage &&
+              selectedVariant.savingsAmount > 0 &&
+              !isOutOfStock
+            "
+            class="savings-text"
+          >
+            SALE: {{ selectedVariant.savingsPercentage }} OFF! (You save ${{
+              selectedVariant.savingsAmount.toFixed(2)
+            }})
+          </p>
+          <p
+            v-else-if="
+              item.savingsAmount && item.savingsPercentage && !isOutOfStock
+            "
+            class="savings-text"
+          >
+            SALE: {{ item.savingsPercentage }} OFF! (You save ${{
+              (item.savingsAmount || 0).toFixed(2)
+            }})
+          </p>
 
           <!-- Inline Variant Selector -->
           <div
@@ -75,13 +110,18 @@
             >
               <div class="attribute-label">
                 <h2 class="attribute-name">{{ capitalize(attribute) }}:</h2>
-
-                <h2 v-if="attribute == 'color'" class="current-attribute">
+                <h2 v-if="attribute !== 'color'" class="current-attribute">
                   {{ selectedAttributes[attribute] }}
                 </h2>
-
-                <h2 v-else class="current-attribute">
-                  {{ selectedAttributes[attribute] }}
+                <h2
+                  v-else-if="
+                    attribute === 'color' &&
+                    selectedAttributes[attribute] &&
+                    selectedAttributes[attribute].name
+                  "
+                  class="current-attribute"
+                >
+                  {{ selectedAttributes[attribute].name }}
                 </h2>
               </div>
               <div
@@ -107,14 +147,14 @@
                   <div
                     v-if="attribute === 'color'"
                     :style="{
-                      backgroundColor:
-                        '#' +
-                        (option && option.hex ? option.hex : 'transparent'),
+                      backgroundColor: '#' + option.value.hex,
                     }"
                     class="color"
                   ></div>
                   <div v-else class="option">
-                    <div class="option-text">{{ option }}</div>
+                    <div class="option-text">
+                      {{ option.value }}
+                    </div>
                     <div class="availability-container">
                       <h3 v-if="option.isOutOfStock">Out Of Stock</h3>
                       <h3 v-else-if="!option.isAvailable">
@@ -130,30 +170,6 @@
         </div>
 
         <!-- Savings Message -->
-        <p
-          v-if="
-            selectedVariant &&
-            selectedVariant.savingsAmount &&
-            selectedVariant.savingsPercentage &&
-            selectedVariant.savingsAmount > 0 &&
-            !isOutOfStock
-          "
-          class="savings-text"
-        >
-          SALE: {{ selectedVariant.savingsPercentage }} OFF! (You save ${{
-            selectedVariant.savingsAmount.toFixed(2)
-          }})
-        </p>
-        <p
-          v-else-if="
-            item.savingsAmount && item.savingsPercentage && !isOutOfStock
-          "
-          class="savings-text"
-        >
-          SALE: {{ item.savingsPercentage }} OFF! (You save ${{
-            (item.savingsAmount || 0).toFixed(2)
-          }})
-        </p>
 
         <!-- Quantity & Add-To-Cart -->
         <div>
@@ -178,27 +194,7 @@
             </div>
           </div>
           <button v-else @click="addToCart" class="add-to-cart-button">
-            <span
-              v-if="
-                selectedVariant &&
-                selectedVariant.oldPrice &&
-                selectedVariant.oldPrice > selectedVariant.price
-              "
-              class="old-price"
-            >
-              ${{ selectedVariant.oldPrice.toFixed(2) }}
-            </span>
-            <span v-else class="old-price">
-              ${{ item.oldPrice.toFixed(2) }}
-            </span>
-            <span
-              class="new-price"
-              v-if="selectedVariant && selectedVariant.price"
-            >
-              ${{ selectedVariant.price.toFixed(2) }}
-            </span>
-            <span class="new-price" v-else> ${{ item.price.toFixed(2) }} </span>
-            | Add To Cart
+            Add To Cart
           </button>
         </div>
       </section>
@@ -450,169 +446,107 @@ const availableAttributes = computed(() => {
     "length",
     "region",
   ];
-  return attributes.filter(
-    (attribute) =>
-      item.value &&
-      item.value.variants &&
-      item.value.variants.some((variant) => variant[attribute])
+  return attributes.filter((attribute) =>
+    item.value.variants.some((variant) => variant[attribute])
   );
 });
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 const getOptions = (attribute) => {
-  const options =
-    item.value && item.value.variants
-      ? item.value.variants
-          .map((variant) => variant[attribute])
-          .filter((option) => option !== undefined && option !== null)
-      : [];
-  // For color, ensure each option is an object { name, hex }
-  const normalizedOptions =
-    attribute === "color"
-      ? options.map((opt) =>
-          typeof opt === "string" ? { name: opt, hex: "" } : opt
-        )
-      : options;
+  const options = item.value.variants
+    .map((variant) => variant[attribute])
+    .filter((option) => option !== undefined && option !== null);
   const uniqueOptions = Array.from(
-    new Set(normalizedOptions.map((option) => JSON.stringify(option)))
+    new Set(options.map((option) => JSON.stringify(option)))
   ).map((str) => JSON.parse(str));
-  return uniqueOptions
-    .map((option) => {
-      const isAvailable =
-        availableAttributes.value[0] === attribute ||
-        checkAvailability(attribute, option);
-      let isOutOfStock = false;
-      if (isAvailable) {
-        isOutOfStock = checkStock(attribute, option);
+  const optionsWithAvailability = uniqueOptions.map((option) => {
+    const isAvailable =
+      availableAttributes.value[0] === attribute ||
+      checkAvailability(attribute, option);
+    let isOutOfStock = false;
+    if (isAvailable) {
+      isOutOfStock = checkStock(attribute, option);
+    }
+    return {
+      value: option,
+      isAvailable,
+      isOutOfStock,
+    };
+  });
+  return optionsWithAvailability.sort((a, b) => {
+    if (a.isAvailable && !b.isAvailable) return -1;
+    if (!a.isAvailable && b.isAvailable) return 1;
+    if (a.isAvailable && b.isAvailable) return a.isOutOfStock ? 1 : -1;
+    return 0;
+  });
+};
+
+const checkStock = (attribute, option) => {
+  const attributeIndex = availableAttributes.value.indexOf(attribute);
+  const isOutOfStock = item.value.variants.every((variant) => {
+    let isMatching = true;
+    for (let i = 0; i <= attributeIndex; i++) {
+      const currentAttr = availableAttributes.value[i];
+      const selectedValue = selectedAttributes.value[currentAttr];
+      if (currentAttr === "color") {
+        const optionMatches =
+          currentAttr === attribute
+            ? variant[currentAttr]?.name === option.name
+            : variant[currentAttr]?.name === selectedValue?.name;
+        isMatching = isMatching && optionMatches;
+      } else {
+        const optionMatches =
+          currentAttr === attribute
+            ? variant[currentAttr] === option
+            : variant[currentAttr] === selectedValue;
+        isMatching = isMatching && optionMatches;
       }
-      return { value: option, isAvailable, isOutOfStock };
-    })
-    .sort((a, b) => {
-      if (a.isAvailable && !b.isAvailable) return -1;
-      if (!a.isAvailable && b.isAvailable) return 1;
-      if (a.isAvailable && b.isAvailable) return a.isOutOfStock ? 1 : -1;
-      return 0;
-    });
+      if (!isMatching) break;
+    }
+    if (isMatching) {
+      return variant.stock === 0;
+    }
+    return true;
+  });
+  return isOutOfStock;
 };
 
 // Guarded checkAvailability for "color" options
 const checkAvailability = (attribute, option) => {
-  if (attribute === "color" && (!option || !option.name)) {
-    console.log(
-      "DEBUG: checkAvailability - invalid option for color:",
-      JSON.stringify(option)
-    );
-    return false;
-  }
   const attributeIndex = availableAttributes.value.indexOf(attribute);
-  if (attributeIndex === 0) return true;
-  return item.value && item.value.variants
-    ? item.value.variants.some((variant) => {
-        const matchesCurrentOption =
-          attribute === "color"
-            ? variant[attribute]?.name === option.name
-            : variant[attribute] === option;
-        if (!matchesCurrentOption) return false;
-        const matchesPreviousAttributes = availableAttributes.value
-          .slice(0, attributeIndex)
-          .every((prevAttribute) => {
-            const selectedValue = selectedAttributes.value[prevAttribute];
-            if (prevAttribute === "color") {
-              return selectedValue
-                ? selectedValue.name === variant[prevAttribute]?.name
-                : false;
-            }
-            return selectedValue === variant[prevAttribute];
-          });
-        return matchesCurrentOption && matchesPreviousAttributes;
-      })
-    : false;
-};
-// Guarded checkStock for "color" options
-const checkStock = (attribute, option) => {
-  if (attribute === "color" && (!option || !option.name)) {
-    console.log(
-      "DEBUG: checkStock - invalid option for color:",
-      JSON.stringify(option)
-    );
-    return false;
+  if (attributeIndex === 0) {
+    return true;
   }
-  const attributeIndex = availableAttributes.value.indexOf(attribute);
-  const isOut =
-    item.value && item.value.variants
-      ? item.value.variants.every((variant) => {
-          let isMatching = true;
-          for (let i = 0; i <= attributeIndex; i++) {
-            const currentAttr = availableAttributes.value[i];
-            const selectedValue = selectedAttributes.value[currentAttr];
-            if (currentAttr === "color") {
-              const optionMatches =
-                currentAttr === attribute
-                  ? variant[currentAttr]?.name === option.name
-                  : variant[currentAttr]?.name ===
-                    (selectedValue ? selectedValue.name : undefined);
-              isMatching = isMatching && optionMatches;
-            } else {
-              const optionMatches =
-                currentAttr === attribute
-                  ? variant[currentAttr] === option
-                  : variant[currentAttr] === selectedValue;
-              isMatching = isMatching && optionMatches;
-            }
-            if (!isMatching) break;
-          }
-          if (isMatching) {
-            return variant.stock === 0;
-          }
-          return true;
-        })
-      : true;
-  return isOut;
-};
-const isSelected = (attribute, optionValue) => {
-  if (attribute === "color") {
-    if (!optionValue || typeof optionValue !== "object") {
-      console.log(
-        `DEBUG: isSelected for "color" received invalid optionValue: ${JSON.stringify(
-          optionValue
-        )}`
-      );
+  return item.value.variants.some((variant) => {
+    const matchesCurrentOption =
+      attribute === "color"
+        ? variant[attribute]?.name === option.name
+        : variant[attribute] === option;
+    if (!matchesCurrentOption) {
       return false;
     }
-    if (
-      !selectedAttributes.value[attribute] ||
-      !selectedAttributes.value[attribute].name
-    ) {
-      console.log(
-        `DEBUG: isSelected for "color" has invalid selectedAttributes: ${JSON.stringify(
-          selectedAttributes.value[attribute]
-        )}`
-      );
-      return false;
-    }
-    return selectedAttributes.value[attribute].name === optionValue.name;
-  }
-  return selectedAttributes.value[attribute] === optionValue;
+    const matchesPreviousAttributes = availableAttributes.value
+      .slice(0, attributeIndex)
+      .every((prevAttribute) => {
+        const selectedValue = selectedAttributes.value[prevAttribute];
+        if (prevAttribute === "color") {
+          return selectedValue?.name === variant[prevAttribute]?.name;
+        }
+        return selectedValue === variant[prevAttribute];
+      });
+    return matchesCurrentOption && matchesPreviousAttributes;
+  });
 };
+
+const isSelected = (attribute, option) =>
+  attribute === "color"
+    ? selectedAttributes.value[attribute]?.name === option.name
+    : selectedAttributes.value[attribute] === option;
 function selectOption(attribute, option) {
-  console.log(
-    `DEBUG: selectOption called with attribute: ${attribute}, option: ${JSON.stringify(
-      option
-    )}`
-  );
-  // For unavailable options, try to set attributes from an available variant
   if (!option.isAvailable) {
-    const availableVariant =
-      item.value && item.value.variants
-        ? item.value.variants.find((variant) =>
-            attribute === "color"
-              ? typeof variant[attribute] === "string"
-                ? variant[attribute] === option.value
-                : variant[attribute]?.name === option.value?.name
-              : variant[attribute] === option.value
-          )
-        : null;
-    console.log(
-      `DEBUG: availableVariant found: ${JSON.stringify(availableVariant)}`
+    const availableVariant = item.value.variants.find((variant) =>
+      attribute === "color"
+        ? variant[attribute]?.name === option.value.name
+        : variant[attribute] === option.value
     );
     if (availableVariant) {
       const newSelectedAttributes = { ...selectedAttributes.value };
@@ -622,84 +556,61 @@ function selectOption(attribute, option) {
       selectedAttributes.value = newSelectedAttributes;
     }
   } else {
-    // Normalize color: if attribute is color and option.value is a string, convert it
-    const normalizedValue =
-      attribute === "color" && typeof option.value === "string"
-        ? { name: option.value, hex: "" }
-        : option.value;
-    selectedAttributes.value = {
-      ...selectedAttributes.value,
-      [attribute]: normalizedValue,
-    };
+    const newSelectedAttributes = { ...selectedAttributes.value };
+    newSelectedAttributes[attribute] = option.value;
+    selectedAttributes.value = newSelectedAttributes;
   }
-  console.log(
-    `DEBUG: updated selectedAttributes: ${JSON.stringify(
-      selectedAttributes.value
-    )}`
-  );
   const attributeIndex = availableAttributes.value.indexOf(attribute);
   if (attributeIndex < availableAttributes.value.length - 1) {
     availableAttributes.value
       .slice(attributeIndex + 1)
       .forEach((lowerAttribute) => {
         const options = getOptions(lowerAttribute);
-        const availableOption = options.find((opt) => opt.isAvailable);
-        selectedAttributes.value = {
-          ...selectedAttributes.value,
-          [lowerAttribute]: availableOption ? availableOption.value : null,
-        };
-        console.log(
-          `DEBUG: updated selectedAttributes for lower attribute ${lowerAttribute}: ${JSON.stringify(
-            selectedAttributes.value
-          )}`
-        );
+        const availableOption = options.find((option) => option.isAvailable);
+        const newSelectedAttributes = { ...selectedAttributes.value };
+        newSelectedAttributes[lowerAttribute] = availableOption
+          ? availableOption.value
+          : null;
+        selectedAttributes.value = newSelectedAttributes;
       });
   }
-  const variant =
-    item.value && item.value.variants
-      ? item.value.variants.find((v) =>
-          Object.keys(selectedAttributes.value).every((attr) =>
-            attr === "color"
-              ? typeof v[attr] === "string"
-                ? v[attr] === selectedAttributes.value[attr]
-                : v[attr]?.name === selectedAttributes.value[attr]?.name
-              : v[attr] === selectedAttributes.value[attr]
-          )
-        )
-      : null;
-  selectedVariant.value =
-    variant ||
-    (item.value && item.value.variants ? item.value.variants[0] : null);
-  console.log(
-    `DEBUG: selectedVariant: ${JSON.stringify(selectedVariant.value)}`
+  const variant = item.value.variants.find((v) =>
+    Object.keys(selectedAttributes.value).every((attribute) =>
+      attribute === "color"
+        ? v[attribute]?.name === selectedAttributes.value[attribute]?.name
+        : v[attribute] === selectedAttributes.value[attribute]
+    )
   );
-  galleryActiveImage.value = computedGalleryImage.value;
+  selectedVariant.value = variant || item.value.variants[0];
+  if (selectedVariant.value && selectedVariant.value.image) {
+    galleryActiveImage.value = selectedVariant.value.image;
+  } else {
+    galleryActiveImage.value = item.value.image;
+  }
 }
 
 function optionKey(attribute, option) {
-  if (attribute === "color") {
-    if (!option.value) {
-      console.log(
-        `DEBUG: optionKey for "color": option.value is undefined: ${JSON.stringify(
-          option
-        )}`
-      );
-      return "";
-    }
-    if (!option.value.name) {
-      console.log(
-        `DEBUG: optionKey for "color": option.value.name is undefined: ${JSON.stringify(
-          option.value
-        )}`
-      );
-    }
-    return option.value.name || "";
-  }
-  return option.value;
+  return attribute === "color" ? option.value.name : option.value;
 }
 
-// Recently Viewed & SEO (keep this onMounted)
-onMounted(addToRecentlyViewedItems);
+onMounted(() => {
+  addToRecentlyViewedItems();
+  if (item.value.variants && item.value.variants.length) {
+    const defaultVariant = item.value.variants[0];
+    Object.keys(defaultVariant).forEach((attribute) => {
+      if (
+        availableAttributes.value.includes(attribute) &&
+        selectableAttributes.includes(attribute)
+      ) {
+        selectedAttributes.value[attribute] = defaultVariant[attribute];
+      }
+    });
+    selectedVariant.value = defaultVariant;
+    // Optionally, update the gallery image if a variant image exists.
+    galleryActiveImage.value = defaultVariant.image || item.value.image;
+  }
+});
+
 async function addToRecentlyViewedItems() {
   const recentlyViewedItem = {
     item: item.value ? item.value._id : null,
@@ -898,7 +809,28 @@ emit("hide-loading");
   font-weight: bold;
   margin-bottom: 2rem;
   color: black;
-  font-family: "Montserrat", serif;
+  font-family: "Poppins", serif;
+}
+
+.pricing {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.pricing .new {
+  font-size: 2.3rem;
+  font-weight: bold;
+  margin-right: 1rem;
+  font-family: "Poppins", serif;
+}
+
+.pricing .old {
+  font-size: 1.8rem;
+  color: gray;
+  font-weight: lighter;
+  text-decoration: line-through;
+  font-family: "Poppins", serif;
 }
 
 .product-description {
@@ -938,13 +870,19 @@ emit("hide-loading");
 .attribute-label {
   display: flex;
   gap: 0.3rem;
+  margin-bottom: 1.2rem;
 }
 .attribute-name {
-  color: #ccc;
-  font-weight: lighter;
+  color: black;
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: "Poppins", serif;
 }
 .current-attribute {
-  color: white;
+  color: black;
+  font-weight: lighter;
+  font-size: 1rem;
+  font-family: "Poppins", serif;
 }
 .attribute-options,
 .color-attribute-options {
@@ -986,19 +924,28 @@ emit("hide-loading");
   border-color: #757575;
 }
 .color-circle {
-  width: 40px;
-  height: 40px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
-  border: 3px solid white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 3px;
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
   cursor: pointer;
   transition: transform 0.3s ease, border-color 0.3s ease;
   position: relative;
   overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-content: center;
 }
+
+.color-circle.selected {
+  border: 1.5px solid black;
+}
+
 .color {
-  width: 110%;
-  height: 110%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
 }
 .option {
   display: flex;
@@ -1073,21 +1020,23 @@ emit("hide-loading");
   background-color: #e67e00;
 }
 .add-to-cart-button {
-  padding: 12px 20px;
-  background-color: #3f654c;
-  color: black;
+  padding: 10px 20px;
+  background-color: #333;
+  color: white;
+  font-weight: bold;
+  font-family: "Poppins", serif;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   width: 100%;
-  font-size: 1.3rem;
+  font-size: 1rem;
   transition: all 0.3s ease;
   margin-top: 20px;
   text-align: center;
 }
 .add-to-cart-button:hover {
-  background-color: #befa71;
-  box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.4);
+  background-color: #555;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
 }
 .new-price {
   color: white;
