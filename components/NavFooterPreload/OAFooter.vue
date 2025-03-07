@@ -3,8 +3,18 @@
     <!-- Top black bar with links -->
     <nav class="top-nav">
       <div class="nav-buttons">
-        <NuxtLink to="/refund">Refund Policy</NuxtLink>
-        <NuxtLink to="/privacy">Privacy Policy</NuxtLink>
+        <NuxtLink
+          to="/refund"
+          class="nav-link"
+          @click="trackNavigation('RefundPolicy')"
+          >Refund Policy</NuxtLink
+        >
+        <NuxtLink
+          to="/privacy"
+          class="nav-link"
+          @click="trackNavigation('PrivacyPolicy')"
+          >Privacy Policy</NuxtLink
+        >
       </div>
     </nav>
 
@@ -22,14 +32,29 @@
             type="email"
             placeholder="Enter your email"
             aria-label="Email for exclusive offers"
+            @focus="trackSignUpInteraction"
           />
         </div>
 
         <div class="more-resources">
           <h2>More Resources</h2>
           <ul>
-            <li><NuxtLink to="/">About us</NuxtLink></li>
-            <li><NuxtLink to="/terms">Terms of Service</NuxtLink></li>
+            <li>
+              <NuxtLink
+                to="/"
+                class="nav-link"
+                @click="trackNavigation('AboutUs')"
+                >About us</NuxtLink
+              >
+            </li>
+            <li>
+              <NuxtLink
+                to="/terms"
+                class="nav-link"
+                @click="trackNavigation('TermsOfService')"
+                >Terms of Service</NuxtLink
+              >
+            </li>
             <!-- <li><NuxtLink to="#">Start a Return</NuxtLink></li> -->
           </ul>
         </div>
@@ -44,8 +69,76 @@
 </template>
 
 <script setup>
-// Composition API (script setup) for Nuxt 3:
-// Add any reactive logic here, if needed.
+const userStore = useUserStore();
+
+// Check if user is logged in
+const isLoggedIn = computed(() => !!userStore.token);
+
+// Inject Meta Pixel and Klaviyo with $ prefix
+const { $fbq } = useNuxtApp();
+const { $klaviyo } = useNuxtApp();
+
+/** Track navigation events with Meta Pixel and Klaviyo, including login status and user data. */
+function trackNavigation(pageName) {
+  const eventName = `NavigatedTo${pageName}`;
+  const baseProperties = {
+    pageName,
+    timestamp: new Date().toISOString(),
+  };
+
+  const properties = isLoggedIn.value
+    ? {
+        ...baseProperties,
+        isLoggedIn: true,
+        userId: userStore.user._id,
+        email: userStore.user.email,
+        cartSize: userStore.user.cart.length,
+        wishlistSize: userStore.user.wishlist.length,
+        recentlyViewedCount: userStore.user.recentlyViewedItems.length,
+        location: `${userStore.user.contact.city}, ${userStore.user.contact.state}`,
+      }
+    : {
+        ...baseProperties,
+        isLoggedIn: false,
+      };
+
+  // Track with Meta Pixel
+  $fbq("trackCustom", eventName, properties);
+
+  // Track with Klaviyo
+  $klaviyo("track", eventName, properties);
+}
+
+/** Track sign-up interaction with Meta Pixel and Klaviyo. */
+function trackSignUpInteraction() {
+  const eventName = "InteractedWithSignUp";
+  const baseProperties = {
+    action: "focused",
+    timestamp: new Date().toISOString(),
+  };
+
+  const properties = isLoggedIn.value
+    ? {
+        ...baseProperties,
+        isLoggedIn: true,
+        userId: userStore.user._id,
+        email: userStore.user.email,
+        cartSize: userStore.user.cart.length,
+        wishlistSize: userStore.user.wishlist.length,
+        recentlyViewedCount: userStore.user.recentlyViewedItems.length,
+        location: `${userStore.user.contact.city}, ${userStore.user.contact.state}`,
+      }
+    : {
+        ...baseProperties,
+        isLoggedIn: false,
+      };
+
+  // Track with Meta Pixel
+  $fbq("trackCustom", eventName, properties);
+
+  // Track with Klaviyo
+  $klaviyo("track", eventName, properties);
+}
 </script>
 
 <style scoped>

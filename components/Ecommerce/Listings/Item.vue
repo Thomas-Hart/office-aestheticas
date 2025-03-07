@@ -31,7 +31,7 @@
             src="/Graphics/Items/whiteHeart.svg"
             alt="Wishlist"
             class="wishlist-icon"
-            @click.stop="handleWishlistClick"
+            @click.stop="trackAndHandleWishlistClick"
           />
           <div class="overlay-content">
             <!-- TITLE (word-by-word, letter-by-letter) -->
@@ -58,20 +58,20 @@
             <div class="overlay-buttons-container">
               <button
                 v-if="item.variants && item.variants.length > 0"
-                @click.stop="showVariantModal = true"
+                @click.stop="trackAndShowVariantModal"
                 class="overlay-add-button"
               >
                 See Options
               </button>
               <button
                 v-else
-                @click.stop="addToCart(item)"
+                @click.stop="trackAndAddToCart"
                 class="overlay-add-button"
               >
                 Add To Cart
               </button>
               <button
-                @click.stop="goToItem(item._id)"
+                @click.stop="trackViewContent"
                 class="overlay-view-button"
               >
                 View Item
@@ -127,6 +127,12 @@ const loading = ref(true);
 
 const showOverlay = ref(false);
 
+const { $fbq } = useNuxtApp();
+const { $klaviyo } = useNuxtApp();
+
+// Check if user is logged in
+const isLoggedIn = computed(() => !!userStore.user);
+
 const handleMouseEnter = () => {
   showOverlay.value = true;
 };
@@ -175,22 +181,14 @@ function resolvedCheckImg() {
 }
 
 function addToCart(item) {
-  console.log("hereeee1", JSON.stringify(item));
   if (isLoggedIn.value) {
     userStore.addToCart(item);
-    console.log("hereeee2");
-
-    console.log(userStore.user.cart); // Item does not successfully add to cart
   } else {
     itemStore.addToCart(item);
-    console.log("hereeee3");
-
-    console.log(itemStore.cart);
   }
   isAddedToCart.value = true;
 }
 
-const isLoggedIn = computed(() => !!userStore.user);
 const isInWishlist = computed(() => {
   if (!userStore.user?.wishlist) return false;
   return userStore.user.wishlist.some((w) => w.item === props.item._id);
@@ -251,6 +249,97 @@ function goToItem(itemId) {
 
 function closeVariantModal() {
   showVariantModal.value = false;
+}
+
+/** Tracking Functions */
+function trackViewContent() {
+  const viewContentData = {
+    content_type: "product",
+    content_id: props.item._id,
+    content_name: props.item.name || "Untitled Product",
+    content_category: props.item.category || "Uncategorized",
+    price: props.item.price || 0,
+    currency: "USD",
+  };
+
+  // Track with Klaviyo
+  $klaviyo("track", "ViewContent", viewContentData);
+
+  // Track with Meta Pixel
+  $fbq("track", "ViewContent", viewContentData);
+
+  // Navigate to product page
+  goToItem(props.item._id);
+}
+
+function trackAndHandleWishlistClick() {
+  trackNavigation("WishlistClick", isInWishlist.value ? "Removed" : "Added");
+  handleWishlistClick();
+}
+
+function trackAndShowVariantModal() {
+  trackNavigation("ViewedVariants", props.item.name);
+  showVariantModal.value = true;
+}
+
+function trackAndAddToCart() {
+  trackNavigation("AddedToCart", {
+    itemId: props.item._id,
+    name: props.item.name,
+    price: props.item.price,
+  });
+  addToCart(props.item);
+}
+
+/** Track navigation or interaction events with Meta Pixel and Klaviyo, including login status and user data. */
+function trackNavigation(actionType, action = null) {
+  let eventName, properties;
+
+  if (actionType === "WishlistClick") {
+    eventName = "WishlistClick";
+    properties = {
+      action: action,
+      itemId: props.item._id,
+      name: props.item.name || "Untitled Product",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "ViewedVariants") {
+    eventName = "ViewedVariants";
+    properties = {
+      itemName: action || "Unnamed Product",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "AddedToCart") {
+    eventName = "AddedToCart";
+    properties = {
+      itemId: action.itemId,
+      name: action.name || "Untitled Product",
+      price: action.price || 0,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  const enhancedProperties = isLoggedIn.value
+    ? {
+        ...properties,
+        isLoggedIn: true,
+        userId: userStore.user._id,
+        email: userStore.user.email,
+        cartSize: userStore.user.cart.length,
+        wishlistSize: userStore.user.wishlist.length,
+        recentlyViewedCount: userStore.user.recentlyViewedItems.length,
+        location: `${userStore.user.contact.city}, ${userStore.user.contact.state}`,
+      }
+    : {
+        ...properties,
+        isLoggedIn: false,
+      };
+
+  // Track with Meta Pixel
+  $fbq("trackCustom", eventName, enhancedProperties);
+
+  // Track with Klaviyo
+  $klaviyo("track", eventName, enhancedProperties);
 }
 </script>
 

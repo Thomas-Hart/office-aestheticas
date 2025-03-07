@@ -11,15 +11,16 @@
         <img class="lamp-icon" src="/Graphics/Home/lamp.svg" alt="Lamp Icon" />
       </div>
       <div class="button-group">
-        <button class="btn shop-now" @click="setTab('Featured')">
+        <button class="btn shop-now" @click="trackAndSetTab('Featured')">
           Shop Now
         </button>
-        <button class="btn view-all" @click="setTab('All')">View All</button>
+        <button class="btn view-all" @click="trackAndSetTab('All')">
+          View All
+        </button>
       </div>
     </div>
   </section>
 </template>
-
 
 <script setup>
 const glowCanvas = ref(null);
@@ -28,6 +29,15 @@ let mousePos = { x: 0, y: 0 };
 const router = useRouter();
 const route = useRoute();
 
+const userStore = useUserStore();
+
+// Check if user is logged in
+const isLoggedIn = computed(() => !!userStore.token);
+
+// Inject Meta Pixel and Klaviyo with $ prefix
+const { $fbq } = useNuxtApp();
+const { $klaviyo } = useNuxtApp();
+
 const isLocalhost = () =>
   process.client &&
   (window.location.hostname === "localhost" ||
@@ -35,7 +45,13 @@ const isLocalhost = () =>
 
 function setTab(tab) {
   router.push({ query: { ...route.query, tab } });
-  const { $fbq, $klaviyo } = useNuxtApp();
+}
+
+function trackAndSetTab(tab) {
+  const action = tab === "Featured" ? "ClickedShopNow" : "ClickedViewAll";
+  trackNavigation(action, tab);
+
+  // Existing tracking logic
   $klaviyo("track", "ViewContent", {
     content_type: "product",
     content_category: "Home Office Essentials",
@@ -46,6 +62,51 @@ function setTab(tab) {
       content_category: "Home Office Essentials",
     });
   }
+
+  setTab(tab);
+}
+
+/** Track navigation or interaction events with Meta Pixel and Klaviyo, including login status and user data. */
+function trackNavigation(actionType, tab = null) {
+  let eventName, properties;
+
+  if (actionType === "ClickedShopNow") {
+    eventName = "ClickedShopNow";
+    properties = {
+      action: "click",
+      tab: "Featured",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "ClickedViewAll") {
+    eventName = "ClickedViewAll";
+    properties = {
+      action: "click",
+      tab: "All",
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  const enhancedProperties = isLoggedIn.value
+    ? {
+        ...properties,
+        isLoggedIn: true,
+        userId: userStore.user._id,
+        email: userStore.user.email,
+        cartSize: userStore.user.cart.length,
+        wishlistSize: userStore.user.wishlist.length,
+        recentlyViewedCount: userStore.user.recentlyViewedItems.length,
+        location: `${userStore.user.contact.city}, ${userStore.user.contact.state}`,
+      }
+    : {
+        ...properties,
+        isLoggedIn: false,
+      };
+
+  // Track with Meta Pixel
+  $fbq("trackCustom", eventName, enhancedProperties);
+
+  // Track with Klaviyo
+  $klaviyo("track", eventName, enhancedProperties);
 }
 
 onMounted(() => {
@@ -137,8 +198,6 @@ onMounted(() => {
   };
 });
 </script>
-
-
 
 <style scoped>
 .intro-section {
@@ -350,4 +409,3 @@ onMounted(() => {
   }
 }
 </style>
-

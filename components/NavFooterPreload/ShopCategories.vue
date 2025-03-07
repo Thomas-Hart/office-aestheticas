@@ -1,21 +1,34 @@
 <template>
   <ul class="mobile-category-list">
     <!-- Back button up top, or you can style it differently -->
-    <li v-if="mobileView" @click="$emit('switchToLinks')" class="back-button">
-      &larr; Back
+    <li v-if="mobileView" @click="trackAndSwitchToLinks" class="back-button">
+      ← Back
     </li>
 
     <!-- Actual categories -->
-    <li v-for="cat in categories" :key="cat" @click="onCategoryClick(cat)">
+    <li
+      v-for="cat in categories"
+      :key="cat"
+      @click="trackAndNavigateToCategory(cat)"
+    >
       {{ cat }}
     </li>
   </ul>
 </template>
-  
-  <script setup>
+
+<script setup>
 const emit = defineEmits(["switchToLinks", "close-mobile-nav"]);
 
 const mobileView = ref(false);
+
+const userStore = useUserStore();
+
+// Check if user is logged in
+const isLoggedIn = computed(() => !!userStore.token);
+
+// Inject Meta Pixel and Klaviyo with $ prefix
+const { $fbq } = useNuxtApp();
+const { $klaviyo } = useNuxtApp();
 
 /** Hard-coded categories. */
 const categories = [
@@ -35,8 +48,10 @@ const categories = [
 
 const router = useRouter();
 
-/** Navigate to the category, then close the overlay. */
-function onCategoryClick(category) {
+/** Navigate to the category, track the action, and close the overlay. */
+function trackAndNavigateToCategory(category) {
+  trackNavigation("Category", category);
+
   router.push({
     path: "/",
     query: {
@@ -49,9 +64,69 @@ function onCategoryClick(category) {
   if (window.innerWidth < 768) {
     emit("switchToLinks");
   }
+  trackAndCloseMobileNav();
+}
+
+/** Switch to links view and track the action. */
+function trackAndSwitchToLinks() {
+  trackNavigation("Links");
+  emit("switchToLinks");
+}
+
+/** Close mobile nav and track the action. */
+function trackAndCloseMobileNav() {
+  trackNavigation("MobileNav", "close");
   emit("close-mobile-nav");
 }
 
+/** Track navigation or interaction events with Meta Pixel and Klaviyo, including login status and user data. */
+function trackNavigation(actionType, action = null) {
+  let eventName, properties;
+
+  if (actionType === "Category") {
+    eventName = "NavigatedToCategory";
+    properties = {
+      category: action,
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "Links") {
+    eventName = "SwitchedToLinks";
+    properties = {
+      view: "links",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "MobileNav" && action === "close") {
+    eventName = "ClosedMobileNav";
+    properties = {
+      action: "close",
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  const enhancedProperties = isLoggedIn.value
+    ? {
+        ...properties,
+        isLoggedIn: true,
+        userId: userStore.user._id,
+        email: userStore.user.email,
+        cartSize: userStore.user.cart.length,
+        wishlistSize: userStore.user.wishlist.length,
+        recentlyViewedCount: userStore.user.recentlyViewedItems.length,
+        location: `${userStore.user.contact.city}, ${userStore.user.contact.state}`,
+      }
+    : {
+        ...properties,
+        isLoggedIn: false,
+      };
+
+  // Track with Meta Pixel
+  $fbq("trackCustom", eventName, enhancedProperties);
+
+  // Track with Klaviyo
+  $klaviyo("track", eventName, enhancedProperties);
+}
+
+/** Handle resize logic. */
 function handleResize() {
   mobileView.value = window.innerWidth < 768;
 }
@@ -67,8 +142,8 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
 });
 </script>
-  
-  <style scoped>
+
+<style scoped>
 .mobile-category-list {
   display: flex;
   flex-direction: column;
@@ -101,4 +176,3 @@ onBeforeUnmount(() => {
   }
 }
 </style>
-  

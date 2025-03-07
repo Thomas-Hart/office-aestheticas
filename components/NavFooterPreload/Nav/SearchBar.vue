@@ -2,7 +2,7 @@
   <div class="nav-container">
     <div class="search-bar-container">
       <div class="search-bar-wrapper">
-        <button @click="toggleSearchBar" class="search-icon">
+        <button @click="trackAndToggleSearchBar" class="search-icon">
           <img src="/Graphics/Nav/search.svg" alt="Search" />
         </button>
         <div class="search-bar" :class="{ expanded: showList }">
@@ -31,7 +31,7 @@
             v-for="item in filteredItems"
             :key="item._id"
             class="dropdown-item"
-            @mousedown.prevent="goToItemPage(item._id)"
+            @mousedown.prevent="trackAndGoToItemPage(item._id, item)"
           >
             <img
               :src="getItemImagePath(item.image)"
@@ -67,6 +67,15 @@ const loading = ref(true);
 const router = useRouter();
 const store = useItemStore();
 
+const userStore = useUserStore();
+
+// Check if user is logged in
+const isLoggedIn = computed(() => !!userStore.token);
+
+// Inject Meta Pixel and Klaviyo with $ prefix
+const { $fbq } = useNuxtApp();
+const { $klaviyo } = useNuxtApp();
+
 const { data: itemsData, error: itemsError } = await useFetch("/api/items");
 
 onMounted(() => {
@@ -98,6 +107,11 @@ function hideList() {
   }, 200);
 }
 
+function trackAndToggleSearchBar() {
+  trackNavigation("SearchBar");
+  toggleSearchBar();
+}
+
 function toggleSearchBar() {
   if (!showList.value) {
     showList.value = true;
@@ -107,6 +121,11 @@ function toggleSearchBar() {
       searchQuery.value = "";
     }, 300);
   }
+}
+
+function trackAndGoToItemPage(itemId, item) {
+  trackNavigation("Item", item);
+  goToItemPage(itemId);
 }
 
 function goToItemPage(itemId) {
@@ -127,6 +146,49 @@ function splitText(text) {
 
 function getItemImagePath(fileName) {
   return "/ItemPics/" + fileName;
+}
+
+/** Track navigation or interaction events with Meta Pixel and Klaviyo, including login status and user data. */
+function trackNavigation(actionType, item = null) {
+  let eventName, properties;
+
+  if (actionType === "SearchBar") {
+    eventName = "ToggledSearchBar";
+    properties = {
+      action: "toggle",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "Item" && item) {
+    eventName = "NavigatedToItem";
+    properties = {
+      itemId: item._id,
+      itemName: item.name,
+      itemPrice: item.price,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  const enhancedProperties = isLoggedIn.value
+    ? {
+        ...properties,
+        isLoggedIn: true,
+        userId: userStore.user._id,
+        email: userStore.user.email,
+        cartSize: userStore.user.cart.length,
+        wishlistSize: userStore.user.wishlist.length,
+        recentlyViewedCount: userStore.user.recentlyViewedItems.length,
+        location: `${userStore.user.contact.city}, ${userStore.user.contact.state}`,
+      }
+    : {
+        ...properties,
+        isLoggedIn: false,
+      };
+
+  // Track with Meta Pixel
+  $fbq("trackCustom", eventName, enhancedProperties);
+
+  // Track with Klaviyo
+  $klaviyo("track", eventName, enhancedProperties);
 }
 </script>
 

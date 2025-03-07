@@ -3,7 +3,7 @@
   <div class="FAQ-wrapper">
     <h1>Frequently Asked Questions</h1>
     <div v-for="(item, index) in items" :key="index" class="faq-item">
-      <div class="question" @click="toggle(index)">
+      <div class="question" @click="trackAndToggle(index)">
         <div class="content">
           <div>
             {{ item.question }}
@@ -24,6 +24,15 @@
 
 <script setup>
 const activeIndices = ref([]);
+
+const userStore = useUserStore();
+
+// Check if user is logged in
+const isLoggedIn = computed(() => !!userStore.token);
+
+// Inject Meta Pixel and Klaviyo with $ prefix
+const { $fbq } = useNuxtApp();
+const { $klaviyo } = useNuxtApp();
 
 const items = ref([
   {
@@ -52,9 +61,50 @@ const toggle = (index) => {
 const isActive = (index) => {
   return activeIndices.value.includes(index);
 };
+
+/** Toggle FAQ and track the action. */
+function trackAndToggle(index) {
+  trackNavigation("FAQ", items.value[index].question);
+  toggle(index);
+}
+
+/** Track navigation or interaction events with Meta Pixel and Klaviyo, including login status and user data. */
+function trackNavigation(actionType, action = null) {
+  let eventName, properties;
+
+  if (actionType === "FAQ") {
+    eventName = "ToggledFAQ";
+    properties = {
+      question: action,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  const enhancedProperties = isLoggedIn.value
+    ? {
+        ...properties,
+        isLoggedIn: true,
+        userId: userStore.user._id,
+        email: userStore.user.email,
+        cartSize: userStore.user.cart.length,
+        wishlistSize: userStore.user.wishlist.length,
+        recentlyViewedCount: userStore.user.recentlyViewedItems.length,
+        location: `${userStore.user.contact.city}, ${userStore.user.contact.state}`,
+      }
+    : {
+        ...properties,
+        isLoggedIn: false,
+      };
+
+  // Track with Meta Pixel
+  $fbq("trackCustom", eventName, enhancedProperties);
+
+  // Track with Klaviyo
+  $klaviyo("track", eventName, enhancedProperties);
+}
 </script>
-  
-  <style scoped>
+
+<style scoped>
 .FAQ-wrapper {
   margin: 0 auto;
   max-width: 1300px;

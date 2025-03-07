@@ -15,8 +15,6 @@
   <script setup>
 const itemStore = useItemStore();
 const userStore = useUserStore();
-const showClickAnimation = ref(false);
-const isDropDownVisible = ref(false);
 const hydrated = ref(false); // This is used to ensure the component is fully hydrated
 
 const isLoggedIn = computed(() => !!userStore.user);

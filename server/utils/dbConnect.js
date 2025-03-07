@@ -3,7 +3,7 @@ import { incrementConnectionCount, getConnectionCount } from './dbConnectionStat
 
 export const connectDB = async () => {
   const config = useRuntimeConfig();
-  const MONGODB_URI = config.DB_URI;
+  const MONGODB_URI = config.private.DB_URI;
 
   // console.log("config.DB_URI: ", MONGODB_URI);
   // console.log("Mongoose connection state before: ", mongoose.connection.readyState);

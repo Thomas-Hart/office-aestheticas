@@ -3,12 +3,13 @@
     <div v-if="loading" class="loading">
       Loading… if this takes too long, refresh the page.
     </div>
-    <div id="paypal-button-container"></div>
+    <!-- Container with fixed width -->
+    <div id="paypal-button-container" style="width: 150px"></div>
   </div>
 </template>
-  
-  <script setup>
-//   import { ref, onMounted, watch, defineProps, defineEmits } from "vue";
+
+<script setup>
+import { ref, onMounted, watch, defineProps, defineEmits } from "vue";
 import { loadScript } from "@paypal/paypal-js";
 
 const props = defineProps({
@@ -19,11 +20,8 @@ const emit = defineEmits(["orderCompleted"]);
 
 const loading = ref(true);
 const paypalReady = ref(false);
-
-// Flag to ensure we patch tax only once (we'll add this later)
 const taxPatched = ref(false);
 
-// Function to convert raw PayPal order into a normalized structure.
 function normalizeOrder(paypalOrder) {
   return {
     orderId: paypalOrder.id,
@@ -52,7 +50,6 @@ function normalizeOrder(paypalOrder) {
 
 async function minimalShippingChange(data, actions) {
   console.log("Shipping change detected:", data.shipping_address);
-  // DO NOTHING and just return the current order.
   return actions.order.get();
 }
 
@@ -63,11 +60,14 @@ async function renderPayPalButton() {
   }
   window.paypal
     .Buttons({
-      fundingSource: window.paypal.FUNDING.PAYPAL,
+      fundingSource: window.paypal.FUNDING.PAYPAL, // Explicitly PayPal only
       style: {
-        layout: "vertical",
+        layout: "horizontal",
         tagline: false,
-        label: "pay",
+        label: "paypal",
+        color: "gold",
+        shape: "rect",
+        height: 35, // Set explicit height to preserve default tall appearance
       },
       createOrder: async (data, actions) => {
         try {
@@ -84,7 +84,6 @@ async function renderPayPalButton() {
                       currency_code: "USD",
                       value: props.totalAmount.toFixed(2),
                     },
-                    // tax_total will be patched later.
                   },
                 },
               },
@@ -125,6 +124,8 @@ onMounted(async () => {
         "AdtQ4QIhyiTH7owmy8BaLN1wuguwU3mksMpaJOKiGutiCmcFUeXfsZby3QrQaLYgtLUIWgONxU0YNvmf",
       currency: "USD",
       components: "buttons",
+      "disable-funding": "paylater,credit", // Disable Pay Later and Credit buttons
+      "enable-funding": "paypal", // Explicitly enable only PayPal
     });
     if (!paypal) {
       console.error("Failed to load PayPal SDK.");
@@ -150,8 +151,8 @@ watch(
   }
 );
 </script>
-  
-  <style scoped>
+
+<style scoped>
 .paypal-checkout {
   width: 100%;
 }
@@ -159,4 +160,3 @@ watch(
   margin-bottom: 1rem;
 }
 </style>
-  

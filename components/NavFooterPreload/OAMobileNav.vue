@@ -1,16 +1,21 @@
 <template>
   <!-- Full-screen overlay -->
-  <div class="overlay" @click.self="closeNav">
+  <div class="overlay" @click.self="trackAndCloseNav">
     <!-- Slide-out menu on the left -->
     <div class="mobile-nav-content">
       <!-- Close button in top-left -->
       <div class="mobile-nav-header">
-        <button class="close-button" @click="closeNav">&times;</button>
+        <button class="close-button" @click="trackAndCloseNav">×</button>
       </div>
 
       <!-- Logo near the top -->
       <div class="mobile-nav-logo">
-        <img class="logo" src="/Logos/OAName.svg" alt="Office Aestheticas" />
+        <img
+          class="logo"
+          src="/Logos/OAName.svg"
+          alt="Office Aestheticas"
+          @click="trackNavigation('Home')"
+        />
       </div>
 
       <!-- Transition wrapper for switching between Links and Categories -->
@@ -20,17 +25,17 @@
         <NavFooterPreloadShopCategories
           v-if="activeView !== 'links'"
           key="categories"
-          @switchToLinks="switchToLinks"
-          @close-mobile-nav="closeNav"
+          @switchToLinks="trackAndSwitchToLinks"
+          @close-mobile-nav="trackAndCloseNav"
         />
 
         <!-- Links View -->
         <NavFooterPreloadMobileNavLinks
           v-else
           key="links"
-          @switchToCategories="switchToCategories"
+          @switchToCategories="trackAndSwitchToCategories"
           @open-shop-menu="activeView = 'menu'"
-          @closeNav="closeNav"
+          @closeNav="trackAndCloseNav"
         />
       </transition>
     </div>
@@ -42,17 +47,88 @@ const emit = defineEmits(["close"]);
 
 const activeView = ref("");
 
-function closeNav() {
+const userStore = useUserStore();
+
+// Check if user is logged in
+const isLoggedIn = computed(() => !!userStore.token);
+
+// Inject Meta Pixel and Klaviyo with $ prefix
+const { $fbq } = useNuxtApp();
+const { $klaviyo } = useNuxtApp();
+
+/** Close nav and track the action. */
+function trackAndCloseNav() {
+  trackNavigation("MobileNav", "close");
   emit("close");
   activeView.value = "links";
 }
-function switchToCategories() {
+
+/** Switch to Categories view and track the action. */
+function trackAndSwitchToCategories() {
+  trackNavigation("Categories");
   activeView.value = "categories";
 }
-function switchToLinks() {
+
+/** Switch to Links view and track the action. */
+function trackAndSwitchToLinks() {
+  trackNavigation("Links");
   activeView.value = "links";
 }
 
+/** Track navigation or interaction events with Meta Pixel and Klaviyo, including login status and user data. */
+function trackNavigation(actionType, action = null) {
+  let eventName, properties;
+
+  if (actionType === "MobileNav" && action === "close") {
+    eventName = "ClosedMobileNav";
+    properties = {
+      action: "close",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "Categories") {
+    eventName = "SwitchedToCategories";
+    properties = {
+      view: "categories",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "Links") {
+    eventName = "SwitchedToLinks";
+    properties = {
+      view: "links",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "Home") {
+    eventName = "NavigatedToHome";
+    properties = {
+      pageName: "Home",
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  const enhancedProperties = isLoggedIn.value
+    ? {
+        ...properties,
+        isLoggedIn: true,
+        userId: userStore.user._id,
+        email: userStore.user.email,
+        cartSize: userStore.user.cart.length,
+        wishlistSize: userStore.user.wishlist.length,
+        recentlyViewedCount: userStore.user.recentlyViewedItems.length,
+        location: `${userStore.user.contact.city}, ${userStore.user.contact.state}`,
+      }
+    : {
+        ...properties,
+        isLoggedIn: false,
+      };
+
+  // Track with Meta Pixel
+  $fbq("trackCustom", eventName, enhancedProperties);
+
+  // Track with Klaviyo
+  $klaviyo("track", eventName, enhancedProperties);
+}
+
+/** Handle resize logic. */
 function handleResize() {
   activeView.value = window.innerWidth < 768 ? "links" : "";
 }

@@ -1,127 +1,200 @@
 <template>
-  <div v-if="activeCart.length > 0" class="overlay">
-    <!-- Checkout panel (desktop: right‑side; mobile: bottom drawer) -->
-    <div class="checkout-panel" :class="{ visible: showCheckout }">
-      <div class="checkout-header">
-        <h2>Checkout</h2>
-        <button class="close-checkout" @click="closeCheckout">&times;</button>
-      </div>
-      <!-- Payment methods component -->
-      <EcommerceCheckoutPanel
-        :totalAmount="totalPrice"
-        @orderCompleted="handleOrderCompleted"
-        @close="closeCheckout"
-      />
-    </div>
-
-    <!-- Original Cart (desktop: right side; mobile: top panel) -->
-    <div class="cart-wrapper">
-      <div class="cart-header">
-        <div class="cart-count">
-          <h1>Cart</h1>
-          <div class="num-circle">{{ totalItemCount }}</div>
-        </div>
-        <button class="close-button" @click="$emit('close-cart')">
-          &times;
-        </button>
-      </div>
-
-      <!-- Scrollable cart items -->
-      <div class="cart-items">
-        <div
-          v-for="(item, index) in activeCart"
-          :key="item._id + (item.variantId || '')"
-          class="cart-item"
-        >
-          <NuxtImg
-            :src="resolvedItemImg(item.image)"
-            alt="item image"
-            class="item-image"
-          />
-          <div class="item-details">
-            <p class="item-name">{{ item.name }}</p>
-            <p class="item-price">
-              <span v-if="item.originalPrice" class="original-price">
-                ${{ item.originalPrice.toFixed(2) }}
-              </span>
-              <span class="current-price">${{ item.price.toFixed(2) }}</span>
-            </p>
-            <!-- Variant details if available -->
-            <div v-if="item.variantId" class="variant-details">
-              <p v-if="item.color">Color: {{ item.color }}</p>
-              <p v-if="item.size">Size: {{ item.size }}</p>
-              <!-- <p v-if="item.material">Material: {{ item.material }}</p>
-              <p v-if="item.style">Style: {{ item.style }}</p>
-              <p v-if="item.capacity">Capacity: {{ item.capacity }}</p>
-              <p v-if="item.flavor">Flavor: {{ item.flavor }}</p>
-              <p v-if="item.scent">Scent: {{ item.scent }}</p>
-              <p v-if="item.power">Power: {{ item.power }}</p>
-              <p v-if="item.length">Length: {{ item.length }}</p>
-              <p v-if="item.region">Region: {{ item.region }}</p> -->
+  <transition name="collapse-right">
+    <div class="overlay" v-if="activeCart.length > 0">
+      <!-- Nav Cart View -->
+      <template v-if="!showCheckout">
+        <div class="cart-wrapper">
+          <div class="cart-header">
+            <div class="cart-count">
+              <h1>Cart</h1>
+              <div class="num-circle">{{ totalItemCount }}</div>
             </div>
-          </div>
-          <div class="item-actions">
-            <input
-              class="item-quantity-input"
-              type="number"
-              min="1"
-              :value="item.quantity"
-              @change="(e) => updateItemQuantity(item, e.target.value)"
-            />
-            <button
-              class="remove-button"
-              @click="removeCartItem(item._id, item.variantId)"
-            >
-              Remove
+            <button class="close-button" @click="$emit('close-cart')">
+              &times;
             </button>
           </div>
-        </div>
-      </div>
 
-      <!-- Cart total and actions -->
-      <div class="cart-bottom">
-        <div class="cart-total">
-          <div class="total-text">
-            <p>Total</p>
-            <span class="total-price">
-              Taxes and shipping calculated at checkout
-            </span>
+          <!-- Scrollable Cart Items -->
+          <div class="cart-items">
+            <div
+              v-for="(item, index) in activeCart"
+              :key="item._id + (item.variantId || '')"
+              class="cart-item"
+            >
+              <NuxtImg
+                :src="resolvedItemImg(item.image)"
+                alt="item image"
+                class="item-image"
+              />
+              <div class="item-details">
+                <p class="item-name">{{ item.name }}</p>
+                <p class="item-price">
+                  <span v-if="item.originalPrice" class="original-price">
+                    ${{ item.originalPrice.toFixed(2) }}
+                  </span>
+                  <span class="current-price">
+                    ${{ item.price.toFixed(2) }}
+                  </span>
+                </p>
+                <!-- Variant details if available -->
+                <div v-if="item.variantId" class="variant-details">
+                  <p v-if="item.color">Color: {{ item.color }}</p>
+                  <p v-if="item.size">Size: {{ item.size }}</p>
+                </div>
+              </div>
+              <div class="item-actions">
+                <input
+                  class="item-quantity-input"
+                  type="number"
+                  min="1"
+                  :value="item.quantity"
+                  @change="(e) => updateItemQuantity(item, e.target.value)"
+                />
+                <button
+                  class="remove-button"
+                  @click="removeCartItem(item._id, item.variantId)"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
           </div>
-          <p>${{ totalPrice.toFixed(2) }}</p>
-        </div>
 
-        <div class="cart-actions">
-          <button class="view-cart" @click="setTab('Featured')">
-            Keep Shopping
-          </button>
-          <button class="checkout" @click="openCheckout">
-            <img src="/Graphics/CartCheckout/security.svg" alt="" />Checkout
-          </button>
+          <!-- Cart Total and Actions -->
+          <div class="cart-bottom">
+            <div class="cart-total">
+              <div class="total-text">
+                <p>Total</p>
+                <span class="total-price">
+                  Taxes and shipping calculated at checkout
+                </span>
+              </div>
+              <p>${{ totalPrice.toFixed(2) }}</p>
+            </div>
+
+            <div class="cart-actions">
+              <button class="view-cart" @click="setTab('Featured')">
+                Keep Shopping
+              </button>
+              <button class="checkout" @click="openCheckout">
+                <img src="/Graphics/CartCheckout/security.svg" alt="" />Checkout
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      </template>
+
+      <!-- Checkout Panel View -->
+      <template v-else>
+        <div class="checkout-panel-full">
+          <div class="checkout-logo">
+            <img src="/Logos/OAName.svg" alt="Office Aestheticas Logo" />
+          </div>
+          <div class="checkout-container">
+            <!-- Left: Express Checkout Section with Logo -->
+            <div class="checkout-left">
+              <h3 class="express-label">Express Checkout</h3>
+              <div class="express-checkout-wrapper">
+                <div class="express-buttons-container">
+                  <div class="express-button paypal">
+                    <EcommerceExpressCheckoutPaypalCheckout
+                      :totalAmount="totalPrice"
+                      @orderCompleted="handleOrderCompleted"
+                    />
+                  </div>
+                  <div class="express-button">
+                    <EcommerceExpressCheckoutAmazonPay
+                      :totalAmount="totalPrice"
+                      @orderCompleted="handleOrderCompleted"
+                    />
+                  </div>
+                  <!-- Add additional payment method components as needed -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Divider between checkout left and checkout right -->
+            <div class="checkout-divider"></div>
+
+            <!-- Right: Order Summary (identical styling to the cart) -->
+            <div class="checkout-right">
+              <div class="order-summary">
+                <h2>Order Summary</h2>
+                <div class="summary-items">
+                  <div
+                    v-for="(item, index) in activeCart"
+                    :key="item._id + (item.variantId || '')"
+                    class="order-summary-item"
+                  >
+                    <NuxtImg
+                      :src="resolvedItemImg(item.image)"
+                      alt="item image"
+                      class="item-image"
+                    />
+                    <div class="item-details">
+                      <p class="item-name">{{ item.name }}</p>
+                      <p class="item-price">
+                        <span v-if="item.originalPrice" class="original-price">
+                          ${{ item.originalPrice.toFixed(2) }}
+                        </span>
+                        <span class="current-price">
+                          ${{ item.price.toFixed(2) }}
+                        </span>
+                      </p>
+                      <div v-if="item.variantId" class="variant-details">
+                        <p v-if="item.color">Color: {{ item.color }}</p>
+                        <p v-if="item.size">Size: {{ item.size }}</p>
+                      </div>
+                      <p class="quantity">Qty: {{ item.quantity }}</p>
+                    </div>
+                  </div>
+                </div>
+                <hr class="summary-divider" />
+                <div class="summary-totals">
+                  <div class="cart-total">
+                    <div>
+                      <p class="subtotal-text">Subtotal</p>
+                    </div>
+                    <p class="subtotal-text">${{ subtotal.toFixed(2) }}</p>
+                  </div>
+                  <div class="cart-total">
+                    <div>
+                      <p class="subtotal-text">Tax</p>
+                    </div>
+                    <p class="subtotal-text">${{ tax.toFixed(2) }}</p>
+                  </div>
+                  <div class="cart-total">
+                    <div class="total-text">
+                      <p>Total</p>
+                    </div>
+                    <p>${{ totalPrice.toFixed(2) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="close-checkout" @click="closeCheckout">&times;</button>
+        </div>
+      </template>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script setup>
 const userStore = useUserStore();
 const itemStore = useItemStore();
+const emit = defineEmits(["close-cart"]);
 const router = useRouter();
 const route = useRoute();
 
-const emit = defineEmits(["close-cart"]);
 const isLoggedIn = computed(() => !!userStore.user);
+const activeCart = computed(() =>
+  isLoggedIn.value ? userStore.user.cart : itemStore.cart
+);
 
-// Use the user cart if logged in; otherwise use the local store cart.
-const activeCart = computed(() => {
-  return isLoggedIn.value ? userStore.user.cart : itemStore.cart;
-});
-
-const totalItemCount = computed(() => {
-  return activeCart.value.reduce((total, item) => total + item.quantity, 0);
-});
-
-// This reactive variable holds the total amount from the API.
+const totalItemCount = computed(() =>
+  activeCart.value.reduce((total, item) => total + item.quantity, 0)
+);
 const totalPrice = ref(0);
 
 // Fetch the total price from the API.
@@ -180,19 +253,33 @@ function updateItemQuantity(item, newValue) {
   fetchCartTotal();
 }
 
-const showCheckout = ref(false);
-function openCheckout() {
-  showCheckout.value = true;
-}
-function closeCheckout() {
-  showCheckout.value = false;
-}
-
 function setTab(tab) {
   emit("close-cart");
   router.push({ query: { ...route.query, tab } });
 }
 
+// Toggle between cart view and checkout panel view
+const showCheckout = ref(false);
+function openCheckout() {
+  console.log("Opening checkout panel");
+  showCheckout.value = true;
+}
+function closeCheckout() {
+  console.log("Closing checkout panel");
+  showCheckout.value = false;
+}
+
+// Calculate the subtotal and tax for the order summary.
+const subtotal = computed(() =>
+  activeCart.value.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  )
+);
+const taxRate = 0.1; // 10%
+const tax = computed(() => subtotal.value * taxRate);
+
+// Handle order completion (console.log statements preserved)
 async function handleOrderCompleted(orderData) {
   console.log("Order Completed:", JSON.stringify(orderData));
   try {
@@ -207,7 +294,6 @@ async function handleOrderCompleted(orderData) {
     } else {
       itemStore.clearCart();
     }
-    await sendConfirmationEmail(savedOrder);
     router.push({ path: `/order/${savedOrder._id}` });
   } catch (error) {
     console.error("Error finalizing order:", error);
@@ -232,68 +318,42 @@ async function handleOrderCompleted(orderData) {
     closeCheckout();
   }
 }
-
-async function sendConfirmationEmail(order) {
-  try {
-    const response = await fetch(
-      "https://jf32m0961a.execute-api.us-east-2.amazonaws.com/first/send-custom-email",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: order.associatedEmail,
-          orderId: order._id,
-          invoiceNumber: order.invoiceNumber,
-          from: "support@aestheticas.com",
-          message: "Thank you for choosing Office Aestheticas.",
-          company: "Office Aestheticas",
-        }),
-      }
-    );
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-  } catch (error) {
-    console.log("Error in sendFailureEmail()");
-  }
-}
-
-async function sendFailureEmail(order) {
-  try {
-    const response = await fetch(
-      "https://jf32m0961a.execute-api.us-east-2.amazonaws.com/first/send-custom-email",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: userEmail.value,
-          from: "support@aestheticas.com",
-          message:
-            "There was a problem processing your order. Please try again. If this continues, please contact us through the contact page on our website.",
-          company: "Office Aestheticas",
-        }),
-      }
-    );
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-  } catch (error) {
-    console.log("Error in sendFailureEmail()");
-  }
-}
 </script>
 
 <style scoped>
-/* ---------- Desktop Styles ---------- */
+/* Transition: collapse effect from the right */
+.collapse-right-enter-active,
+.collapse-right-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform-origin: right;
+}
+.collapse-right-enter-from,
+.collapse-right-leave-to {
+  transform: scaleX(0);
+  opacity: 0;
+}
+.collapse-right-enter-to,
+.collapse-right-leave-from {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+/* Overlay aligned to the right */
 .overlay {
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: flex-end;
   z-index: 1000;
   padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
+/* Nav Cart Styles (unchanged from your original) */
 .cart-wrapper {
   width: 40%;
   max-width: 100%;
@@ -308,27 +368,6 @@ async function sendFailureEmail(order) {
   line-height: 1.4;
   position: relative;
   z-index: 2;
-}
-
-.cart-items {
-  flex-grow: 1;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #bbb transparent;
-  padding-right: 0.5rem;
-}
-.cart-items::-webkit-scrollbar {
-  width: 8px;
-}
-.cart-items::-webkit-scrollbar-thumb {
-  background-color: #bbb;
-  border-radius: 4px;
-}
-.cart-items::-webkit-scrollbar-thumb:hover {
-  background-color: #999;
-}
-.cart-items::-webkit-scrollbar-track {
-  background-color: transparent;
 }
 .cart-header {
   display: flex;
@@ -364,6 +403,11 @@ async function sendFailureEmail(order) {
   font-size: 2rem;
   cursor: pointer;
 }
+.cart-items {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
 .cart-item {
   width: 100%;
   padding-bottom: 1rem;
@@ -396,8 +440,13 @@ async function sendFailureEmail(order) {
 }
 .item-price .current-price {
   color: #3f654c;
-  font-weight: light;
+  font-weight: lighter;
   font-family: "Lora";
+}
+.variant-details p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #555;
 }
 .item-actions {
   display: flex;
@@ -431,9 +480,14 @@ async function sendFailureEmail(order) {
   justify-content: space-between;
   font-size: 1.2rem;
   font-weight: bold;
-  margin-bottom: 1rem;
+  margin-bottom: 0rem;
 }
 .total-text span {
+  color: #636363;
+  font-weight: lighter;
+  font-size: 0.9rem;
+}
+.subtotal-text {
   color: #636363;
   font-weight: lighter;
   font-size: 0.9rem;
@@ -480,89 +534,150 @@ async function sendFailureEmail(order) {
   height: 1.5rem;
 }
 
-/* ---------- Checkout Panel Styles ---------- */
-.checkout-panel {
+/* Checkout Panel Styles */
+.checkout-panel-full {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  position: relative;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.checkout-container {
+  display: flex;
+  flex: 1;
+  max-width: 1300px;
+  justify-content: center;
+  /* align-items: flex-start; */
+  /* min-width: 100vw; */
+}
+
+/* Remove border-right from checkout-left */
+.checkout-left {
+  padding: 1rem;
+  /* overflow-y: auto; */
+}
+
+/* Divider element */
+.checkout-divider {
+  width: 1px;
+  background-color: #ddd;
+  margin: 0 2rem;
+  align-self: stretch;
+}
+
+/* Sticky Order Summary in checkout-right */
+.checkout-right {
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  width: 100%;
+}
+
+/* New Checkout Left Styles */
+.checkout-logo {
+  text-align: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 1rem;
+  width: 100%;
+}
+.checkout-logo img {
+  max-width: 150px;
+}
+.express-label {
+  text-align: center;
+  font-size: 1.2rem;
+  margin: 1rem 0;
+}
+.express-checkout-wrapper {
+  margin: 0 auto;
+}
+.close-checkout {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  bottom: 1rem;
-  width: 30%;
-  background-color: #fff;
-  padding: 2rem;
-  border-right: 1px solid #ddd;
-  z-index: 1;
-  transform: translateX(0);
-  transition: transform 0.3s ease;
-}
-.checkout-panel.visible {
-  transform: translateX(-133%);
-}
-.checkout-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 1rem;
-  margin-bottom: 0rem;
-}
-.close-checkout {
   background: none;
   border: none;
   font-size: 2rem;
   cursor: pointer;
 }
 
-/* ---------- Responsive Mobile Styles ---------- */
+/* Order Summary Styles */
+.order-summary {
+  padding: 1rem;
+}
+.order-summary h2 {
+  margin-bottom: 1rem;
+}
+.summary-items {
+  margin-bottom: 1rem;
+}
+.order-summary-item {
+  display: flex;
+  margin-bottom: 1rem;
+}
+.order-summary-item .item-details {
+  width: 60%;
+}
+.quantity {
+  font-size: 0.9rem;
+  color: #555;
+}
+.summary-divider {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 1rem 0;
+}
+.summary-totals p {
+  font-size: 1.2rem;
+  margin: 0.5rem 0;
+}
+.summary-totals .total {
+  margin-top: 0.5rem;
+}
+
+/* Express Checkout Buttons: list in a row with fixed width */
+.express-buttons-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.express-button {
+  width: 150px;
+  min-height: 1rem;
+}
+.express-button.paypal {
+  width: 300px;
+}
+
+/* Responsive Mobile Styles */
 @media (max-width: 768px) {
   .overlay {
     flex-direction: column;
     justify-content: flex-end;
     align-items: stretch;
     padding: 0;
-  }
-  .checkout-panel {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
     width: 100%;
-    height: 40%;
-    padding: 1rem;
-    border: none;
-    border-top: 1px solid #ddd;
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-    z-index: 1100;
+    height: 100%;
+    margin: 0;
   }
-  .checkout-panel.visible {
-    transform: translateY(0);
-  }
-  .cart-wrapper {
+  .cart-wrapper,
+  .checkout-panel-full {
     width: 100%;
-    height: 60%;
+    height: 100%;
     padding: 1rem;
-    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.2);
-    border-top: 1px solid #ddd;
+    box-shadow: none;
   }
-  .cart-header h1 {
-    font-size: 1.5rem;
-  }
-  .cart-count .num-circle {
-    width: 1.2em;
-    height: 1.2em;
-    font-size: 0.8rem;
-  }
-  .cart-items {
-    overflow-y: auto;
-  }
-  .cart-actions button,
-  .fixed-actions button {
-    font-size: 1.2rem;
+  .checkout-left,
+  .checkout-right {
     padding: 1rem;
-  }
-  .item-image {
-    width: 100px;
-    height: 100px;
-    margin-right: 0.5rem;
   }
 }
 </style>

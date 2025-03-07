@@ -4,29 +4,29 @@
     <div class="top-nav">
       <div class="top-nav-content">
         <!-- MOBILE: Hamburger Menu Button (hidden on desktop) -->
-        <button class="mobile-menu-button" @click="toggleMobileNav">
+        <button class="mobile-menu-button" @click="trackAndToggleMobileNav">
           <!-- Explicit width/height to prevent layout shift -->
           <img src="/Graphics/NavBars.svg" alt="Menu" width="24" height="24" />
         </button>
 
         <!-- LOGO: If possible, define width/height in your logo component or here -->
         <div class="nav-logo-container">
-          <NavFooterPreloadNavLogo />
+          <NavFooterPreloadNavLogo @click.native="trackNavigation('Home')" />
         </div>
 
         <!-- DESKTOP: Navigation Links in the center (hidden on mobile) -->
         <div class="desktop-nav-links">
-          <NavFooterPreloadNavLinks @open-shop-menu="toggleMobileNav" />
+          <NavFooterPreloadNavLinks @open-shop-menu="trackAndToggleMobileNav" />
         </div>
 
         <!-- DESKTOP: Icons + Cart on the right (hidden on mobile) -->
         <div class="desktop-nav-right">
           <NavFooterPreloadNavIcons
-            @closeMobileNav="closeMobileNav"
-            @openLoginModal="openLoginModal"
+            @closeMobileNav="trackAndCloseMobileNav"
+            @openLoginModal="trackAndOpenLoginModal"
           />
           <NavFooterPreloadNavCartButton
-            @clicked="closeMobileNav"
+            @clicked="trackAndInteractedWithCart"
             @toggle-cart="toggleCart"
           />
         </div>
@@ -34,50 +34,47 @@
         <!-- MOBILE: Cart Button (hidden on desktop) -->
         <NavFooterPreloadNavCartButton
           class="mobile-cart-button"
-          @clicked="closeMobileNav"
+          @clicked="trackAndInteractedWithCart"
           @toggle-cart="toggleCart"
         />
       </div>
     </div>
-
-    <!-- Pointer Animation & Text for Cart (Optional) -->
-    <!-- Also add fixed width/height here if needed -->
-    <img
-      v-if="showClickAnimation && !isDropDownVisible"
-      src="/CartPoint.svg"
-      alt="Click Animation"
-      class="click-animation"
-      width="80"
-      height="80"
-    />
-    <p v-if="showClickAnimation && !isDropDownVisible" class="click-text">
-      Click here to see your cart
-    </p>
   </div>
 </template>
 
 <script setup>
 const itemStore = useItemStore();
+const userStore = useUserStore();
 
-// State
-const showClickAnimation = ref(false);
-const isDropDownVisible = ref(false);
+// Check if user is logged in
+const isLoggedIn = computed(() => !!userStore.token);
+
+// Inject Meta Pixel and Klaviyo with $ prefix
+const { $fbq } = useNuxtApp();
+const { $klaviyo } = useNuxtApp();
 
 // Watch cart item count to trigger pointer animation from 0 -> 1
 watch(
   () => itemStore.getCartItemCount(),
   (newVal, oldVal) => {
-    if (oldVal === 0 && newVal === 1 && !isDropDownVisible.value) {
-      triggerClickAnimation();
+    if (newVal > oldVal) {
+      openCart();
     }
   }
 );
 
-function triggerClickAnimation() {
-  showClickAnimation.value = true;
-  setTimeout(() => {
-    showClickAnimation.value = false;
-  }, 3000);
+watch(
+  () => userStore.getCartItemCount(),
+  (newVal, oldVal) => {
+    if (newVal > oldVal) {
+      openCart();
+    }
+  }
+);
+
+function openCart() {
+  console.log("Opening cart...");
+  emit("toggle-cart");
 }
 
 const emit = defineEmits([
@@ -102,6 +99,88 @@ function openLoginModal() {
 }
 function closeLoginModal() {
   emit("close-login-modal");
+}
+
+/** Toggle mobile nav and track the action. */
+function trackAndToggleMobileNav() {
+  trackNavigation("MobileMenu", "toggle");
+  toggleMobileNav();
+}
+
+/** Close mobile nav and track the action. */
+function trackAndCloseMobileNav() {
+  trackNavigation("MobileNav", "close");
+  closeMobileNav();
+}
+
+/** Open login modal and track the action. */
+function trackAndOpenLoginModal() {
+  trackNavigation("LoginModal", "open");
+  openLoginModal();
+}
+
+/** Track cart interaction. */
+function trackAndInteractedWithCart() {
+  trackNavigation("Cart", "interacted");
+}
+
+/** Track navigation or interaction events with Meta Pixel and Klaviyo, including login status and user data. */
+function trackNavigation(actionType, action = null) {
+  let eventName, properties;
+
+  if (actionType === "MobileMenu" && action === "toggle") {
+    eventName = "ToggledMobileMenu";
+    properties = {
+      action: "toggle",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "MobileNav" && action === "close") {
+    eventName = "ClosedMobileNav";
+    properties = {
+      action: "close",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "LoginModal" && action === "open") {
+    eventName = "OpenedLoginModal";
+    properties = {
+      action: "open",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "Cart" && action === "interacted") {
+    eventName = "InteractedWithCart";
+    properties = {
+      action: "interacted",
+      timestamp: new Date().toISOString(),
+    };
+  } else if (actionType === "Home") {
+    eventName = "NavigatedToHome";
+    properties = {
+      pageName: "Home",
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  const enhancedProperties = isLoggedIn.value
+    ? {
+        ...properties,
+        isLoggedIn: true,
+        userId: userStore.user._id,
+        email: userStore.user.email,
+        cartSize: userStore.user.cart.length,
+        wishlistSize: userStore.user.wishlist.length,
+        recentlyViewedCount: userStore.user.recentlyViewedItems.length,
+        location: `${userStore.user.contact.city}, ${userStore.user.contact.state}`,
+      }
+    : {
+        ...properties,
+        isLoggedIn: false,
+      };
+
+  // Track with Meta Pixel
+  $fbq("trackCustom", eventName, enhancedProperties);
+
+  // Track with Klaviyo
+  $klaviyo("track", eventName, enhancedProperties);
 }
 </script>
 

@@ -71,7 +71,8 @@ export default defineNuxtConfig({
   runtimeConfig: {    
     // Public keys that are exposed to the client
     // Database
-    DB_URI: process.env.DB_URI,
+    private: {
+      DB_URI: process.env.DB_URI,
 
     // Google Sign In
     JWT_SECRET: process.env.JWT_SECRET,
@@ -89,6 +90,11 @@ export default defineNuxtConfig({
     // Amazon Pay
     AMAZON_PAY_CLIENT_SECRET: process.env.AMAZON_PAY_CLIENT_SECRET,
     AMAZON_PAY_PRIVATE_KEY_PATH: process.env.AMAZON_PAY_PRIVATE_KEY_PATH,
+
+    TEST_KLAVIYO_PRIVATE_KEY: process.env.TEST_KLAVIYO_PRIAVTE_KEY,
+    META_ACCESS_TOKEN: process.env.META_ACCESS_TOKEN,
+    },
+    
       
     public: {
       // Amazon Pay

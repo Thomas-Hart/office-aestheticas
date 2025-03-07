@@ -38,66 +38,74 @@ export default defineNuxtPlugin((nuxtApp) => {
         x.parentNode.insertBefore(s, x);
       })(window, document, 'script');
 
-      // Initialize Klaviyo tracking (using the _learnq object)
       if (window._learnq) {
         window._learnq.push(['init', publicApiKey]);
         window._learnq.push(['track', 'Viewed Page', { pageType: 'other' }]);
       }
     };
 
-    // Load the pixel when the browser is idle
     if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => {
-        initKlaviyoPixel();
-      });
+      requestIdleCallback(() => initKlaviyoPixel());
     } else {
-      setTimeout(() => {
-        initKlaviyoPixel();
-      }, 2000);
+      setTimeout(() => initKlaviyoPixel(), 2000);
     }
 
-    // Actual wrapper that pushes to the _learnq array
+    // Client-side wrapper that pushes to _learnq
     const klaviyoWrapper = (...args) => {
       if (window._learnq) {
         window._learnq.push(args);
+        // Send to server endpoint for server-side tracking
+        const [method, eventName, properties = {}] = args;
+        if (method === 'track') {
+          $fetch('/api/klaviyo-events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              method,
+              eventName,
+              properties,
+              email: properties.$email || null,
+              eventId: properties.$event_id || Date.now().toString(),
+            }),
+          }).catch(err => console.error('Server Klaviyo Track Error:', err));
+        } else if (method === 'identify') {
+          $fetch('/api/klaviyo-events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              method,
+              properties,
+              email: properties.$email || null,
+            }),
+          }).catch(err => console.error('Server Klaviyo Identify Error:', err));
+        }
       } else {
-        setTimeout(() => klaviyoWrapper(...args), 500); // Retry if not ready
+        setTimeout(() => klaviyoWrapper(...args), 500);
       }
     };
 
     const clientApiCall = async (endpoint, body) => {
-      if (!window.fetch) {
-        console.error('Fetch API not supported');
-        return;
-      }
       try {
-        const response = await fetch(`https://a.klaviyo.com${endpoint}?company_id=${publicApiKey}`, {
+        const response = await $fetch(`https://a.klaviyo.com${endpoint}?company_id=${publicApiKey}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            revision: '2023-02-22',
+            revision: '2024-10-15', // Updated to latest API revision
           },
           body: JSON.stringify(body),
         });
-        const responseText = await response.text();
-        // console.log('Response status:', response.status);
-        // console.log('Response text:', responseText);
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}, Text: ${responseText}`);
-        }
-        let data = null;
-        if (responseText) {
-          try {
-            data = JSON.parse(responseText);
-          } catch (jsonError) {
-            console.warn('Response is not valid JSON:', jsonError);
-            data = null;
-          }
-        } else if (response.status === 202) {
-          // console.log('Received 202 Accepted with empty response, subscription is processing.');
-        }
-        // console.log(`${endpoint} successful:`, data);
-        return data;
+
+        // Forward to server-side endpoint for dual tracking
+        await $fetch('/api/klaviyo-client', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            endpoint,
+            body,
+          }),
+        }).catch(err => console.error('Server Klaviyo Client API Error:', err));
+
+        return response;
       } catch (error) {
         console.error(`Error with ${endpoint}:`, error);
         throw error;
@@ -122,7 +130,7 @@ export default defineNuxtPlugin((nuxtApp) => {
               profile: profile || {},
               metric: { name: metric },
               properties,
-              timestamp,
+              time: timestamp,
               value,
             },
           },
@@ -136,7 +144,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     nuxtApp.provide('klaviyo', klaviyoWrapper);
     nuxtApp.provide('klaviyoClientApi', klaviyoClientApi);
   } else {
-    // For SSR, provide the no-op fallback functions
     nuxtApp.provide('klaviyo', defaultKlaviyoWrapper);
     nuxtApp.provide('klaviyoClientApi', defaultKlaviyoClientApi);
   }
