@@ -6,7 +6,6 @@ export default defineNuxtConfig({
     '/': { ssr: true },
     '/orderConfirmation': { ssr: true },
     '/profile': { ssr: true },
-    '/contact': { prerender: true },
     '/terms': { prerender: true },
     '/privacy': { prerender: true },
     '/refund' : { prerender: true },
