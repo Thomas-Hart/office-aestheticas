@@ -6,7 +6,7 @@
         <div class="cart-wrapper">
           <div class="cart-header">
             <div class="cart-count">
-              <h1>Cart</h1>
+              <h2>Cart</h2>
               <div class="num-circle">{{ totalItemCount }}</div>
             </div>
             <button class="close-button" @click="$emit('close-cart')">
@@ -112,9 +112,11 @@
                         @orderCompleted="handleOrderCompleted"
                       />
                     </div>
-                    <div class="checkout-divider">
-                      <span>Or pay with</span>
+                    <div class="payment-divider">
+                      <span>Or Pay With</span>
                     </div>
+                    <h3 class="express-label">Manual Checkout</h3>
+
                     <EcommerceCheckoutFormCheckout />
                     <!-- Add additional payment method components as needed -->
                   </div>
@@ -135,11 +137,17 @@
                       :key="item._id + (item.variantId || '')"
                       class="order-summary-item"
                     >
-                      <NuxtImg
-                        :src="resolvedItemImg(item.image)"
-                        alt="item image"
-                        class="item-image"
-                      />
+                      <div class="summary-item-count">
+                        <NuxtImg
+                          :src="resolvedItemImg(item.image)"
+                          alt="item image"
+                          class="item-image"
+                        />
+                        <div class="floating-num-circle">
+                          {{ item.quantity }}
+                        </div>
+                      </div>
+
                       <div class="item-details">
                         <p class="item-name">{{ item.name }}</p>
                         <p class="item-price">
@@ -149,7 +157,7 @@
                           >
                             ${{ item.originalPrice.toFixed(2) }}
                           </span>
-                          <span class="current-price">
+                          <span class="subtotal-text">
                             ${{ item.price.toFixed(2) }}
                           </span>
                         </p>
@@ -157,7 +165,11 @@
                           <p v-if="item.color">Color: {{ item.color }}</p>
                           <p v-if="item.size">Size: {{ item.size }}</p>
                         </div>
-                        <p class="quantity">Qty: {{ item.quantity }}</p>
+                      </div>
+                      <div class="order-summary-item-total">
+                        <p class="subtotal-text">
+                          ${{ item.price * item.quantity }}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -389,7 +401,7 @@ async function handleOrderCompleted(orderData) {
   padding-bottom: 1rem;
   margin-bottom: 1rem;
 }
-.cart-header h1 {
+.cart-header h2 {
   font-size: 1.3rem;
   margin: 0;
   font-weight: bold;
@@ -410,6 +422,21 @@ async function handleOrderCompleted(orderData) {
   justify-content: center;
   align-items: center;
 }
+.floating-num-circle {
+  position: absolute;
+  right: 0.5rem;
+  top: -0.5rem;
+  margin-left: 0.5rem;
+  width: 1.5em;
+  height: 1.5rem;
+  background: black;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .cart-header .close-button {
   background: none;
   border: none;
@@ -428,8 +455,8 @@ async function handleOrderCompleted(orderData) {
   margin-bottom: 1rem;
 }
 .item-image {
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   object-fit: cover;
   margin-right: 1rem;
 }
@@ -461,6 +488,11 @@ async function handleOrderCompleted(orderData) {
   font-size: 0.9rem;
   color: #555;
 }
+
+.order-summary-item-total {
+  /* width: 10%; */
+}
+
 .item-actions {
   display: flex;
   flex-direction: column;
@@ -656,6 +688,9 @@ async function handleOrderCompleted(orderData) {
   display: flex;
   margin-bottom: 1rem;
 }
+.summary-item-count {
+  position: relative;
+}
 .order-summary-item .item-details {
   width: 60%;
 }
@@ -686,28 +721,26 @@ async function handleOrderCompleted(orderData) {
   min-height: 1rem;
 }
 
-.checkout-divider {
+.payment-divider {
   display: flex;
   align-items: center;
+  justify-content: center;
   margin: 2rem 0;
   text-align: center;
+  width: 100%;
+  border-top: 1px solid rgba(0, 0, 0, 0.7);
+  position: relative;
 }
 
-.checkout-divider span {
-  flex: 1;
-  color: white;
+.payment-divider span {
+  position: absolute;
+  color: rgba(0, 0, 0, 0.7);
   font-size: 1rem;
-  font-weight: bold;
-  border-top: 1px solid rgba(255, 255, 255, 0.5);
-  line-height: 0.1rem;
-  margin: 0 1rem;
-}
-
-.checkout-divider span::before,
-.checkout-divider span::after {
-  content: "";
-  flex: 1;
-  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  font-weight: lighter;
+  margin: 0 auto;
+  background: white;
+  width: 6rem;
 }
 
 /* Responsive Mobile Styles */
@@ -742,6 +775,10 @@ async function handleOrderCompleted(orderData) {
   .checkout-left,
   .checkout-right {
     padding: 1rem;
+  }
+
+  .cart-actions {
+    gap: 0rem;
   }
 }
 </style>
