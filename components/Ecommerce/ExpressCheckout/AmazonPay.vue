@@ -198,7 +198,10 @@ watch(
 
 <style scoped>
 .amazonpay-checkout {
-  width: 100%;
+  min-width: 100%;
+}
+#amazon-pay-button-container {
+  min-width: 100%;
 }
 .loading {
   margin-bottom: 1rem;

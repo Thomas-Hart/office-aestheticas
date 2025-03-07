@@ -77,7 +77,10 @@
                 Keep Shopping
               </button>
               <button class="checkout" @click="openCheckout">
-                <img src="/Graphics/CartCheckout/security.svg" alt="" />Checkout
+                <NuxtImg
+                  src="/Graphics/CartCheckout/security.svg"
+                  alt=""
+                />Checkout
               </button>
             </div>
           </div>
@@ -93,22 +96,28 @@
           <div class="checkout-container">
             <!-- Left: Express Checkout Section with Logo -->
             <div class="checkout-left">
-              <h3 class="express-label">Express Checkout</h3>
-              <div class="express-checkout-wrapper">
-                <div class="express-buttons-container">
-                  <div class="express-button paypal">
-                    <EcommerceExpressCheckoutPaypalCheckout
-                      :totalAmount="totalPrice"
-                      @orderCompleted="handleOrderCompleted"
-                    />
+              <div class="left-wrapper">
+                <h3 class="express-label">Express Checkout</h3>
+                <div class="express-checkout-wrapper">
+                  <div class="express-buttons-container">
+                    <div class="express-button paypal">
+                      <EcommerceExpressCheckoutPaypalCheckout
+                        :totalAmount="totalPrice"
+                        @orderCompleted="handleOrderCompleted"
+                      />
+                    </div>
+                    <div class="express-button">
+                      <EcommerceExpressCheckoutAmazonPay
+                        :totalAmount="totalPrice"
+                        @orderCompleted="handleOrderCompleted"
+                      />
+                    </div>
+                    <div class="checkout-divider">
+                      <span>Or pay with</span>
+                    </div>
+                    <EcommerceCheckoutFormCheckout />
+                    <!-- Add additional payment method components as needed -->
                   </div>
-                  <div class="express-button">
-                    <EcommerceExpressCheckoutAmazonPay
-                      :totalAmount="totalPrice"
-                      @orderCompleted="handleOrderCompleted"
-                    />
-                  </div>
-                  <!-- Add additional payment method components as needed -->
                 </div>
               </div>
             </div>
@@ -118,56 +127,60 @@
 
             <!-- Right: Order Summary (identical styling to the cart) -->
             <div class="checkout-right">
-              <div class="order-summary">
-                <h2>Order Summary</h2>
-                <div class="summary-items">
-                  <div
-                    v-for="(item, index) in activeCart"
-                    :key="item._id + (item.variantId || '')"
-                    class="order-summary-item"
-                  >
-                    <NuxtImg
-                      :src="resolvedItemImg(item.image)"
-                      alt="item image"
-                      class="item-image"
-                    />
-                    <div class="item-details">
-                      <p class="item-name">{{ item.name }}</p>
-                      <p class="item-price">
-                        <span v-if="item.originalPrice" class="original-price">
-                          ${{ item.originalPrice.toFixed(2) }}
-                        </span>
-                        <span class="current-price">
-                          ${{ item.price.toFixed(2) }}
-                        </span>
-                      </p>
-                      <div v-if="item.variantId" class="variant-details">
-                        <p v-if="item.color">Color: {{ item.color }}</p>
-                        <p v-if="item.size">Size: {{ item.size }}</p>
+              <div class="right-wrapper">
+                <div class="order-summary">
+                  <div class="summary-items">
+                    <div
+                      v-for="(item, index) in activeCart"
+                      :key="item._id + (item.variantId || '')"
+                      class="order-summary-item"
+                    >
+                      <NuxtImg
+                        :src="resolvedItemImg(item.image)"
+                        alt="item image"
+                        class="item-image"
+                      />
+                      <div class="item-details">
+                        <p class="item-name">{{ item.name }}</p>
+                        <p class="item-price">
+                          <span
+                            v-if="item.originalPrice"
+                            class="original-price"
+                          >
+                            ${{ item.originalPrice.toFixed(2) }}
+                          </span>
+                          <span class="current-price">
+                            ${{ item.price.toFixed(2) }}
+                          </span>
+                        </p>
+                        <div v-if="item.variantId" class="variant-details">
+                          <p v-if="item.color">Color: {{ item.color }}</p>
+                          <p v-if="item.size">Size: {{ item.size }}</p>
+                        </div>
+                        <p class="quantity">Qty: {{ item.quantity }}</p>
                       </div>
-                      <p class="quantity">Qty: {{ item.quantity }}</p>
                     </div>
                   </div>
-                </div>
-                <hr class="summary-divider" />
-                <div class="summary-totals">
-                  <div class="cart-total">
-                    <div>
+                  <hr class="summary-divider" />
+                  <div class="summary-totals">
+                    <div class="cart-subtotal">
                       <p class="subtotal-text">Subtotal</p>
+                      <p class="subtotal-text">${{ subtotal.toFixed(2) }}</p>
                     </div>
-                    <p class="subtotal-text">${{ subtotal.toFixed(2) }}</p>
-                  </div>
-                  <div class="cart-total">
-                    <div>
-                      <p class="subtotal-text">Tax</p>
+                    <div class="cart-subtotal">
+                      <p class="subtotal-text">Shipping</p>
+                      <p class="subtotal-text">FREE</p>
                     </div>
-                    <p class="subtotal-text">${{ tax.toFixed(2) }}</p>
-                  </div>
-                  <div class="cart-total">
-                    <div class="total-text">
-                      <p>Total</p>
+                    <div class="cart-subtotal">
+                      <p class="subtotal-text">Estimated Taxes</p>
+                      <p class="subtotal-text">${{ tax.toFixed(2) }}</p>
                     </div>
-                    <p>${{ totalPrice.toFixed(2) }}</p>
+                    <div class="cart-total">
+                      <div class="total-text">
+                        <p>Total</p>
+                      </div>
+                      <p>${{ totalPrice.toFixed(2) }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -481,20 +494,34 @@ async function handleOrderCompleted(orderData) {
   font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 0rem;
+  margin-top: 0rem;
 }
+
+.cart-subtotal {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.total-text {
+}
+
 .total-text span {
   color: #636363;
   font-weight: lighter;
   font-size: 0.9rem;
 }
 .subtotal-text {
-  color: #636363;
+  color: black;
   font-weight: lighter;
   font-size: 0.9rem;
 }
 .cart-actions {
   display: flex;
   gap: 1rem;
+  margin-top: 1rem;
   justify-content: space-between;
 }
 .view-cart {
@@ -543,56 +570,70 @@ async function handleOrderCompleted(orderData) {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
 }
 .checkout-container {
   display: flex;
-  flex: 1;
-  max-width: 1300px;
+  width: 100%;
+  height: 100%;
   justify-content: center;
-  /* align-items: flex-start; */
-  /* min-width: 100vw; */
 }
 
 /* Remove border-right from checkout-left */
 .checkout-left {
-  padding: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
   /* overflow-y: auto; */
+}
+
+.left-wrapper {
+  padding: 3rem 3rem 1rem 1rem;
+  width: 100%;
+  max-width: 550px;
 }
 
 /* Divider element */
 .checkout-divider {
   width: 1px;
   background-color: #ddd;
-  margin: 0 2rem;
+  margin: 0 0rem;
   align-self: stretch;
 }
 
 /* Sticky Order Summary in checkout-right */
 .checkout-right {
-  padding: 1rem;
   position: sticky;
   top: 0;
   align-self: flex-start;
+  display: flex;
+  width: 100%;
+  background: #f5f5f5;
+  height: 100%;
+}
+
+.right-wrapper {
+  padding: 3rem 1rem 1rem 3rem;
+  max-width: 550px;
   width: 100%;
 }
 
 /* New Checkout Left Styles */
 .checkout-logo {
   text-align: center;
-  margin-bottom: 1rem;
   border-bottom: 1px solid #ddd;
-  padding-bottom: 1rem;
   width: 100%;
 }
 .checkout-logo img {
-  max-width: 150px;
+  max-width: 200px;
 }
 .express-label {
   text-align: center;
-  font-size: 1.2rem;
-  margin: 1rem 0;
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+  font-weight: lighter;
+  color: rgba(0, 0, 0, 0.7);
 }
 .express-checkout-wrapper {
   margin: 0 auto;
@@ -608,12 +649,6 @@ async function handleOrderCompleted(orderData) {
 }
 
 /* Order Summary Styles */
-.order-summary {
-  padding: 1rem;
-}
-.order-summary h2 {
-  margin-bottom: 1rem;
-}
 .summary-items {
   margin-bottom: 1rem;
 }
@@ -633,10 +668,7 @@ async function handleOrderCompleted(orderData) {
   border-top: 1px solid #ddd;
   margin: 1rem 0;
 }
-.summary-totals p {
-  font-size: 1.2rem;
-  margin: 0.5rem 0;
-}
+
 .summary-totals .total {
   margin-top: 0.5rem;
 }
@@ -646,18 +678,50 @@ async function handleOrderCompleted(orderData) {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 .express-button {
-  width: 150px;
+  width: 100%;
   min-height: 1rem;
 }
-.express-button.paypal {
-  width: 300px;
+
+.checkout-divider {
+  display: flex;
+  align-items: center;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.checkout-divider span {
+  flex: 1;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  line-height: 0.1rem;
+  margin: 0 1rem;
+}
+
+.checkout-divider span::before,
+.checkout-divider span::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 /* Responsive Mobile Styles */
+@media (max-width: 1024px) {
+  .cart-wrapper {
+    width: 55%;
+  }
+
+  .item-image {
+    width: 125px;
+    height: 125px;
+  }
+}
+
 @media (max-width: 768px) {
   .overlay {
     flex-direction: column;
