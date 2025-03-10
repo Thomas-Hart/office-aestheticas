@@ -147,7 +147,7 @@ async function renderAmazonPayButton() {
         ledgerCurrency: ledgerCurrency,
         checkoutLanguage: "en_US",
         productType: "PayAndShip",
-        placement: "Cart",
+        placement: "Checkout",
         buttonColor: "Gold",
         estimatedOrderAmount: {
           amount: props.totalAmount.toFixed(2),

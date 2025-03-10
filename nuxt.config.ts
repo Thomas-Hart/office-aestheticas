@@ -17,15 +17,12 @@ export default defineNuxtConfig({
     '/item/**': { ssr: true },
     '/affiliate/**': { ssr: true },
     '/bundle/**': { ssr: true },
+    '/review/**': { ssr: true },
     '/order/**': { ssr: true },
   },
   devtools: { enabled: true },
 
   nitro: {
-    prerender: {
-      routes: ['/'],
-      crawlLinks: true, // Automatically discover links to prerender
-    },
     compressPublicAssets: true, // This enables compression for public assets
     // middleware: ['~/server/middleware/compression.js'], // Add custom middleware for compression
   },

@@ -106,18 +106,21 @@
                         @orderCompleted="handleOrderCompleted"
                       />
                     </div>
-                    <div class="express-button">
+                    <!-- <div class="express-button">
                       <EcommerceExpressCheckoutAmazonPay
                         :totalAmount="totalPrice"
                         @orderCompleted="handleOrderCompleted"
                       />
-                    </div>
+                    </div> -->
                     <div class="payment-divider">
                       <span>Or Pay With</span>
                     </div>
                     <h3 class="express-label">Manual Checkout</h3>
 
-                    <EcommerceCheckoutFormCheckout />
+                    <EcommerceCheckoutFormCheckout
+                      :totalAmount="totalPrice"
+                      @orderCompleted="handleOrderCompleted"
+                    />
                     <!-- Add additional payment method components as needed -->
                   </div>
                 </div>
@@ -686,13 +689,14 @@ async function handleOrderCompleted(orderData) {
 }
 .order-summary-item {
   display: flex;
+  min-width: 100%;
   margin-bottom: 1rem;
 }
 .summary-item-count {
   position: relative;
 }
 .order-summary-item .item-details {
-  width: 60%;
+  width: 100%;
 }
 .quantity {
   font-size: 0.9rem;

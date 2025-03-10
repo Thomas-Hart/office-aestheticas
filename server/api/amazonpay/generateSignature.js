@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
     const config = {
       publicKeyId: runtimeConfig.AMAZON_PAY_PUBLIC_KEY_ID,
-      privateKey: fs.readFileSync(process.env.AMAZON_PAY_PRIVATE_KEY_PATH),
+      privateKey: fs.readFileSync(process.env.private.AMAZON_PAY_PRIVATE_KEY_PATH),
       region: runtimeConfig.AMAZON_PAY_REGION || 'US',
       sandbox: runtimeConfig.AMAZON_PAY_SANDBOX !== 'false',
       algorithm: 'AMZN-PAY-RSASSA-PSS-V2',
@@ -33,6 +33,6 @@ export default defineEventHandler(async (event) => {
     return { signature };
   } catch (error) {
     console.error('Error generating signature:', error);
-    return { error: 'Error generating signature' };
+    return { error: `Error generating signature: ${error.message}` };
   }
 });

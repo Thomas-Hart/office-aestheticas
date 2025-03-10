@@ -276,8 +276,9 @@ onMounted(() => {
 }
 
 .btn {
-  font-family: "Lora", "Source Sans Pro", serif;
+  font-family: "Source Sans Pro", serif;
   font-size: 1.3rem;
+  font-weight: bold;
   padding: 10px 48px;
   min-width: 180px;
   border: none;

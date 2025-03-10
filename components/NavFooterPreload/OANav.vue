@@ -57,8 +57,13 @@ const { $klaviyo } = useNuxtApp();
 watch(
   () => itemStore.getCartItemCount(),
   (newVal, oldVal) => {
-    if (newVal > oldVal) {
-      openCart();
+    console.log("New Value item store:" + newVal);
+    console.log("Old Value:" + oldVal);
+    if (newVal == 1 || newVal > oldVal) {
+      if (isLoggedIn) {
+        console.log("Was not logged in on cart value change...");
+        openCart();
+      }
     }
   }
 );
@@ -66,8 +71,13 @@ watch(
 watch(
   () => userStore.getCartItemCount(),
   (newVal, oldVal) => {
-    if (newVal > oldVal) {
-      openCart();
+    console.log("New Value user store:" + newVal);
+    console.log("Old Value:" + oldVal);
+    if (newVal == 1 || newVal > oldVal) {
+      if (isLoggedIn) {
+        console.log("Was logged in on cart value change...");
+        openCart();
+      }
     }
   }
 );

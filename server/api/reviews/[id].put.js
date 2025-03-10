@@ -9,33 +9,45 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event); // Extract the request body
     const reviewId = event.context.params.id; // Get the review ID from the URL parameters
 
-    // Find the review by ID
-    const review = await Review.findById(reviewId);
-    if (!review) {
+    // Build an update object with only the allowed fields
+    const updateFields = {};
+    if (typeof body.rating !== 'undefined') {
+      updateFields.rating = body.rating;
+    }
+    if (typeof body.comment !== 'undefined') {
+      updateFields.comment = body.comment;
+    }
+    if (typeof body.tags !== 'undefined') {
+      updateFields.tags = body.tags;
+    }
+    // You can add any other allowed fields here
+
+    // Use findByIdAndUpdate with runValidators and return the new document
+    const updatedReview = await Review.findByIdAndUpdate(
+      reviewId,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    );
+    if (!updatedReview) {
       throw createError({ statusCode: 404, message: 'Review not found' });
     }
 
-    // Update the review with new data
-    Object.assign(review, body);
-    await review.save();
-
-    // Optionally, you can update the average rating of the associated item
-    if (review.itemId) {
-      const reviews = await Review.find({ itemId: review.itemId });
+    // Optionally update the associated item's rating and review count
+    if (updatedReview.itemId) {
+      const reviews = await Review.find({ itemId: updatedReview.itemId });
       const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
       const averageRating = (totalRating / reviews.length).toFixed(1);
-
-      // Update the item's average rating and review count
-      await Item.findByIdAndUpdate(review.itemId, {
+      await Item.findByIdAndUpdate(updatedReview.itemId, {
         ratings: parseFloat(averageRating),
         reviewCount: reviews.length,
       });
     }
 
     await disconnectDB(); // Disconnect from DB
-    return review; // Return the updated review
+    return updatedReview; // Return the updated review
   } catch (error) {
     console.error('Error in PUT /api/reviews/:id:', error);
-    throw createError({ statusCode: 500, message: 'Server Error' });
+    await disconnectDB();
+    throw createError({ statusCode: 500, message: error.message || 'Server Error' });
   }
 });
