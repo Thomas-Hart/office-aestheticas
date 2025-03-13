@@ -54,33 +54,27 @@ const { $fbq } = useNuxtApp();
 const { $klaviyo } = useNuxtApp();
 
 // Watch cart item count to trigger pointer animation from 0 -> 1
-watch(
-  () => itemStore.getCartItemCount(),
-  (newVal, oldVal) => {
-    console.log("New Value item store:" + newVal);
-    console.log("Old Value:" + oldVal);
-    if (newVal == 1 || newVal > oldVal) {
-      if (isLoggedIn) {
-        console.log("Was not logged in on cart value change...");
+if (isLoggedIn.value) {
+  // For logged in users, watch the userStore cart count
+  watch(
+    () => userStore.getCartItemCount(),
+    (newVal, oldVal) => {
+      if (newVal > oldVal) {
         openCart();
       }
     }
-  }
-);
-
-watch(
-  () => userStore.getCartItemCount(),
-  (newVal, oldVal) => {
-    console.log("New Value user store:" + newVal);
-    console.log("Old Value:" + oldVal);
-    if (newVal == 1 || newVal > oldVal) {
-      if (isLoggedIn) {
-        console.log("Was logged in on cart value change...");
+  );
+} else {
+  // For guest users, watch the itemStore cart count
+  watch(
+    () => itemStore.getCartItemCount(),
+    (newVal, oldVal) => {
+      if (newVal > oldVal) {
         openCart();
       }
     }
-  }
-);
+  );
+}
 
 function openCart() {
   console.log("Opening cart...");

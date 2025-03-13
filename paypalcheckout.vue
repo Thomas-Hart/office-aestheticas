@@ -24,7 +24,7 @@ const taxPatched = ref(false);
 
 function normalizeOrder(paypalOrder) {
   return {
-    orderId: paypalOrder.id,
+    invoiceNumber: paypalOrder.id,
     paymentMethod: "PAYPAL",
     orderDate: new Date().toISOString(),
     totalCost: parseFloat(paypalOrder.purchase_units[0].amount.value),

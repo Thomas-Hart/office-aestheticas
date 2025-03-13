@@ -16,10 +16,8 @@ export default defineEventHandler(async (event) => {
 
     const itemIds = cartItems.map((item) => item._id);
     if (itemIds.length === 0) {
-      throw createError({
-        statusCode: 400,
-        message: "No items provided in the cart.",
-      });
+      const zero = 0;
+      return zero.toFixed(2);
     }
 
     // Fetch the items from the database. These are the main items.

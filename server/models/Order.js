@@ -71,6 +71,7 @@ const OrderSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: ['Pending', 'Shipped', 'Delivered', 'Cancelled'],
+    default: 'Pending',
   },
   totalCost: { type: Number, required: true },
   itemizedList: {

@@ -1,6 +1,7 @@
 <template>
+  <!-- Add a conditional class on the overlay so when in checkout mode it has no padding -->
   <transition name="collapse-right">
-    <div class="overlay" v-if="activeCart.length > 0">
+    <div class="overlay" :class="{ 'full-screen-checkout': showCheckout }">
       <!-- Nav Cart View -->
       <template v-if="!showCheckout">
         <div class="cart-wrapper">
@@ -15,30 +16,30 @@
           </div>
 
           <!-- Scrollable Cart Items -->
-          <div class="cart-items">
+          <div class="cart-items" v-if="activeCart.length > 0">
             <div
               v-for="(item, index) in activeCart"
               :key="item._id + (item.variantId || '')"
               class="cart-item"
             >
               <NuxtImg
-                :src="resolvedItemImg(item.image)"
+                :src="`/ItemPics/${item.image}`"
                 alt="item image"
                 class="item-image"
               />
               <div class="item-details">
                 <p class="item-name">{{ item.name }}</p>
                 <p class="item-price">
-                  <span v-if="item.originalPrice" class="original-price">
-                    ${{ item.originalPrice.toFixed(2) }}
-                  </span>
                   <span class="current-price">
                     ${{ item.price.toFixed(2) }}
+                  </span>
+                  <span v-if="item.originalPrice" class="original-price">
+                    ${{ item.originalPrice.toFixed(2) }}
                   </span>
                 </p>
                 <!-- Variant details if available -->
                 <div v-if="item.variantId" class="variant-details">
-                  <p v-if="item.color">Color: {{ item.color }}</p>
+                  <p v-if="item.color">Color: {{ item.color.name }}</p>
                   <p v-if="item.size">Size: {{ item.size }}</p>
                 </div>
               </div>
@@ -58,6 +59,14 @@
                 </button>
               </div>
             </div>
+          </div>
+          <div v-else class="empty-cart">
+            <NuxtImg
+              src="/Logos/OALogo.svg"
+              alt="Empty Cart"
+              class="empty-graphic"
+            />
+            <p class="empty-message">Your cart is currently empty...</p>
           </div>
 
           <!-- Cart Total and Actions -->
@@ -91,10 +100,11 @@
       <template v-else>
         <div class="checkout-panel-full">
           <div class="checkout-logo">
-            <img src="/Logos/OAName.svg" alt="Office Aestheticas Logo" />
+            <NuxtImg src="/Logos/OAName.svg" alt="Office Aestheticas Logo" />
           </div>
+          <!-- The container below is set to flex and will ensure both columns match heights -->
           <div class="checkout-container">
-            <!-- Left: Express Checkout Section with Logo -->
+            <!-- Left: Express Checkout Section -->
             <div class="checkout-left">
               <div class="left-wrapper">
                 <h3 class="express-label">Express Checkout</h3>
@@ -106,22 +116,17 @@
                         @orderCompleted="handleOrderCompleted"
                       />
                     </div>
-                    <!-- <div class="express-button">
-                      <EcommerceExpressCheckoutAmazonPay
-                        :totalAmount="totalPrice"
-                        @orderCompleted="handleOrderCompleted"
-                      />
-                    </div> -->
-                    <div class="payment-divider">
-                      <span>Or Pay With</span>
-                    </div>
-                    <h3 class="express-label">Manual Checkout</h3>
-
-                    <EcommerceCheckoutFormCheckout
+                    <!-- Additional express checkout methods can be added here -->
+                  </div>
+                  <div class="payment-divider">
+                    <span>OR</span>
+                  </div>
+                  <div class="manual-checkout-wrapper">
+                    <EcommerceCheckoutForm
                       :totalAmount="totalPrice"
+                      :cartItems="activeCart"
                       @orderCompleted="handleOrderCompleted"
                     />
-                    <!-- Add additional payment method components as needed -->
                   </div>
                 </div>
               </div>
@@ -130,7 +135,7 @@
             <!-- Divider between checkout left and checkout right -->
             <div class="checkout-divider"></div>
 
-            <!-- Right: Order Summary (identical styling to the cart) -->
+            <!-- Right: Order Summary Section -->
             <div class="checkout-right">
               <div class="right-wrapper">
                 <div class="order-summary">
@@ -150,22 +155,21 @@
                           {{ item.quantity }}
                         </div>
                       </div>
-
                       <div class="item-details">
                         <p class="item-name">{{ item.name }}</p>
                         <p class="item-price">
+                          <span class="subtotal-text">
+                            ${{ item.price.toFixed(2) }}
+                          </span>
                           <span
                             v-if="item.originalPrice"
                             class="original-price"
                           >
                             ${{ item.originalPrice.toFixed(2) }}
                           </span>
-                          <span class="subtotal-text">
-                            ${{ item.price.toFixed(2) }}
-                          </span>
                         </p>
                         <div v-if="item.variantId" class="variant-details">
-                          <p v-if="item.color">Color: {{ item.color }}</p>
+                          <p v-if="item.color">Color: {{ item.color.name }}</p>
                           <p v-if="item.size">Size: {{ item.size }}</p>
                         </div>
                       </div>
@@ -209,6 +213,7 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 const userStore = useUserStore();
 const itemStore = useItemStore();
 const emit = defineEmits(["close-cart"]);
@@ -246,7 +251,16 @@ async function fetchCartTotal() {
   }
 }
 
-onMounted(fetchCartTotal);
+onMounted(() => {
+  fetchCartTotal();
+  // Disable background scroll when mounted
+  document.body.style.overflow = "hidden";
+});
+onUnmounted(() => {
+  // Restore scroll when the component is unmounted
+  document.body.style.overflow = "";
+});
+
 watch(activeCart, fetchCartTotal, { deep: true });
 
 const resolvedItemImg = (img) => `/ItemPics/${img}`;
@@ -309,9 +323,15 @@ const tax = computed(() => subtotal.value * taxRate);
 
 // Handle order completion (console.log statements preserved)
 async function handleOrderCompleted(orderData) {
+  if (isLoggedIn.value) {
+    orderData.userId = userStore.user._id;
+  } else {
+    orderData.userId = null; // Placeholder for anonymous orders. Replace with user._id if available.
+  }
+
   console.log("Order Completed:", JSON.stringify(orderData));
   try {
-    const savedOrder = await $fetch("/api/tax", {
+    const savedOrder = await $fetch("/api/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: orderData,
@@ -380,8 +400,12 @@ async function handleOrderCompleted(orderData) {
   justify-content: flex-end;
   align-items: center;
 }
+/* When checkout is active, remove the overlay padding so the checkout fills the screen */
+.overlay.full-screen-checkout {
+  padding: 0;
+}
 
-/* Nav Cart Styles (unchanged from your original) */
+/* Nav Cart Styles (unchanged) */
 .cart-wrapper {
   width: 40%;
   max-width: 100%;
@@ -391,11 +415,12 @@ async function handleOrderCompleted(orderData) {
   box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  /* overflow: hidden; */
   font-family: "Montserrat", sans-serif;
   line-height: 1.4;
   position: relative;
   z-index: 2;
+  justify-content: space-between;
 }
 .cart-header {
   display: flex;
@@ -429,7 +454,6 @@ async function handleOrderCompleted(orderData) {
   position: absolute;
   right: 0.5rem;
   top: -0.5rem;
-  margin-left: 0.5rem;
   width: 1.5em;
   height: 1.5rem;
   background: black;
@@ -439,7 +463,6 @@ async function handleOrderCompleted(orderData) {
   justify-content: center;
   align-items: center;
 }
-
 .cart-header .close-button {
   background: none;
   border: none;
@@ -478,24 +501,19 @@ async function handleOrderCompleted(orderData) {
 .item-price .original-price {
   text-decoration: line-through;
   color: #888;
-  margin-right: 0.5rem;
   font-size: 1.1rem;
 }
 .item-price .current-price {
   color: #3f654c;
   font-weight: lighter;
   font-family: "Lora";
+  margin-right: 0.25rem;
 }
 .variant-details p {
   margin: 0;
   font-size: 0.9rem;
   color: #555;
 }
-
-.order-summary-item-total {
-  /* width: 10%; */
-}
-
 .item-actions {
   display: flex;
   flex-direction: column;
@@ -519,6 +537,24 @@ async function handleOrderCompleted(orderData) {
   cursor: pointer;
   text-decoration: underline;
 }
+.empty-cart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: 2rem;
+}
+.empty-graphic {
+  width: 100px;
+  height: auto;
+  margin-bottom: 1rem;
+}
+.empty-message {
+  font-size: 1rem;
+  color: black;
+  font-weight: lighter;
+}
 .cart-bottom {
   border-top: 1px solid black;
   padding-top: 1rem;
@@ -528,10 +564,7 @@ async function handleOrderCompleted(orderData) {
   justify-content: space-between;
   font-size: 1.2rem;
   font-weight: bold;
-  margin-bottom: 0rem;
-  margin-top: 0rem;
 }
-
 .cart-subtotal {
   display: flex;
   justify-content: space-between;
@@ -539,10 +572,6 @@ async function handleOrderCompleted(orderData) {
   font-weight: bold;
   margin-bottom: 0.5rem;
 }
-
-.total-text {
-}
-
 .total-text span {
   color: #636363;
   font-weight: lighter;
@@ -596,65 +625,16 @@ async function handleOrderCompleted(orderData) {
   height: 1.5rem;
 }
 
-/* Checkout Panel Styles */
+/* Checkout Panel Styles for full-screen checkout */
 .checkout-panel-full {
-  width: 100%;
-  height: 100%;
   background: #fff;
   position: relative;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-}
-.checkout-container {
-  display: flex;
+  /* Make checkout fill the full screen */
+  height: 100vh;
   width: 100%;
-  height: 100%;
-  justify-content: center;
+  overflow-y: auto;
 }
-
-/* Remove border-right from checkout-left */
-.checkout-left {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  /* overflow-y: auto; */
-}
-
-.left-wrapper {
-  padding: 3rem 3rem 1rem 1rem;
-  width: 100%;
-  max-width: 550px;
-}
-
-/* Divider element */
-.checkout-divider {
-  width: 1px;
-  background-color: #ddd;
-  margin: 0 0rem;
-  align-self: stretch;
-}
-
-/* Sticky Order Summary in checkout-right */
-.checkout-right {
-  position: sticky;
-  top: 0;
-  align-self: flex-start;
-  display: flex;
-  width: 100%;
-  background: #f5f5f5;
-  height: 100%;
-}
-
-.right-wrapper {
-  padding: 3rem 1rem 1rem 3rem;
-  max-width: 550px;
-  width: 100%;
-}
-
-/* New Checkout Left Styles */
 .checkout-logo {
   text-align: center;
   border-bottom: 1px solid #ddd;
@@ -662,6 +642,51 @@ async function handleOrderCompleted(orderData) {
 }
 .checkout-logo img {
   max-width: 200px;
+}
+
+/* The checkout container uses flex to line up the left and right sections */
+.checkout-container {
+  display: flex;
+  min-height: 100%;
+  height: auto;
+  /* overflow-y: hidden; */
+}
+/* Left section: sticky and full viewport height */
+.checkout-left {
+  flex: 1;
+  position: sticky;
+  top: 0;
+  min-height: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+.left-wrapper {
+  padding: 2rem 3rem 1rem 1rem;
+  width: 100%;
+  max-width: 550px;
+}
+/* Divider between sections */
+.checkout-divider {
+  width: 1px;
+  background-color: #ddd;
+  align-self: stretch;
+}
+/* Right section: sticky and full viewport height */
+.checkout-right {
+  flex: 1;
+
+  /* min-height: 90vh; */
+  min-height: 100%;
+  padding-bottom: 5rem;
+  background: #f5f5f5;
+}
+.right-wrapper {
+  padding: 2rem 1rem 1rem 3rem;
+  max-width: 550px;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  /* Removed individual overflow as scrolling is on checkout-right */
 }
 .express-label {
   text-align: center;
@@ -689,7 +714,7 @@ async function handleOrderCompleted(orderData) {
 }
 .order-summary-item {
   display: flex;
-  min-width: 100%;
+  width: 100%;
   margin-bottom: 1rem;
 }
 .summary-item-count {
@@ -698,21 +723,13 @@ async function handleOrderCompleted(orderData) {
 .order-summary-item .item-details {
   width: 100%;
 }
-.quantity {
-  font-size: 0.9rem;
-  color: #555;
-}
 .summary-divider {
   border: none;
   border-top: 1px solid #ddd;
   margin: 1rem 0;
 }
 
-.summary-totals .total {
-  margin-top: 0.5rem;
-}
-
-/* Express Checkout Buttons: list in a row with fixed width */
+/* Express Checkout Buttons */
 .express-buttons-container {
   display: flex;
   flex-direction: row;
@@ -724,27 +741,23 @@ async function handleOrderCompleted(orderData) {
   width: 100%;
   min-height: 1rem;
 }
-
 .payment-divider {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 2rem 0;
-  text-align: center;
+  margin: 2rem 0 1rem 0;
   width: 100%;
   border-top: 1px solid rgba(0, 0, 0, 0.7);
   position: relative;
 }
-
 .payment-divider span {
   position: absolute;
   color: rgba(0, 0, 0, 0.7);
-  font-size: 1rem;
   font-size: 0.9rem;
   font-weight: lighter;
-  margin: 0 auto;
   background: white;
-  width: 6rem;
+  width: 3rem;
+  text-align: center;
 }
 
 /* Responsive Mobile Styles */
@@ -752,13 +765,11 @@ async function handleOrderCompleted(orderData) {
   .cart-wrapper {
     width: 55%;
   }
-
   .item-image {
     width: 125px;
     height: 125px;
   }
 }
-
 @media (max-width: 768px) {
   .overlay {
     flex-direction: column;
@@ -767,7 +778,6 @@ async function handleOrderCompleted(orderData) {
     padding: 0;
     width: 100%;
     height: 100%;
-    margin: 0;
   }
   .cart-wrapper,
   .checkout-panel-full {
@@ -780,7 +790,6 @@ async function handleOrderCompleted(orderData) {
   .checkout-right {
     padding: 1rem;
   }
-
   .cart-actions {
     gap: 0rem;
   }

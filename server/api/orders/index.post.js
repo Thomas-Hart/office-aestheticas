@@ -12,12 +12,14 @@ export default defineEventHandler(async (event) => {
     // Prepare order data
     body._id = null;
     const order = new Order(body);
-    await order.save();
+    await order.save(); // Save to my own database
 
     // Extract necessary data for integrations
     const { email, total, items } = body;
-    const orderId = order._id.toString();
+    const orderId = order._id;
     const timestamp = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+
+    // Send to taxCloud as well?
 
     // 1. Klaviyo Server-Side API - Track "Placed Order" event
     await fetch(`https://a.klaviyo.com/api/v1/track`, {

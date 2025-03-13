@@ -167,7 +167,7 @@ if (cartItem.variantId) {
       name: correspondingItem.name,
       price: selectedVariant.price,
       originalPrice: selectedVariant.oldPrice || correspondingItem.oldPrice, // NEW
-      image: selectedVariant.image,
+      image: selectedVariant.image || correspondingItem.image,
       variantId: selectedVariant._id,
       color: selectedVariant.color,
       size: selectedVariant.size,

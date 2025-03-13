@@ -60,7 +60,6 @@ const toggleCartVisibility = () => {
 // Toggle mobile nav
 function toggleMobileNav() {
   showMobileNav.value = !showMobileNav.value;
-  // Prevent scrolling in background when nav is open
   document.body.classList.toggle("no-scroll", showMobileNav.value);
 }
 
@@ -69,7 +68,7 @@ function closeMobileNav() {
   document.body.classList.remove("no-scroll");
 }
 
-// Login modal
+// Login modal functions
 function openLoginModal() {
   showLoginModal.value = true;
   document.body.classList.add("no-scroll");
@@ -99,6 +98,7 @@ onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });
 </script>
+
 
 <style scoped>
 /* Nav Bar Styles */

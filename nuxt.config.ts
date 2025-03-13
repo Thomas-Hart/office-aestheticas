@@ -43,7 +43,7 @@ export default defineNuxtConfig({
   googleFonts: {
     families: {
       // Specify each family and the variations you want to load
-      'Source+Sans+Pro': [400, 500, 700], // Loads only the specified weights
+      'Source+Sans+Pro': [400, 600, 700], // Loads only the specified weights
       'Montserrat': [400, 700], // Loads only the specified weights
       'Poppins': [400, 700], // Loads only the specified weights
       'Lora': [400, 700], // Add Lora with the specified weights
@@ -66,33 +66,45 @@ export default defineNuxtConfig({
 
   runtimeConfig: {    
     // Public keys that are exposed to the client
-    // Database
+    
     private: {
+      // Database
       DB_URI: process.env.DB_URI,
 
-    // Google Sign In
-    JWT_SECRET: process.env.JWT_SECRET,
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    GOOGLE_LOGIN_URI: process.env.GOOGLE_LOGIN_URI,
-    GOOGLE_LOGIN_URI_TEST: process.env.GOOGLE_LOGIN_URI_TEST,
+      // USPS
+      USPS_CLIENT_SECRET: process.env.USPS_CLIENT_SECRET,
 
-    // AWS
-    NUXT_AWS_ACCESS_KEY: process.env.NUXT_AWS_ACCESS_KEY,
-    NUXT_AWS_SECRET_KEY: process.env.NUXT_AWS_SECRET_KEY,
-    NUXT_AWS_REGION: process.env.NUXT_AWS_REGION,
-    NUXT_S3_BUCKET: process.env.NUXT_S3_BUCKET,
+      // Google Sign In
+      JWT_SECRET: process.env.JWT_SECRET,
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+      GOOGLE_LOGIN_URI: process.env.GOOGLE_LOGIN_URI,
+      GOOGLE_LOGIN_URI_TEST: process.env.GOOGLE_LOGIN_URI_TEST,
 
-    // Amazon Pay
-    AMAZON_PAY_CLIENT_SECRET: process.env.AMAZON_PAY_CLIENT_SECRET,
-    AMAZON_PAY_PRIVATE_KEY_PATH: process.env.AMAZON_PAY_PRIVATE_KEY_PATH,
+      // AWS
+      NUXT_AWS_ACCESS_KEY: process.env.NUXT_AWS_ACCESS_KEY,
+      NUXT_AWS_SECRET_KEY: process.env.NUXT_AWS_SECRET_KEY,
+      NUXT_AWS_REGION: process.env.NUXT_AWS_REGION,
+      NUXT_S3_BUCKET: process.env.NUXT_S3_BUCKET,
 
-    TEST_KLAVIYO_PRIVATE_KEY: process.env.TEST_KLAVIYO_PRIAVTE_KEY,
-    META_ACCESS_TOKEN: process.env.META_ACCESS_TOKEN,
+      // Amazon Pay
+      AMAZON_PAY_CLIENT_SECRET: process.env.AMAZON_PAY_CLIENT_SECRET,
+      AMAZON_PAY_PRIVATE_KEY_PATH: process.env.AMAZON_PAY_PRIVATE_KEY_PATH,
+
+      // Klaviyo
+      TEST_KLAVIYO_PRIVATE_KEY: process.env.TEST_KLAVIYO_PRIAVTE_KEY,
+      META_ACCESS_TOKEN: process.env.META_ACCESS_TOKEN,
+
+      // Square Payment
+      SQUARE_SANDBOX_ACCESS_TOKEN: process.env.SQUARE_SANDBOX_ACCESS_TOKEN,
+      SQUARE_ACCESS_TOKEN: process.env.SQUARE_ACCESS_TOKEN,
     },
     
-      
     public: {
+      // USPS
+      USPS_USER_ID: process.env.USPS_USER_ID,
+      USPS_CLIENT_ID: process.env.USPS_CLIENT_ID,
+
       // Amazon Pay
       AMAZON_PAY_CHECKOUT_RETURN_URL: process.env.AMAZON_PAY_CHECKOUT_RETURN_URL,
       AMAZON_PAY_SELLER_ID: process.env.AMAZON_PAY_SELLER_ID,    // Also Merchant ID
@@ -106,8 +118,13 @@ export default defineNuxtConfig({
       KLAVIYO_PUBLIC_KEY: process.env.KLAVIYO_PUBLIC_KEY,
       KLAVIYO_WAITLIST_ID: process.env.KLAVIYO_WAITLIST_ID,
 
-      // META PIXEL
-      META_PIXEL_ID: process.env.META_PIXEL_ID
+      // Meta Pixel
+      META_PIXEL_ID: process.env.META_PIXEL_ID,
+
+      // Square Payment
+      SQUARE_LOCATION_ID: process.env.SQUARE_LOCATION_ID,
+      TEST_SQUARE_APP_ID: process.env.TEST_SQUARE_APP_ID,
+      SQUARE_APP_ID: process.env.SQUARE_APP_ID,
     }
   },
 

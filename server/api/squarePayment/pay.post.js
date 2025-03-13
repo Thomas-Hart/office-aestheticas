@@ -1,9 +1,10 @@
 import { randomUUID } from 'crypto';
 import { Client, ApiError } from 'square';
 
+const config = useRuntimeConfig();
 // Configure the Square client
 const client = new Client({
-  accessToken: process.env.SQUARE_ACCESS_TOKEN,
+  accessToken: config.private.SQUARE_ACCESS_TOKEN,
   environment: 'production',
 });
 
@@ -27,20 +28,7 @@ export default defineEventHandler(async (event) => {
     // console.log("Received Request Body:", { locationId, sourceId, cartItems, userLocation });
 
     // Initialize total cost
-    let totalCost = 0;
-
-    // Fetch and accumulate item prices
-    for (const item of cartItems) {
-      if (!item._id || !item.quantity || typeof item.quantity !== "number") {
-        throw new Error(`Invalid cart item format: ${JSON.stringify(item)}`);
-      }
-
-      const price = await getPrice(item._id);
-      const itemCost = price * item.quantity;
-
-      // console.log(`Item ID: ${item._id}, Price: ${price}, Quantity: ${item.quantity}, Item Cost: ${itemCost}`);
-      totalCost += itemCost;
-    }
+    let totalCost = await getCartTotal(cartItems);
 
     console.log(`Total cost before tax: ${totalCost}`);
 
@@ -64,7 +52,7 @@ export default defineEventHandler(async (event) => {
         amount: amountInCents,
         currency: 'USD',
       },
-      statementDescriptionIdentifier: 'National Auto Hub', // Custom statement description identifier
+      statementDescriptionIdentifier: 'Office Aestheticas', // Custom statement description identifier
     };
     console.log("Payment Payload:", paymentPayload);
 
@@ -89,21 +77,17 @@ export default defineEventHandler(async (event) => {
 });
 
 // Helper function to fetch the price of an item
-async function getPrice(itemId) {
+async function getCartTotal(cartItems) {
   // console.log(`Fetching price for item ID: ${itemId}`);
-  
   try {
-    const response = await $fetch(`/api/items?_id=${itemId}`);
-    console.log(`Response for item ID ${itemId}:`, response);
-
-    if (!response || typeof response.price !== 'number') {
-      throw new Error(`Invalid price for item ID ${itemId}`);
-    }
-
-    return response.price;
+    let total = await $fetch("/api/cart/total", {
+      method: "POST",
+      body: { cartItems: cartItems },
+    });
+    console.log("total: ", total);
+    return parseFloat(total);
   } catch (error) {
-    console.error(`Error fetching price for item ID ${itemId}:`, error.message);
-    throw error;
+    console.error("Error fetching cart total:", error);
   }
 }
 
