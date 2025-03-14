@@ -150,9 +150,9 @@ const canScrollUp = computed(() => false);
 const canScrollDown = computed(() => false);
 
 function getStarImages(rating) {
-  const fullStar = "/FullStar.svg";
-  const halfStar = "/HalfStar.svg";
-  const emptyStar = "/EmptyStar.svg";
+  const fullStar = "/Graphics/FullStar.svg";
+  const halfStar = "/Graphics/HalfStar.svg";
+  const emptyStar = "/Graphics/EmptyStar.svg";
   const starImgs = [];
   const roundedRating = Math.round(rating * 2) / 2;
   for (let i = 0; i < 5; i++) {

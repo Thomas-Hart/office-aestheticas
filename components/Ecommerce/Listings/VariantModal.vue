@@ -377,9 +377,9 @@ onMounted(() => {
 
 // --- Basic Info Section ---
 function getStarImages(rating) {
-  const fullStar = "/FullStar.svg";
-  const halfStar = "/HalfStar.svg";
-  const emptyStar = "/EmptyStar.svg";
+  const fullStar = "/Graphics/FullStar.svg";
+  const halfStar = "/Graphics/HalfStar.svg";
+  const emptyStar = "/Graphics/EmptyStar.svg";
   const starImages = [];
   const roundedRating = Math.round(rating * 2) / 2;
   for (let i = 0; i < 5; i++) {

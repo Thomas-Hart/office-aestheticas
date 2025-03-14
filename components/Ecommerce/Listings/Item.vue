@@ -43,15 +43,9 @@
               {{ item.description }}
             </p>
 
-            <!-- Star Rating -->
-            <div class="overlay-rating" v-if="starImages && starImages.length">
-              <img
-                v-for="(star, i) in starImages"
-                :key="i"
-                :src="star"
-                alt="Star"
-                class="star-icon"
-              />
+            <!-- Star Rating (REPLACED) -->
+            <div class="overlay-rating">
+              <SubcomponentsStarRating :rating="item.ratings || 0" />
             </div>
 
             <!-- Buttons -->
@@ -144,27 +138,6 @@ const handleMouseLeave = () => {
 onMounted(() => {
   loading.value = false;
 });
-
-/** Star rating logic */
-function getStarImages(rating) {
-  const fullStar = "/FullStar.svg";
-  const halfStar = "/HalfStar.svg";
-  const emptyStar = "/EmptyStar.svg";
-  const starImages = [];
-
-  const roundedRating = Math.round(rating * 2) / 2;
-  for (let i = 0; i < 5; i++) {
-    if (roundedRating - i >= 1) {
-      starImages.push(fullStar);
-    } else if (roundedRating - i === 0.5) {
-      starImages.push(halfStar);
-    } else {
-      starImages.push(emptyStar);
-    }
-  }
-  return starImages;
-}
-const starImages = computed(() => getStarImages(props.item.ratings || 0));
 
 /** Word-based splitting so lines break only between words */
 const titleWords = computed(() => {
@@ -422,6 +395,7 @@ function trackNavigation(actionType, action = null) {
 /* Star Rating */
 .overlay-rating {
   display: flex;
+  width: 50%;
   gap: 4px;
   margin: 0.5rem 0 1rem 0;
 }
