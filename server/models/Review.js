@@ -1,36 +1,8 @@
 import mongoose from 'mongoose';
 
-const reviewUpdateSchema = new mongoose.Schema({
-  rating: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 5,
-  },
-  comment: {
-    type: String,
-    required: true,
-  },
-  date: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-const businessReplySchema = new mongoose.Schema({
-  businessRep: {
-    type: String,
-    required: true,
-  },
-  comment: {
-    type: String,
-    required: true,
-  },
-  date: {
-    type: Date,
-    default: Date.now,
-  }
-});
+function arrayLimit(val) {
+  return val.length <= 3;
+}
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -39,17 +11,19 @@ const reviewSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    itemName: {
+    reviewerName: {
       type: String,
       required: true,
     },
-    reviewer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+    email: {
+      type: String,
       required: true,
-      index: true,
     },
-    reviewerName: {
+    title: {
+      type: String,
+      required: true,
+    },
+    comment: {
       type: String,
       required: true,
     },
@@ -59,15 +33,19 @@ const reviewSchema = new mongoose.Schema(
       min: 1,
       max: 5,
     },
-    comment: {
-      type: String,
-      required: true,
+    helpful: {
+      thumbsUp: {
+        type: Number,
+        default: 0,
+      },
+      thumbsDown: {
+        type: Number,
+        default: 0,
+      },
     },
-    updates: [reviewUpdateSchema],
-    businessReplies: [businessReplySchema],
-    isPro: {
-      type: Boolean,
-      default: false,
+    photos: {
+      type: [String],
+      validate: [arrayLimit, '{PATH} exceeds the limit of 3'],
     },
     date: {
       type: Date,

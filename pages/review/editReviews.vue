@@ -67,9 +67,9 @@
               <div class="overall-rating">
                 <h2>
                   Overall Rating:
-                  <span v-if="reviews.length"
-                    >{{ overallRating }} ⭐ ({{ reviews.length }} reviews)</span
-                  >
+                  <span v-if="reviews.length">
+                    {{ overallRating }} ⭐ ({{ reviews.length }} reviews)
+                  </span>
                   <span v-else>No reviews yet</span>
                 </h2>
               </div>
@@ -93,15 +93,41 @@
                   </button>
                   <!-- Review Header -->
                   <div class="review-header">
-                    <h3>
-                      {{ review.reviewerName }} - Rating: {{ review.rating }}
-                    </h3>
-                    <small>{{ formatDate(review.date) }}</small>
+                    <h3>{{ review.title }}</h3>
+                    <div class="review-meta">
+                      <span
+                        >By: {{ review.reviewerName }} ({{
+                          review.email
+                        }})</span
+                      >
+                      <span>Rating: {{ review.rating }}</span>
+                      <span>{{ formatDate(review.date) }}</span>
+                    </div>
                   </div>
                   <!-- Review Body -->
                   <div class="review-body">
                     <p>{{ review.comment }}</p>
-                    <!-- Display update logs if available -->
+                    <!-- Photos -->
+                    <div
+                      v-if="review.photos && review.photos.length"
+                      class="review-photos"
+                    >
+                      <h4>Photos</h4>
+                      <div class="photos-container">
+                        <img
+                          v-for="(photo, idx) in review.photos"
+                          :key="idx"
+                          :src="photo"
+                          alt="Review photo"
+                        />
+                      </div>
+                    </div>
+                    <!-- Helpful Counts -->
+                    <div class="review-helpful">
+                      <span>👍 {{ review.helpful?.thumbsUp || 0 }}</span>
+                      <span>👎 {{ review.helpful?.thumbsDown || 0 }}</span>
+                    </div>
+                    <!-- Updates if available -->
                     <div v-if="review.updates && review.updates.length">
                       <h4>Updates</h4>
                       <ul>
@@ -111,25 +137,6 @@
                         >
                           {{ formatDate(update.date) }} - Rating:
                           {{ update.rating }} - {{ update.comment }}
-                        </li>
-                      </ul>
-                    </div>
-                    <!-- Display business replies if available -->
-                    <div
-                      v-if="
-                        review.businessReplies && review.businessReplies.length
-                      "
-                    >
-                      <h4>Business Replies</h4>
-                      <ul>
-                        <li
-                          v-for="(reply, idx) in review.businessReplies"
-                          :key="idx"
-                        >
-                          <strong>{{ reply.businessRep }}</strong> ({{
-                            formatDate(reply.date)
-                          }}):
-                          {{ reply.comment }}
                         </li>
                       </ul>
                     </div>
@@ -143,51 +150,42 @@
                     >
                       Edit Review
                     </button>
-                    <button
-                      class="toggle-button"
-                      :class="{ active: toggleStates[review._id]?.reply }"
-                      @click="toggleReply(review._id)"
-                    >
-                      Reply to Review
-                    </button>
                   </div>
                   <!-- Inline Edit Section (toggled) -->
                   <div
                     class="review-edit"
                     v-if="toggleStates[review._id]?.edit"
                   >
-                    <label>Edit Rating</label>
+                    <label>Reviewer Name</label>
+                    <input type="text" v-model="review.reviewerName" />
+
+                    <label>Email</label>
+                    <input type="email" v-model="review.email" />
+
+                    <label>Title</label>
+                    <input type="text" v-model="review.title" />
+
+                    <label>Rating</label>
                     <input
                       type="number"
                       v-model.number="review.rating"
                       min="1"
                       max="5"
                     />
-                    <label>Edit Comment</label>
+
+                    <label>Comment</label>
                     <textarea v-model="review.comment"></textarea>
+
+                    <label>Photos (comma-separated URLs)</label>
+                    <input
+                      type="text"
+                      v-model="review.photosString"
+                      placeholder="https://example.com/photo1.jpg, https://example.com/photo2.jpg"
+                    />
                     <button @click="updateReview(review)">Update Review</button>
                     <div class="update-status" v-if="updateStatus[review._id]">
                       {{ updateStatus[review._id] }}
                     </div>
-                  </div>
-                  <!-- Business Reply Section (toggled) -->
-                  <div
-                    class="business-reply"
-                    v-if="toggleStates[review._id]?.reply"
-                  >
-                    <h4>Add Business Reply</h4>
-                    <input
-                      type="text"
-                      v-model="replyInputs[review._id].businessRep"
-                      placeholder="Your Name"
-                    />
-                    <textarea
-                      v-model="replyInputs[review._id].comment"
-                      placeholder="Your Reply"
-                    ></textarea>
-                    <button @click="postBusinessReply(review)">
-                      Post Reply
-                    </button>
                   </div>
                 </div>
               </div>
@@ -231,7 +229,7 @@
   </div>
 </template>
   
-  <script setup>
+<script setup>
 import { ref, reactive, computed, onMounted } from "vue";
 
 // States for items, reviews, and UI controls
@@ -246,11 +244,9 @@ const isSubmitting = ref(false);
 const isLoadingItems = ref(false);
 const isLoadingReviews = ref(false);
 
-// Object to store business reply inputs for each review (keyed by review _id)
-const replyInputs = reactive({});
 // Object to store update status messages for each review
 const updateStatus = reactive({});
-// Object to store toggle state for each review: { edit: Boolean, reply: Boolean }
+// Object to store toggle state for each review: { edit: Boolean }
 const toggleStates = reactive({});
 
 // Delete modal state
@@ -294,17 +290,16 @@ const fetchReviews = async () => {
   try {
     const data = await $fetch(`/api/reviews?itemId=${selectedItem._id}`);
     reviews.value = Array.isArray(data) ? data : [];
-    // Initialize reply inputs, updateStatus, and toggleStates for each review if not already set
+    // Initialize updateStatus, toggleStates, and a photosString for editing
     reviews.value.forEach((review) => {
-      if (!replyInputs[review._id]) {
-        replyInputs[review._id] = { businessRep: "", comment: "" };
-      }
       if (!updateStatus[review._id]) {
         updateStatus[review._id] = "";
       }
       if (!toggleStates[review._id]) {
-        toggleStates[review._id] = { edit: false, reply: false };
+        toggleStates[review._id] = { edit: false };
       }
+      // Create a comma-separated string for photos for inline editing
+      review.photosString = review.photos ? review.photos.join(", ") : "";
     });
   } catch (error) {
     console.error("Error fetching reviews: ", error);
@@ -319,31 +314,23 @@ const selectItem = (item) => {
   fetchReviews();
 };
 
-// Toggle functions for edit and reply sections (only one can be open at a time)
+// Toggle function for edit section
 const toggleEdit = (id) => {
-  if (!toggleStates[id]) toggleStates[id] = { edit: false, reply: false };
-  if (!toggleStates[id].edit) {
-    toggleStates[id].edit = true;
-    toggleStates[id].reply = false;
-  } else {
-    toggleStates[id].edit = false;
-  }
-};
-
-const toggleReply = (id) => {
-  if (!toggleStates[id]) toggleStates[id] = { edit: false, reply: false };
-  if (!toggleStates[id].reply) {
-    toggleStates[id].reply = true;
-    toggleStates[id].edit = false;
-  } else {
-    toggleStates[id].reply = false;
-  }
+  if (!toggleStates[id]) toggleStates[id] = { edit: false };
+  toggleStates[id].edit = !toggleStates[id].edit;
 };
 
 // Update a review (assumes an API endpoint at /api/reviews/:id)
 const updateReview = async (review) => {
   try {
     updateStatus[review._id] = "Updating...";
+    // Convert photosString to an array of URLs
+    if (review.photosString !== undefined) {
+      review.photos = review.photosString
+        .split(",")
+        .map((url) => url.trim())
+        .filter((url) => url !== "");
+    }
     await $fetch(`/api/reviews/${review._id}`, {
       method: "PUT",
       body: review,
@@ -361,24 +348,26 @@ const updateReview = async (review) => {
   }
 };
 
-// Post a business reply for a review (assumes an API endpoint at /api/reviews/:id/business-replies)
-const postBusinessReply = async (review) => {
-  const reply = replyInputs[review._id];
-  if (!reply.businessRep || !reply.comment) {
-    alert("Please fill in both the name and reply comment.");
+// Bulk upload reviews (assumes an API endpoint at /api/reviews/bulk with itemId query parameter)
+const uploadBulkReviews = async () => {
+  if (!selectedItem._id) {
+    alert("Please select an item first.");
     return;
   }
   try {
-    await $fetch(`/api/reviews/${review._id}/business-replies`, {
-      method: "POST",
-      body: reply,
-    });
-    alert("Business reply posted successfully");
+    const parsedReviews = JSON.parse(bulkJson.value);
+    const response = await $fetch(
+      `/api/reviews/bulk?itemId=${selectedItem._id}`,
+      {
+        method: "POST",
+        body: parsedReviews,
+      }
+    );
+    alert("Bulk upload successful");
     fetchReviews();
-    replyInputs[review._id] = { businessRep: "", comment: "" };
   } catch (error) {
-    console.error("Error posting business reply: ", error);
-    alert("Error posting business reply: " + error.message);
+    console.error("Error uploading bulk reviews", error);
+    alert("Bulk upload failed: " + error.message);
   }
 };
 
@@ -411,16 +400,14 @@ const confirmDeleteReview = async () => {
   }
 };
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleString();
-};
+const formatDate = (date) => new Date(date).toLocaleString();
 
 onMounted(() => {
   fetchItems();
 });
 </script>
   
-  <style scoped>
+<style scoped>
 /* Use Inter (or Roboto) with clear typography */
 .wrapper,
 body {
@@ -535,20 +522,46 @@ body {
 }
 .review-card {
   position: relative;
-  border-bottom: 1px solid black;
+  border: 1px solid #e5e7eb;
   padding: 20px;
   background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .review-header h3 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   color: #374151;
 }
-.review-header small {
+.review-meta {
+  font-size: 0.9rem;
   color: #6b7280;
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
 }
 .review-body {
   margin-top: 10px;
+}
+.review-photos {
+  margin-top: 10px;
+}
+.photos-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.photos-container img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+.review-helpful {
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #2563eb;
+  display: flex;
+  gap: 15px;
 }
 .toggle-buttons-row {
   display: flex;
@@ -572,23 +585,19 @@ body {
   background-color: #2563eb;
   color: #fff;
 }
-.review-edit,
-.business-reply {
+.review-edit {
   margin-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 .review-edit input,
-.review-edit textarea,
-.business-reply input,
-.business-reply textarea {
+.review-edit textarea {
   padding: 10px;
   border: 1px solid #e5e7eb;
   min-width: 200px;
 }
-.review-edit button,
-.business-reply button {
+.review-edit button {
   background: #2563eb;
   color: #fff;
   padding: 10px 20px;
@@ -597,8 +606,7 @@ body {
   transition: background 0.2s ease;
   min-width: 200px;
 }
-.review-edit button:hover,
-.business-reply button:hover {
+.review-edit button:hover {
   background: #1d4ed8;
 }
 .update-status {
@@ -704,4 +712,3 @@ textarea {
   margin-bottom: 10px;
 }
 </style>
-  

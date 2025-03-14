@@ -48,27 +48,11 @@
       </div>
     </div>
 
-    <!-- Reviews & FAQ Sections -->
-    <section class="tabs-section">
-      <ReviewForm
-        :item="item.value || {}"
-        :tagDescriptions="tagDescriptions"
-        :isItemOwner="isItemOwner"
-        :existingReview="existingReview"
-        :isPro="isPro"
-      />
-    </section>
-    <section class="reviews-section">
-      <ReviewReviewsSection
-        :item="item.value || {}"
-        :tagDescriptions="tagDescriptions"
-        :isItemOwner="isItemOwner"
-        :reviews="reviews.value || []"
-        :isPro="isPro"
-      />
-    </section>
-
-    <div class="divider point-bot"></div>
+    <ReviewSection
+      :itemId="item._id"
+      :itemName="item.name"
+      :itemImage="item.image"
+    />
 
     <!-- FAQ Section -->
     <section class="FAQ">
@@ -98,19 +82,8 @@ if (
   );
 }
 
-const isItemOwner = ref(false);
-const isPro = ref(false);
 const isLoggedIn = computed(() => !!useUserStore().token);
 const tagDescriptions = ref([]);
-const existingReview = computed(() => {
-  if (isLoggedIn.value && reviews.value) {
-    const found = reviews.value.find(
-      (review) => review.reviewer?._id === useUserStore().user?._id
-    );
-    return found || null;
-  }
-  return null;
-});
 
 // Setup default variant and image (for SEO/structured data purposes)
 const selectedVariant = ref(

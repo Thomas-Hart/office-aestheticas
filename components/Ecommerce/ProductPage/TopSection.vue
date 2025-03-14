@@ -32,23 +32,23 @@
       </div>
     </div>
 
+    <div class="checkout-divider"></div>
+
     <section class="right-section">
       <div>
         <!-- Inline Basic Info -->
         <div class="basic-info">
           <h1 class="product-name">{{ item.name }}</h1>
           <div class="ratings-row">
+            <!-- Replaced star images with a globally available SubcomponentsStarRating -->
             <div class="stars-container">
-              <img
-                v-for="(star, index) in starImages"
-                :key="index"
-                :src="star"
-                alt="Star"
-                class="star-icon"
-              />
+              <SubcomponentsStarRating :rating="item.ratings || 0" />
             </div>
             <span v-if="item && item.reviewCount" class="rating-number">
-              ({{ (item.reviewCount || 0).toFixed(0) }})
+              {{ item.ratings }}
+            </span>
+            <span v-if="item && item.reviewCount" class="rating-number">
+              ({{ (item.reviewCount || 0).toFixed(0) }} Reviews)
             </span>
             <span v-else>No Reviews</span>
           </div>
@@ -84,10 +84,11 @@
           "
           class="savings-text"
         >
-          SALE: {{ item.savingsPercentage }} OFF! (You save ${{
-            (item.savingsAmount || 0).toFixed(2)
-          }})
+          SALE: {{ item.savingsPercentage }} OFF! (You save ${
+          (item.savingsAmount || 0).toFixed(2) })
         </p>
+
+        <div class="checkout-divider"></div>
 
         <!-- Inline Variant Selector -->
         <div
@@ -187,8 +188,8 @@
     </section>
   </section>
 </template>
-  
-  <script setup>
+
+<script setup>
 const props = defineProps({
   item: { type: Object, required: true },
   itemInCart: { type: Object, default: null },
@@ -220,6 +221,7 @@ if (localItem.value.variants && localItem.value.variants.length > 0) {
   selectedVariant.value = defaultVariant;
 }
 
+// Computed gallery image
 const computedGalleryImage = computed(() => {
   if (
     selectedVariant.value &&
@@ -241,6 +243,8 @@ watch(computedGalleryImage, (newVal) => {
   galleryActiveImage.value = newVal;
 });
 const getImagePath = (img) => `/ItemPics/${img || ""}`;
+
+// Thumbnails scrolling
 const thumbnailContainer = ref(null);
 const scrollPosition = ref(0);
 function hoverImage(img) {
@@ -271,29 +275,6 @@ const canScrollDown = computed(() => {
     );
   }
   return false;
-});
-
-// Star Rating Logic
-function getStarImages(rating) {
-  const fullStar = "/Graphics/FullStar.svg";
-  const halfStar = "/Graphics/HalfStar.svg";
-  const emptyStar = "/Graphics/EmptyStar.svg";
-  const starImgs = [];
-  const roundedRating = Math.round(rating * 2) / 2;
-  for (let i = 0; i < 5; i++) {
-    if (roundedRating - i >= 1) {
-      starImgs.push(fullStar);
-    } else if (roundedRating - i === 0.5) {
-      starImgs.push(halfStar);
-    } else {
-      starImgs.push(emptyStar);
-    }
-  }
-  return starImgs;
-}
-const starImages = computed(() => {
-  const rating = localItem.value.ratings || 0;
-  return getStarImages(rating);
 });
 
 // Variant Selector Logic
@@ -443,7 +424,7 @@ function selectOption(attribute, option) {
       .slice(attributeIndex + 1)
       .forEach((lowerAttribute) => {
         const options = getOptions(lowerAttribute);
-        const availableOption = options.find((option) => option.isAvailable);
+        const availableOption = options.find((opt) => opt.isAvailable);
         const newSelectedAttributes = { ...selectedAttributes.value };
         newSelectedAttributes[lowerAttribute] = availableOption
           ? availableOption.value
@@ -500,16 +481,22 @@ function handleNotifyMe() {
   emit("notify-me", { item: localItem.value, email: email.value });
 }
 </script>
-  
-  <style scoped>
+
+<style scoped>
 /* Wrapper & Layout */
 .section {
   max-width: 1300px;
   margin: 0 auto;
   display: flex;
-  gap: 1rem;
+  gap: 2rem;
   padding: 0 2rem;
 }
+.checkout-divider {
+  width: 1px;
+  background-color: #ddd;
+  align-self: stretch;
+}
+
 .right-section {
   min-height: 100%;
   width: 100%;
@@ -518,20 +505,19 @@ function handleNotifyMe() {
   position: sticky;
   top: 2rem;
   padding-top: 3rem;
+  flex: 1;
 }
 
 /* Image Gallery Styles */
 .gallery {
   position: relative;
   background: white;
-  margin-right: 2rem;
-  border-right: 1px solid black;
+  flex: 1;
 }
 .main-image {
   position: relative;
-  width: 600px;
-  height: 550px;
-  margin-right: 2rem;
+  width: 100%;
+  height: auto;
   margin-top: 3rem;
 }
 .main-image img {
@@ -598,10 +584,10 @@ function handleNotifyMe() {
 .product-name {
   font-size: 1.5rem;
   line-height: 1.3rem;
-  font-weight: bold;
+  font-weight: 600;
   margin-bottom: 2rem;
   color: black;
-  font-family: "Poppins", serif;
+  font-family: "Source Sans Pro", serif;
 }
 
 .pricing {
@@ -611,7 +597,7 @@ function handleNotifyMe() {
 }
 
 .pricing .new {
-  font-size: 2.3rem;
+  font-size: 2rem;
   font-weight: bold;
   margin-right: 1rem;
   font-family: "Poppins", serif;
@@ -645,6 +631,14 @@ function handleNotifyMe() {
   font-size: 1rem;
   margin-left: 8px;
   color: black;
+}
+
+.savings-text {
+  background: #e9f2ef;
+  padding: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  font-size: 1.5rem;
 }
 
 /* Variant Selector Styles */
@@ -823,4 +817,3 @@ function handleNotifyMe() {
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
 }
 </style>
-  

@@ -61,8 +61,8 @@ defineOptions({
 
 // Basic constants
 const totalStars = 5;
-const fillColor = "#FFA800"; // Gold-like fill color
-const outlineColor = "#FFA800"; // Same color for outline
+const fillColor = "#EA5520"; // Gold-like fill color
+const outlineColor = "#EA5520"; // Same color for outline
 const outlineFill = "transparent";
 
 // A path that draws a 5-point star within a 50×50 viewBox
@@ -108,6 +108,7 @@ function getFillWidth(starIndex) {
 /* A flex container for the stars in a row */
 .stars {
   display: flex;
+  gap: 2px;
   width: 100%; /* take full available width of the wrapper */
   /* No gap here, so the stars perfectly fit the container width */
 }
