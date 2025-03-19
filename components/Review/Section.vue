@@ -3,24 +3,35 @@
     <!-- Ratings & Summary Row -->
     <div class="ratings-summary">
       <div class="left-panel">
-        <div class="average-rating">
-          <div class="rating-value">{{ overallRating }}</div>
-          <div class="max-rating">/ 5</div>
+        <!-- Inline rating summary: rating, stars, reviews count -->
+        <div class="rating-summary-inline">
+          <span class="rating-value">{{ overallRating }}</span>
+          <div class="stars-container">
+            <SubcomponentsStarRating :rating="overallRating" />
+          </div>
+          <span class="review-count">{{ totalReviews }} reviews</span>
         </div>
-        <div class="rating-text">
-          <strong>{{ totalReviews }}</strong> reviews
-        </div>
-        <!-- Star distribution (mocked for illustration) -->
+
+        <!-- Star distribution with actual counts -->
         <div class="star-distribution">
-          <div v-for="i in 5" :key="i" class="star-row">
-            <span>{{ 6 - i }} stars</span>
+          <div
+            v-for="star in [5, 4, 3, 2, 1]"
+            :key="star"
+            class="star-row"
+            @click="applyStarFilter(star)"
+            :class="{ active: activeFilter === star }"
+          >
+            <span>{{ star }}</span>
+            <div class="star-wrapper">
+              <SubcomponentsStarSvgSingle :fillWidth="50" />
+            </div>
             <div class="progress-bar">
               <div
                 class="progress"
-                :style="{ width: starDistribution[i] + '%' }"
+                :style="{ width: calculateProgressWidth(star) }"
               ></div>
             </div>
-            <span>{{ starDistribution[i] }}%</span>
+            <span>{{ ratingCounts[star] }}</span>
           </div>
         </div>
       </div>
@@ -44,16 +55,22 @@
       </div>
     </div>
 
-    <!-- Filter Row -->
-    <div class="filters-row">
-      <button
-        v-for="option in filterOptions"
-        :key="option.value"
-        :class="{ active: activeFilter === option.value }"
-        @click="applyFilter(option.value)"
-      >
-        {{ option.label }}
-      </button>
+    <!-- Reviews Header: "Showing X of X reviews" + filter buttons -->
+    <div class="reviews-list-header">
+      <div class="reviews-count">
+        <!-- Example of a static range "1 - 6", or adapt if you have real pagination -->
+        Showing 1 - 6 of {{ totalReviews }} reviews
+      </div>
+      <div class="filters-row">
+        <button
+          v-for="option in filterOptions"
+          :key="option.value"
+          :class="{ active: activeFilter === option.value }"
+          @click="applyFilter(option.value)"
+        >
+          {{ option.label }}
+        </button>
+      </div>
     </div>
 
     <!-- Reviews List -->
@@ -63,48 +80,35 @@
         :key="review._id"
         class="review-card"
       >
-        <!-- Star Rating & Name/Date -->
-        <div class="review-header">
-          <div class="star-rating">
-            <span
-              v-for="i in 5"
-              :key="i"
-              class="star"
-              :class="{ filled: review.rating >= i }"
-            >
-              ★
-            </span>
-          </div>
-          <div class="review-meta">
-            <span class="reviewer-name">{{
-              censorName(review.reviewerName)
-            }}</span>
-            <span class="review-date">{{ formatDate(review.date) }}</span>
-          </div>
+        <!-- Top Row: Name (censored) + Verified Check + Date -->
+        <div class="review-top-row">
+          <span class="reviewer-name">{{
+            censorName(review.reviewerName)
+          }}</span>
+          <span class="verified-check-icon" title="Verified Reviewer">✔</span>
+          <span class="review-date">{{ formatDate(review.date) }}</span>
         </div>
 
-        <!-- Review Title & Comment -->
-        <div class="review-body">
-          <h4 class="review-title">{{ review.title }}</h4>
-          <p class="review-comment">{{ review.comment }}</p>
-          <!-- Photos -->
-          <div
-            v-if="review.photos && review.photos.length"
-            class="review-photos"
+        <!-- Star Rating Row -->
+        <div class="star-rating">
+          <span
+            v-for="i in 5"
+            :key="i"
+            class="star"
+            :class="{ filled: review.rating >= i }"
           >
-            <div
-              v-for="(photo, idx) in review.photos"
-              :key="idx"
-              class="photo-item"
-            >
-              <img :src="photo" alt="Review photo" />
-            </div>
-          </div>
+            ★
+          </span>
+        </div>
+
+        <!-- Comment (title + comment if desired, or just comment) -->
+        <div class="review-body">
+          <p class="review-comment">{{ review.comment }}</p>
         </div>
 
         <!-- Helpful Section -->
         <div class="helpful-section">
-          <span>Was this helpful?</span>
+          <span>Is this helpful?</span>
           <button class="thumbs-btn" @click="markHelpful(review, 'up')">
             👍 {{ review.helpful?.thumbsUp || 0 }}
           </button>
@@ -139,7 +143,7 @@
 
           <div class="modal-body">
             <!-- Step 1: Rating & Basic Info -->
-            <div v-if="reviewStep === 1">
+            <div class="modal-body-wrapper" v-if="reviewStep === 1">
               <p class="step-heading">Quality*</p>
               <!-- Error message if required fields are missing -->
               <div v-if="showRequiredError" class="error-message">
@@ -176,7 +180,7 @@
             </div>
 
             <!-- Step 2: Photo Upload -->
-            <div v-else-if="reviewStep === 2">
+            <div class="modal-body-wrapper" v-else-if="reviewStep === 2">
               <h4 class="step-heading">Upload Photos</h4>
               <p class="media-note">Accept .jpg, .png and max 2MB each</p>
 
@@ -205,7 +209,7 @@
             </div>
 
             <!-- Step 3: Name & Email -->
-            <div v-else-if="reviewStep === 3">
+            <div class="modal-body-wrapper" v-else-if="reviewStep === 3">
               <h4 class="step-heading">Your information</h4>
               <label class="input-label">Your Name *</label>
               <input
@@ -231,24 +235,12 @@
     </transition>
   </div>
 </template>
-  
-  <script setup>
-import { ref, reactive, computed, onMounted, defineProps } from "vue";
 
+<script setup>
 const props = defineProps({
-  itemId: {
-    type: String,
-    required: true,
-  },
-  itemName: {
-    type: String,
-    required: true,
-  },
-  itemImage: {
-    type: String,
-    required: false,
-    default: "",
-  },
+  itemId: { type: String, required: true },
+  itemName: { type: String, required: true },
+  itemImage: { type: String, required: false, default: "" },
 });
 
 // Local State
@@ -256,14 +248,24 @@ const reviews = ref([]);
 const totalReviews = ref(0);
 const overallRating = ref(0);
 
-// Mocked star distribution data
-const starDistribution = reactive({
-  1: 5,
-  2: 10,
-  3: 15,
-  4: 30,
-  5: 40,
+// Compute actual counts per rating from reviews
+const ratingCounts = computed(() => {
+  const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  reviews.value.forEach((r) => {
+    if (r.rating) {
+      counts[r.rating] = (counts[r.rating] || 0) + 1;
+    }
+  });
+  return counts;
 });
+
+// Calculate progress width for each star rating based on the maximum count
+function calculateProgressWidth(star) {
+  const count = ratingCounts.value[star];
+  const maxCount = Math.max(...Object.values(ratingCounts.value));
+  if (maxCount === 0) return "0%";
+  return (count / maxCount) * 100 + "%";
+}
 
 // Summarize unique photos from all reviews
 const uniquePhotos = computed(() => {
@@ -271,12 +273,13 @@ const uniquePhotos = computed(() => {
   return [...new Set(allPhotos)];
 });
 
-// Filter
+// Filter Options: "All" and "Latest"
 const filterOptions = [
   { label: "All", value: "all" },
-  { label: "Newest", value: "newest" },
-  { label: "Oldest", value: "oldest" },
+  { label: "Latest", value: "newest" },
 ];
+
+// activeFilter can be a string (from filterOptions) or a number (a star rating)
 const activeFilter = ref("all");
 
 // Modal for writing a review
@@ -297,11 +300,10 @@ onMounted(async () => {
   await fetchReviews();
 });
 
-// Fetch reviews from your API
+// Fetch reviews from API
 async function fetchReviews() {
   try {
-    // e.g. /api/reviews?itemId=...
-    const data = await $fetch(`/api/reviews?itemId=${props.itemId}`);
+    const data = await $fetch(`/api/reviews/${props.itemId}`);
     reviews.value = Array.isArray(data) ? data : [];
     calculateStats();
   } catch (err) {
@@ -320,25 +322,31 @@ function calculateStats() {
   overallRating.value = (sum / totalReviews.value).toFixed(1);
 }
 
-// Filter logic
+// Filter logic for "All", "Latest" and star ratings
 function applyFilter(value) {
   activeFilter.value = value;
 }
 
-// Computed filtered reviews
+// Filtered reviews based on activeFilter (which can be a star number or "all"/"newest")
 const filteredReviews = computed(() => {
-  if (activeFilter.value === "newest") {
+  // If user clicked a star row, filter by star rating
+  if (typeof activeFilter.value === "number") {
+    return reviews.value.filter((r) => r.rating === activeFilter.value);
+  }
+  // If user selected "Latest", sort descending by date
+  else if (activeFilter.value === "newest") {
     return [...reviews.value].sort(
       (a, b) => new Date(b.date) - new Date(a.date)
     );
-  } else if (activeFilter.value === "oldest") {
-    return [...reviews.value].sort(
-      (a, b) => new Date(a.date) - new Date(b.date)
-    );
   }
-  // 'all' or any other fallback
+  // Default: "All"
   return reviews.value;
 });
+
+// When clicking a star row, filter reviews to that star rating
+function applyStarFilter(star) {
+  activeFilter.value = star;
+}
 
 // "Is this helpful?" logic
 async function markHelpful(review, type) {
@@ -351,14 +359,9 @@ async function markHelpful(review, type) {
     } else {
       review.helpful.thumbsDown++;
     }
-    // In a real app, call an endpoint to persist the change:
-    // await $fetch(`/api/reviews/${review._id}/helpful`, {
-    //   method: 'POST',
-    //   query: { type },
-    // })
+    // In a real app, call an endpoint to persist the change
   } catch (err) {
     console.error("Error marking helpful", err);
-    // Revert or handle error gracefully
   }
 }
 
@@ -385,7 +388,6 @@ function resetReviewForm() {
 
 function goToNextStep() {
   if (reviewStep.value === 1) {
-    // Validate rating, title, comment
     if (!reviewForm.rating || !reviewForm.title || !reviewForm.comment) {
       showRequiredError.value = true;
       return;
@@ -393,7 +395,6 @@ function goToNextStep() {
     showRequiredError.value = false;
     reviewStep.value = 2;
   } else if (reviewStep.value === 2) {
-    // Move on to final step
     reviewStep.value = 3;
   }
 }
@@ -402,35 +403,29 @@ function goToNextStep() {
 function handlePhotoUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
-
-  // Basic file size check (2MB max)
   if (file.size > 2 * 1024 * 1024) {
     alert("File is too large. Max 2MB allowed.");
     return;
   }
-
   const reader = new FileReader();
   reader.onload = () => {
     reviewForm.photos.push(reader.result);
   };
   reader.readAsDataURL(file);
-  event.target.value = ""; // Reset file input
+  event.target.value = "";
 }
 
 function removePhoto(index) {
   reviewForm.photos.splice(index, 1);
 }
 
-// Submit final step
+// Submit review
 async function submitReview() {
-  // Validate name & email
   if (!reviewForm.reviewerName || !reviewForm.email) {
     alert("Please fill in your name and email.");
     return;
   }
-
   try {
-    // Construct new review object
     const newReview = {
       itemId: props.itemId,
       reviewerName: reviewForm.reviewerName,
@@ -442,13 +437,10 @@ async function submitReview() {
       helpful: { thumbsUp: 0, thumbsDown: 0 },
       date: new Date(),
     };
-
-    // POST to /api/reviews
     await $fetch("/api/reviews", {
       method: "POST",
       body: newReview,
     });
-
     alert("Review submitted!");
     showReviewModal.value = false;
     await fetchReviews();
@@ -468,27 +460,27 @@ function censorName(name) {
   const parts = name.split(" ");
   return parts
     .map((part) => {
-      if (part.length <= 1) return part; // single-letter name
-      // Show the first character, replace the rest with asterisks
+      if (part.length <= 1) return part;
       return part[0] + part.slice(1).replace(/./g, "*");
     })
     .join(" ");
 }
 </script>
-  
-  <style scoped>
+
+<style scoped>
 .reviews-section {
   margin: 20px auto;
   max-width: 1000px;
   font-family: sans-serif;
+  padding: 0 2rem;
 }
 
 /* Ratings Summary Row */
 .ratings-summary {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
+  align-items: flex-end;
+  gap: 2rem;
   margin-bottom: 30px;
 }
 
@@ -496,62 +488,79 @@ function censorName(name) {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 18rem;
 }
 
-.average-rating {
+/* Inline rating summary styles */
+.rating-summary-inline {
   display: flex;
-  align-items: flex-end;
-  font-size: 2.5rem;
-  font-weight: bold;
-  line-height: 1;
-}
-.average-rating .rating-value {
-  color: #ea5520;
-}
-.average-rating .max-rating {
+  align-items: center;
+  gap: 10px;
   font-size: 1.5rem;
-  color: #9ca3af;
-  margin-left: 5px;
+}
+.rating-value {
+  font-weight: bold;
+  font-size: 3rem;
+}
+.stars-container {
+  width: 6rem;
+  display: flex;
+  justify-content: flex-end;
+}
+.review-count {
+  font-size: 1.2rem;
 }
 
-.rating-text {
-  font-size: 1rem;
-  color: #6b7280;
-}
-
+/* Star distribution styling */
 .star-distribution {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+}
+.star-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1rem;
+  width: 1rem;
 }
 .star-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.9rem;
-  color: #6b7280;
+  gap: 10px;
+  font-size: 1rem;
+  color: black;
+  cursor: pointer;
+  width: 100%;
+}
+.star-row.active {
+  color: black;
 }
 .progress-bar {
-  width: 100px;
-  height: 6px;
+  flex: 1;
+  height: 8px;
   background: #e5e7eb;
   position: relative;
-  border-radius: 3px;
+  border-radius: 20px;
 }
 .progress {
   background: #ea5520;
-  height: 6px;
-  border-radius: 3px;
+  height: 8px;
+  border-radius: 20px;
   transition: width 0.3s;
 }
 
+/* Customer Photos & Write Review Button */
 .right-panel {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
+  justify-content: flex-end;
+  min-height: 100%;
+  height: 100%;
   gap: 15px;
 }
-
 .customer-photos {
   width: 200px;
 }
@@ -570,7 +579,6 @@ function censorName(name) {
   object-fit: cover;
   border: 1px solid #ddd;
 }
-
 .write-review-btn {
   background: #ef4444;
   color: #fff;
@@ -584,11 +592,20 @@ function censorName(name) {
   background: #dc2626;
 }
 
-/* Filters Row */
+/* Reviews Header: "Showing X of X reviews" + filter buttons */
+.reviews-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.reviews-count {
+  font-size: 1rem;
+  color: #374151;
+}
 .filters-row {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
 }
 .filters-row button {
   background: none;
@@ -613,71 +630,56 @@ function censorName(name) {
   flex-direction: column;
   gap: 20px;
 }
-
 .review-card {
   padding: 15px;
   border: 1px solid #e5e7eb;
   border-radius: 4px;
   background: #fff;
-  position: relative;
 }
 
-/* Review Header */
-.review-header {
+/* Top row: name, check icon, date */
+.review-top-row {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-.star-rating {
-  display: flex;
-  gap: 2px;
-  font-size: 1.2rem;
-}
-.star {
-  color: #d1d5db;
-  cursor: pointer;
-}
-.star.filled {
-  color: #ea5520;
-}
-.review-meta {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.9rem;
-  color: #6b7280;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 6px;
 }
 .reviewer-name {
   font-weight: 600;
-}
-
-/* Review Body */
-.review-body {
-  margin-top: 10px;
-}
-.review-title {
-  margin: 0 0 5px;
-  font-size: 1.1rem;
   color: #111;
 }
-.review-comment {
-  margin: 0;
-  line-height: 1.4;
-  color: #374151;
+.verified-check-icon {
+  color: #16a34a; /* green check */
+  font-size: 1rem;
 }
-.review-photos {
-  margin-top: 10px;
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-.review-photos .photo-item img {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border: 1px solid #ddd;
+.review-date {
+  font-size: 0.9rem;
+  color: #6b7280;
 }
 
-/* Helpful Section */
+/* Star rating row */
+.star-rating {
+  margin: 0.2rem 0 0.6rem;
+  font-size: 1.2rem;
+}
+.star {
+  color: #d1d5db; /* empty star color */
+}
+.star.filled {
+  color: #ea5520; /* filled star color */
+}
+
+/* Comment text */
+.review-body {
+  margin-top: 0.2rem;
+}
+.review-comment {
+  font-size: 1rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+/* Helpful section */
 .helpful-section {
   display: flex;
   align-items: center;
@@ -685,6 +687,9 @@ function censorName(name) {
   margin-top: 10px;
   font-size: 0.9rem;
   color: #6b7280;
+}
+.helpful-section span {
+  white-space: nowrap;
 }
 .thumbs-btn {
   background: none;
@@ -713,7 +718,7 @@ function censorName(name) {
 }
 .modal {
   background: #fff;
-  width: 600px; /* Make the modal bigger */
+  width: 600px;
   max-width: 90%;
   padding: 20px;
   border-radius: 6px;
@@ -758,6 +763,12 @@ function censorName(name) {
   flex-direction: column;
   gap: 15px;
 }
+.modal-body-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .step-heading {
   font-size: 1rem;
   font-weight: 600;
@@ -778,6 +789,7 @@ function censorName(name) {
   display: flex;
   gap: 4px;
   font-size: 1.5rem;
+  margin-top: -10px;
 }
 .star-rating-input .star {
   cursor: pointer;
@@ -788,7 +800,6 @@ function censorName(name) {
 }
 .input-label {
   font-weight: 600;
-  margin-top: 10px;
 }
 .modal input[type="text"],
 .modal input[type="email"],
@@ -856,4 +867,3 @@ function censorName(name) {
   opacity: 0;
 }
 </style>
-  

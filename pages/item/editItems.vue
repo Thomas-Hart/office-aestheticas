@@ -66,7 +66,7 @@
               <div class="product-image-preview" v-if="selectedItem.image">
                 <NuxtImg
                   class="zoomable"
-                  :src="selectedItem.image"
+                  :src="`/ItemPics/${selectedItem.image}`"
                   alt="Product Image"
                   width="300"
                   height="300"
@@ -353,11 +353,18 @@
                   :key="'fbt' + index"
                   class="list-item"
                 >
-                  <input
-                    type="text"
+                  <select
                     v-model="selectedItem.frequentlyBoughtTogether[index]"
-                    placeholder="Item ID"
-                  />
+                  >
+                    <option value="">Select an item</option>
+                    <option
+                      v-for="item in getFrequentlyBoughtOptions(index)"
+                      :key="item._id"
+                      :value="item._id"
+                    >
+                      {{ item.name }}
+                    </option>
+                  </select>
                   <button
                     type="button"
                     @click="
@@ -846,6 +853,18 @@ const formSections = [
   },
 ];
 
+const getFrequentlyBoughtOptions = (index) => {
+  // Get the already selected items in the frequently bought list (except current index)
+  const alreadySelected = selectedItem.frequentlyBoughtTogether.filter(
+    (val, i) => i !== index
+  );
+  // Return items excluding the current item and those already selected
+  return items.value.filter(
+    (item) =>
+      item._id !== selectedItem._id && !alreadySelected.includes(item._id)
+  );
+};
+
 const topSections = formSections.filter(
   (section) => section.id === "general-info"
 );
@@ -1237,6 +1256,10 @@ body {
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
+}
+
+input {
+  padding-left: 5px;
 }
 .list-item input {
   flex: 1;

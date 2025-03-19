@@ -11,8 +11,16 @@
       @add-to-cart="addToCart"
     />
 
+    <!-- Info Graphic Section with Background Image and Dark Overlay -->
+    <div class="info-graphic">
+      <div class="info-text">
+        <h2>@aestheticas</h2>
+        <h3>A taste of luxury</h3>
+      </div>
+    </div>
+
     <!-- Inline Frequently Bought Together -->
-    <div
+    <!-- <div
       v-if="
         item.frequentlyBoughtTogether &&
         item.frequentlyBoughtTogether.length > 0
@@ -46,13 +54,15 @@
           <p>Loading items...</p>
         </div>
       </div>
-    </div>
+    </div> -->
 
-    <ReviewSection
-      :itemId="item._id"
-      :itemName="item.name"
-      :itemImage="item.image"
-    />
+    <div class="review-section">
+      <ReviewSection
+        :itemId="item._id"
+        :itemName="item.name"
+        :itemImage="item.image"
+      />
+    </div>
 
     <!-- FAQ Section -->
     <section class="FAQ">
@@ -234,6 +244,55 @@ emit("hide-loading");
   font-family: "Roboto", sans-serif;
   background: white;
 }
+
+.info-graphic {
+  position: relative;
+  width: 100%;
+  height: 30rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url("/Backgrounds/OfficePic5.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Dark overlay */
+.info-graphic::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1;
+}
+
+.info-text {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 1rem;
+  color: white;
+}
+
+.info-text h2,
+.info-text h3 {
+  margin: 1rem 0;
+  font-family: "Poppins", serif;
+}
+
+.info-text h2 {
+  font-size: 1.2rem;
+  font-weight: lighter;
+}
+
+.info-text h3 {
+  font-size: 2rem;
+}
+
 .frequently-bought-wrapper {
   padding: 1rem 5rem;
   background: linear-gradient(
@@ -246,6 +305,7 @@ emit("hide-loading");
   background-size: 400% 400%;
   width: 100%;
 }
+
 @keyframes gradientMove {
   0% {
     background-position: 0% 50%;
@@ -257,6 +317,7 @@ emit("hide-loading");
     background-position: 0% 50%;
   }
 }
+
 .frequently-bought-list {
   display: flex;
   justify-content: space-between;

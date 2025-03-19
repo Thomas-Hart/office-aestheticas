@@ -45,7 +45,7 @@
               <SubcomponentsStarRating :rating="item.ratings || 0" />
             </div>
             <span v-if="item && item.reviewCount" class="rating-number">
-              {{ item.ratings }}
+              {{ item.ratings.toFixed(1) }}
             </span>
             <span v-if="item && item.reviewCount" class="rating-number">
               ({{ (item.reviewCount || 0).toFixed(0) }} Reviews)
@@ -74,9 +74,9 @@
           "
           class="savings-text"
         >
-          SALE: {{ selectedVariant.savingsPercentage }} OFF! (You save ${{
+          {{ selectedVariant.savingsPercentage }} Sale: Save ${{
             selectedVariant.savingsAmount.toFixed(2)
-          }})
+          }}
         </p>
         <p
           v-else-if="
@@ -84,11 +84,10 @@
           "
           class="savings-text"
         >
-          SALE: {{ item.savingsPercentage }} OFF! (You save ${
-          (item.savingsAmount || 0).toFixed(2) })
+          SALE: {{ item.savingsPercentage }} OFF! (You save ${{
+            (item.savingsAmount || 0).toFixed(2)
+          }})
         </p>
-
-        <div class="checkout-divider"></div>
 
         <!-- Inline Variant Selector -->
         <div
@@ -192,26 +191,21 @@
 <script setup>
 const props = defineProps({
   item: { type: Object, required: true },
-  itemInCart: { type: Object, default: null },
   isOutOfStock: { type: Boolean, default: false },
 });
-const emit = defineEmits([
-  "decrease-quantity",
-  "increase-quantity",
-  "notify-me",
-  "add-to-cart",
-]);
 
-// Create a local reactive copy of the item so we can modify its image/price if needed.
+// --- Setup Stores & Authentication ---
+const itemStore = useItemStore();
+const userStore = useUserStore();
+const isLoggedIn = computed(() => !!userStore.user);
+
+// --- Local Copy of the Item & Variant Setup ---
 const localItem = ref({ ...props.item });
-
-// Setup selected variant, price, and image defaults
 const selectedVariant = ref(
   localItem.value.variants && localItem.value.variants.length
     ? localItem.value.variants[0]
     : {}
 );
-const email = ref("");
 if (localItem.value.variants && localItem.value.variants.length > 0) {
   const defaultVariant = localItem.value.variants[0];
   if (defaultVariant.image && defaultVariant.image.trim() !== "") {
@@ -221,7 +215,7 @@ if (localItem.value.variants && localItem.value.variants.length > 0) {
   selectedVariant.value = defaultVariant;
 }
 
-// Computed gallery image
+// --- Computed Gallery Image ---
 const computedGalleryImage = computed(() => {
   if (
     selectedVariant.value &&
@@ -244,7 +238,7 @@ watch(computedGalleryImage, (newVal) => {
 });
 const getImagePath = (img) => `/ItemPics/${img || ""}`;
 
-// Thumbnails scrolling
+// --- Thumbnails Scrolling ---
 const thumbnailContainer = ref(null);
 const scrollPosition = ref(0);
 function hoverImage(img) {
@@ -277,7 +271,7 @@ const canScrollDown = computed(() => {
   return false;
 });
 
-// Variant Selector Logic
+// --- Variant Selector Logic ---
 const selectedAttributes = ref({});
 const selectableAttributes = [
   "color",
@@ -467,18 +461,122 @@ onMounted(() => {
   }
 });
 
-// Emit event wrappers so that the parent receives the correct payloads
-function handleDecreaseQuantity() {
-  emit("decrease-quantity", localItem.value);
-}
+// --- Updated Quantity & Cart Logic Using Store Methods ---
+const itemInCart = computed(() => {
+  if (!isLoggedIn.value) {
+    return itemStore.cart.find(
+      (cartItem) =>
+        cartItem._id === localItem.value._id &&
+        cartItem.variantId === selectedVariant.value?._id
+    );
+  } else {
+    return userStore.user.cart.find(
+      (cartItem) =>
+        cartItem._id === localItem.value._id &&
+        cartItem.variantId === selectedVariant.value?._id
+    );
+  }
+});
+
 function handleIncreaseQuantity() {
-  emit("increase-quantity", localItem.value);
+  if (selectedVariant.value) {
+    if (itemInCart.value) {
+      if (!isLoggedIn.value) {
+        itemStore.updateQuantity({
+          itemId: localItem.value._id,
+          variantId: selectedVariant.value._id,
+          quantity: itemInCart.value.quantity + 1,
+        });
+      } else {
+        userStore.updateQuantity({
+          itemId: localItem.value._id,
+          variantId: selectedVariant.value._id,
+          quantity: itemInCart.value.quantity + 1,
+        });
+      }
+    } else {
+      handleAddToCart();
+    }
+  } else {
+    if (itemInCart.value) {
+      if (!isLoggedIn.value) {
+        itemStore.updateQuantity({
+          itemId: localItem.value._id,
+          quantity: itemInCart.value.quantity + 1,
+        });
+      } else {
+        userStore.updateQuantity({
+          itemId: localItem.value._id,
+          quantity: itemInCart.value.quantity + 1,
+        });
+      }
+    } else {
+      handleAddToCart();
+    }
+  }
 }
+
+function handleDecreaseQuantity() {
+  if (selectedVariant.value) {
+    if (itemInCart.value && itemInCart.value.quantity > 1) {
+      if (!isLoggedIn.value) {
+        itemStore.updateQuantity({
+          itemId: localItem.value._id,
+          variantId: selectedVariant.value._id,
+          quantity: itemInCart.value.quantity - 1,
+        });
+      } else {
+        userStore.updateQuantity({
+          itemId: localItem.value._id,
+          variantId: selectedVariant.value._id,
+          quantity: itemInCart.value.quantity - 1,
+        });
+      }
+    } else if (itemInCart.value && itemInCart.value.quantity === 1) {
+      removeFromCart(localItem.value._id, selectedVariant.value?._id);
+    }
+  } else {
+    if (itemInCart.value && itemInCart.value.quantity > 1) {
+      if (!isLoggedIn.value) {
+        itemStore.updateQuantity({
+          itemId: localItem.value._id,
+          quantity: itemInCart.value.quantity - 1,
+        });
+      } else {
+        userStore.updateQuantity({
+          itemId: localItem.value._id,
+          quantity: itemInCart.value.quantity - 1,
+        });
+      }
+    } else if (itemInCart.value && itemInCart.value.quantity === 1) {
+      removeFromCart(localItem.value._id);
+    }
+  }
+}
+
+function removeFromCart(itemId, variantId) {
+  if (!isLoggedIn.value) {
+    itemStore.removeFromCart(itemId, variantId);
+  } else {
+    userStore.removeFromCart(itemId, variantId);
+  }
+}
+
 function handleAddToCart() {
-  emit("add-to-cart", localItem.value);
+  if (!isLoggedIn.value) {
+    itemStore.addToCart(localItem.value, selectedVariant.value);
+  } else {
+    userStore.addToCart(localItem.value, selectedVariant.value);
+  }
 }
+
 function handleNotifyMe() {
-  emit("notify-me", { item: localItem.value, email: email.value });
+  if (email.value && props.isOutOfStock) {
+    alert(
+      `You will be notified when this item is back in stock at ${email.value}.`
+    );
+    email.value = "";
+  }
 }
 </script>
 
@@ -504,7 +602,7 @@ function handleNotifyMe() {
   flex-direction: column;
   position: sticky;
   top: 2rem;
-  padding-top: 3rem;
+  padding: 3rem 0 1rem 0;
   flex: 1;
 }
 
@@ -621,6 +719,7 @@ function handleNotifyMe() {
   display: flex;
   height: 20px;
   width: 100px;
+  align-items: flex-end;
 }
 .star-icon {
   width: 100%;
@@ -644,6 +743,8 @@ function handleNotifyMe() {
 /* Variant Selector Styles */
 .variant-selector {
   margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
 }
 .attribute-section {
   margin-bottom: 2rem;
@@ -765,7 +866,7 @@ function handleNotifyMe() {
   transition: all 0.3s ease;
 }
 .item-quantity button:hover {
-  background: #3f654c;
+  background: #aaa;
 }
 .notify-wrapper {
   margin-top: 20px;

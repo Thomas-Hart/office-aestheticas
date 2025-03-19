@@ -1,51 +1,21 @@
 <template>
   <div class="wrapper">
     <div class="stars">
-      <!-- Loop through totalStars and render one star for each -->
+      <!-- Loop through totalStars and render one star-wrapper for each -->
       <div v-for="index in totalStars" :key="index" class="star-wrapper">
-        <svg
-          class="star-svg"
-          viewBox="0 0 50 50"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <!-- Define a clipPath with the star shape -->
-          <defs>
-            <clipPath :id="`star-clip-${index}`">
-              <path :d="starPath" />
-            </clipPath>
-          </defs>
-
-          <!-- 1) Draw a rectangle that is clipped to the star shape for the filled portion -->
-          <rect
-            x="0"
-            y="0"
-            :width="getFillWidth(index - 1)"
-            height="50"
-            :fill="fillColor"
-            :clip-path="`url(#star-clip-${index})`"
-          />
-
-          <!-- 2) Draw the star outline on top -->
-          <path
-            :d="starPath"
-            :fill="outlineFill"
-            :stroke="outlineColor"
-            stroke-width="2"
-          />
-        </svg>
+        <!-- Instead of an <svg> directly, we now use <StarSvgSingle> -->
+        <SubcomponentsStarSvgSingle :fillWidth="getFillWidth(index - 1)" />
       </div>
     </div>
   </div>
 </template>
-  
-  <script setup>
-import { computed } from "vue";
+
+<script setup>
+import StarSvgSingle from "./StarSvgSingle.vue";
 
 /**
- * Nuxt 3 + Composition API single-file component.
- *
  * Props:
- *   - rating (Number, 0–5, can be fractional)
+ *   rating (Number) => e.g. 2.7 means 2.7 out of 5 stars
  */
 const props = defineProps({
   rating: {
@@ -54,75 +24,73 @@ const props = defineProps({
   },
 });
 
-// Optional: name the component for debugging/devtools
-defineOptions({
-  name: "StarRatingSvg",
-});
+/**
+ * Keep everything exactly as in your original code:
+ *   - totalStars
+ *   - fillColor, outlineColor, outlineFill
+ *   - starPath
+ *   - getFillWidth(starIndex)
+ */
 
-// Basic constants
 const totalStars = 5;
-const fillColor = "#EA5520"; // Gold-like fill color
-const outlineColor = "#EA5520"; // Same color for outline
+const fillColor = "#EA5520"; // same as original
+const outlineColor = "#EA5520"; // same as original
 const outlineFill = "transparent";
-
-// A path that draws a 5-point star within a 50×50 viewBox
 const starPath = `M25,2
-                    L31,18
-                    L48,18
-                    L34,28
-                    L39,44
-                    L25,34
-                    L11,44
-                    L16,28
-                    L2,18
-                    L19,18
-                    Z`;
+                  L31,18
+                  L48,18
+                  L34,28
+                  L39,44
+                  L25,34
+                  L11,44
+                  L16,28
+                  L2,18
+                  L19,18
+                  Z`;
 
 /**
- * Returns the width (in px) of the filled portion for the star at "starIndex".
- * starIndex is 0-based, so the first star is index=0, second is index=1, etc.
+ * Exactly the same function from your original code:
+ *  - We compute the fraction of the star that should be filled
+ *  - Then multiply by 50 (the star's width in px)
  */
 function getFillWidth(starIndex) {
-  // Example: if rating = 2.7
-  //  starIndex=0 => fillFraction=1.0 (fully filled)
-  //  starIndex=1 => fillFraction=1.0
-  //  starIndex=2 => fillFraction=0.7
-  //  starIndex=3,4 => fillFraction=0
+  // starIndex is 0-based; so for the 1st star, starIndex=0
+  // rating=2.7 => star0=1.0 => 50px, star1=1.0 => 50px, star2=0.7 => 35px, etc.
   const fillFraction = Math.min(Math.max(props.rating - starIndex, 0), 1);
-  // Multiply that fraction by 50 (the width of the SVG viewBox).
-  return 50 * fillFraction;
+  return 50 * fillFraction; // => a number in [0..50]
 }
 </script>
-  
-  <style scoped>
+
+<style scoped>
 /**
-   * .wrapper will scale to the parent's width. 
-   * For example, if the parent has style="width: 5rem;",
-   * the entire row of stars will fit within that width.
-   */
+ * These styles are identical to your original:
+ * .wrapper, .stars, .star-wrapper, .star-svg
+ * so that the layout & appearance remain unchanged.
+ */
+
 .wrapper {
-  /* inline-block so it only takes as much space as needed (or as the parent sets) */
   display: inline-block;
 }
 
-/* A flex container for the stars in a row */
 .stars {
   display: flex;
   gap: 2px;
-  width: 100%; /* take full available width of the wrapper */
-  /* No gap here, so the stars perfectly fit the container width */
+  width: 100%;
 }
 
-/* Each star wrapper is flex: 1, so all five stars share the space equally */
 .star-wrapper {
   flex: 1;
 }
 
-/* The SVG scales to fill the width of .star-wrapper */
+/* 
+  The .star-svg class is now inside the child (StarSvgSingle.vue).
+  If you want it here too for the parent's scope, you can keep it.
+  But typically it's enough that the child has .star-svg. 
+  We'll include it to be safe. 
+*/
 .star-svg {
   width: 100%;
   height: auto;
   display: block;
 }
 </style>
-  

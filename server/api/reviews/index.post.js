@@ -5,11 +5,15 @@ import { connectDB } from '~/server/utils/dbConnect';
 import { disconnectDB } from '~/server/utils/dbDisconnect';
 
 async function updateItemRating(itemId) {
+  console.log("Updating item: " + itemId);
   // Get all reviews for the given item
   const reviews = await Review.find({ itemId });
   const reviewCount = reviews.length;
+  console.log("Reviews: " + reviewCount);
   const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+  console.log("Total Rating: " + totalRating);
   const averageRating = reviewCount > 0 ? totalRating / reviewCount : 0;
+  console.log("Average Rating: " + averageRating);
   await Item.findByIdAndUpdate(itemId, { reviewCount, ratings: averageRating });
 }
 

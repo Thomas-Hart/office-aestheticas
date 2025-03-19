@@ -2,13 +2,13 @@
   <div class="modal">
     <div class="modal-content">
       <button @click="closeModal" class="close-button">✖</button>
-      <div class="left">
-        <!-- Image Gallery Section -->
+      <!-- Use the inline component layout inside the modal -->
+      <section class="section">
+        <!-- Image Gallery -->
         <div class="gallery">
           <div class="main-image">
             <img
-              v-if="galleryActiveImage"
-              :src="getImagePath(galleryActiveImage)"
+              :src="getImagePath(computedGalleryImage)"
               alt="Product Image"
             />
             <div class="thumbnails-overlay">
@@ -26,7 +26,7 @@
                   :src="getImagePath(img)"
                   @mouseover="hoverImage(img)"
                   @mouseleave="resetImage"
-                  :class="{ active: galleryActiveImage === img }"
+                  :class="{ active: computedGalleryImage === img }"
                   class="thumbnail"
                 />
               </div>
@@ -40,161 +40,200 @@
             </div>
           </div>
         </div>
-      </div>
-      <div class="right">
-        <!-- Basic Info Section -->
-        <div class="basic-info">
-          <h1 class="product-name">{{ item.name }}</h1>
-          <div class="ratings-row">
-            <div class="stars-container">
-              <img
-                v-for="(star, index) in starImages"
-                :key="index"
-                :src="star"
-                alt="Star"
-                class="star-icon"
-              />
-            </div>
-            <span v-if="item.reviewCount > 0" class="rating-number">
-              ({{ item.reviewCount.toFixed(0) }})
-            </span>
-            <span v-else>No Reviews</span>
-          </div>
-          <p class="product-description">{{ item.description }}</p>
-        </div>
 
-        <!-- Variant Selector Section -->
-        <div
-          v-if="item.variants && item.variants.length"
-          class="variant-selector"
-        >
-          <div
-            v-for="attribute in availableAttributes"
-            :key="attribute"
-            class="attribute-section"
-          >
-            <div class="attribute-label">
-              <h2 class="attribute-name">{{ capitalize(attribute) }}:</h2>
-              <h2 v-if="attribute !== 'color'" class="current-attribute">
-                {{ selectedAttributes[attribute] }}
-              </h2>
-              <h2
-                v-else-if="
-                  attribute === 'color' &&
-                  selectedAttributes[attribute] &&
-                  selectedAttributes[attribute].name
-                "
-                class="current-attribute"
-                :style="{ color: '#' + selectedAttributes[attribute].hex }"
-              >
-                {{ selectedAttributes[attribute].name }}
-              </h2>
+        <div class="checkout-divider"></div>
+
+        <!-- Right Section with Basic Info, Variant Selector, and Cart Controls -->
+        <section class="right-section">
+          <div>
+            <!-- Basic Info -->
+            <div class="basic-info">
+              <h1 class="product-name">{{ item.name }}</h1>
+              <div class="ratings-row">
+                <div class="stars-container">
+                  <SubcomponentsStarRating :rating="item.ratings || 0" />
+                </div>
+                <span v-if="item && item.reviewCount" class="rating-number">
+                  {{ item.ratings }}
+                </span>
+                <span v-if="item && item.reviewCount" class="rating-number">
+                  ({{ (item.reviewCount || 0).toFixed(0) }} Reviews)
+                </span>
+                <span v-else>No Reviews</span>
+              </div>
+              <div v-if="item.variants && item.variants.length" class="pricing">
+                <h2 class="new">${{ selectedVariant.price }}</h2>
+                <h2 v-if="selectedVariant.oldPrice" class="old">
+                  ${{ selectedVariant.oldPrice }}
+                </h2>
+              </div>
+              <div v-else class="pricing">
+                <h2 class="new">${{ item.price }}</h2>
+                <h2 v-if="item.oldPrice" class="old">${{ item.oldPrice }}</h2>
+              </div>
             </div>
-            <div
-              :class="
-                attribute !== 'color'
-                  ? 'attribute-options'
-                  : 'color-attribute-options'
+
+            <p
+              v-if="
+                selectedVariant &&
+                selectedVariant.savingsAmount &&
+                selectedVariant.savingsPercentage &&
+                selectedVariant.savingsAmount > 0 &&
+                !isOutOfStock
               "
+              class="savings-text"
+            >
+              SALE: {{ selectedVariant.savingsPercentage }} OFF! (You save ${{
+                selectedVariant.savingsAmount.toFixed(2)
+              }})
+            </p>
+            <p
+              v-else-if="
+                item.savingsAmount && item.savingsPercentage && !isOutOfStock
+              "
+              class="savings-text"
+            >
+              SALE: {{ item.savingsPercentage }} OFF! (You save ${{
+                (item.savingsAmount || 0).toFixed(2)
+              }})
+            </p>
+
+            <div class="checkout-divider"></div>
+
+            <!-- Variant Selector -->
+            <div
+              v-if="item.variants && item.variants.length"
+              class="variant-selector"
             >
               <div
-                v-for="option in getOptions(attribute)"
-                :key="optionKey(attribute, option)"
-                :class="[
-                  attribute !== 'color' ? 'attribute-option' : 'color-circle',
-                  {
-                    selected: isSelected(attribute, option.value),
-                    unavailable: !option.isAvailable,
-                    'out-of-stock': option.isOutOfStock,
-                  },
-                ]"
-                @click="selectOption(attribute, option)"
+                v-for="attribute in availableAttributes"
+                :key="attribute"
+                class="attribute-section"
               >
+                <div class="attribute-label">
+                  <h2 class="attribute-name">{{ capitalize(attribute) }}:</h2>
+                  <h2 v-if="attribute !== 'color'" class="current-attribute">
+                    {{ selectedAttributes[attribute] }}
+                  </h2>
+                  <h2
+                    v-else-if="
+                      attribute === 'color' &&
+                      selectedAttributes[attribute] &&
+                      selectedAttributes[attribute].name
+                    "
+                    class="current-attribute"
+                    :style="{ color: '#' + selectedAttributes[attribute].hex }"
+                  >
+                    {{ selectedAttributes[attribute].name }}
+                  </h2>
+                </div>
                 <div
-                  v-if="attribute === 'color'"
-                  :style="{ backgroundColor: '#' + option.value.hex }"
-                  class="color"
-                ></div>
-                <div v-else class="option">
-                  <div class="option-text">
-                    {{ option.value }}
-                  </div>
-                  <div class="availability-container">
-                    <h3 v-if="option.isOutOfStock">Out Of Stock</h3>
-                    <h3 v-else-if="!option.isAvailable">
-                      See Available Options
-                    </h3>
-                    <h3 v-else class="in-stock">In Stock</h3>
+                  :class="
+                    attribute !== 'color'
+                      ? 'attribute-options'
+                      : 'color-attribute-options'
+                  "
+                >
+                  <div
+                    v-for="option in getOptions(attribute)"
+                    :key="optionKey(attribute, option)"
+                    :class="[
+                      attribute !== 'color'
+                        ? 'attribute-option'
+                        : 'color-circle',
+                      {
+                        selected: isSelected(attribute, option.value),
+                        unavailable: !option.isAvailable,
+                        'out-of-stock': option.isOutOfStock,
+                      },
+                    ]"
+                    @click="selectOption(attribute, option)"
+                  >
+                    <div
+                      v-if="attribute === 'color'"
+                      :style="{ backgroundColor: '#' + option.value.hex }"
+                      class="color"
+                    ></div>
+                    <div v-else class="option">
+                      <div class="option-text">{{ option.value }}</div>
+                      <div class="availability-container">
+                        <h3 v-if="option.isOutOfStock">Out Of Stock</h3>
+                        <h3 v-else-if="!option.isAvailable">
+                          See Available Options
+                        </h3>
+                        <h3 v-else class="in-stock">In Stock</h3>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Quantity and Add-to-Cart Section -->
-        <div>
-          <div class="item-quantity">
-            <button @click="decreaseQuantity(item)">-</button>
-            <p v-if="itemInCart">{{ itemInCart.quantity }}</p>
-            <p v-else>0</p>
-            <button @click="increaseQuantity(item)">+</button>
-          </div>
-          <div v-if="isOutOfStock" class="notify-wrapper">
-            <p>
-              This item is currently out of stock. Enter your email to be
-              notified when it becomes available:
-            </p>
-            <div class="input-wrapper">
-              <input
-                type="email"
-                v-model="email"
-                placeholder="Enter your email"
-              />
-              <button @click="notifyMe" class="notify-button">Notify Me</button>
+          <!-- Quantity & Add-To-Cart Section -->
+          <div>
+            <div class="item-quantity">
+              <button @click="handleDecreaseQuantity">-</button>
+              <p v-if="itemInCart">{{ itemInCart.quantity }}</p>
+              <p v-else>0</p>
+              <button @click="handleIncreaseQuantity">+</button>
             </div>
+            <div v-if="isOutOfStock" class="notify-wrapper">
+              <p>
+                This item is currently out of stock. Enter your email to be
+                notified when it becomes available:
+              </p>
+              <div class="input-wrapper">
+                <input
+                  type="email"
+                  v-model="email"
+                  placeholder="Enter your email"
+                />
+                <button @click="handleNotifyMe" class="notify-button">
+                  Notify Me
+                </button>
+              </div>
+            </div>
+            <button v-else @click="handleAddToCart" class="add-to-cart-button">
+              <span
+                v-if="
+                  selectedVariant &&
+                  selectedVariant.oldPrice &&
+                  selectedVariant.oldPrice > selectedVariant.price
+                "
+                class="old-price"
+              >
+                ${{ selectedVariant.oldPrice.toFixed(2) }}
+              </span>
+              <span v-else class="old-price">
+                ${{ item.oldPrice.toFixed(2) }}
+              </span>
+              <span
+                v-if="selectedVariant && selectedVariant.price"
+                class="new-price"
+              >
+                ${{ selectedVariant.price.toFixed(2) }}
+              </span>
+              <span v-else class="new-price">
+                ${{ item.price.toFixed(2) }}
+              </span>
+              | Add to Cart
+            </button>
           </div>
-          <button v-else @click="addToCart" class="add-to-cart-button">
-            <span
-              v-if="
-                selectedVariant &&
-                selectedVariant.oldPrice &&
-                selectedVariant.oldPrice > selectedVariant.price
-              "
-              class="old-price"
-            >
-              ${{ selectedVariant.oldPrice.toFixed(2) }}
-            </span>
-            <span v-else class="old-price">
-              ${{ item.oldPrice.toFixed(2) }}
-            </span>
-            <span
-              class="new-price"
-              v-if="selectedVariant && selectedVariant.price"
-            >
-              ${{ selectedVariant.price.toFixed(2) }}
-            </span>
-            <span class="new-price" v-else> ${{ item.price.toFixed(2) }} </span>
-            | Add to Cart
-          </button>
-        </div>
-      </div>
+        </section>
+      </section>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
-
-// --- Props & External Stores ---
 const props = defineProps({
-  item: Object,
+  item: { type: Object, required: true },
 });
-const emit = defineEmits(["closeModal", "variantSelected", "addToCart"]);
+const emit = defineEmits(["closeModal"]);
 const itemStore = useItemStore();
 const userStore = useUserStore();
 const isLoggedIn = computed(() => !!userStore.user);
-console.log("Image variant modal: " + JSON.stringify(props.item.image));
 
 // --- Modal Variables & Functions ---
 const email = ref("");
@@ -206,7 +245,7 @@ const selectedVariant = ref(
 const isOutOfStock = computed(() => {
   return selectedVariant.value && selectedVariant.value.stock === 0;
 });
-function notifyMe() {
+function handleNotifyMe() {
   if (email.value && isOutOfStock.value) {
     alert(
       `You will be notified when this item is back in stock at ${email.value}.`
@@ -214,6 +253,8 @@ function notifyMe() {
     email.value = "";
   }
 }
+
+// --- Quantity & Cart Logic Using Store Methods ---
 const itemInCart = computed(() => {
   if (!isLoggedIn.value) {
     return itemStore.cart.find(
@@ -229,7 +270,7 @@ const itemInCart = computed(() => {
     );
   }
 });
-const increaseQuantity = () => {
+function handleIncreaseQuantity() {
   if (selectedVariant.value) {
     if (itemInCart.value) {
       if (!isLoggedIn.value) {
@@ -246,7 +287,7 @@ const increaseQuantity = () => {
         });
       }
     } else {
-      addToCart();
+      handleAddToCart();
     }
   } else {
     if (itemInCart.value) {
@@ -262,11 +303,11 @@ const increaseQuantity = () => {
         });
       }
     } else {
-      addToCart();
+      handleAddToCart();
     }
   }
-};
-const decreaseQuantity = () => {
+}
+function handleDecreaseQuantity() {
   if (selectedVariant.value) {
     if (itemInCart.value && itemInCart.value.quantity > 1) {
       if (!isLoggedIn.value) {
@@ -302,15 +343,15 @@ const decreaseQuantity = () => {
       removeFromCart(props.item._id);
     }
   }
-};
-const removeFromCart = (itemId, variantId) => {
+}
+function removeFromCart(itemId, variantId) {
   if (!isLoggedIn.value) {
     itemStore.removeFromCart(itemId, variantId);
   } else {
     userStore.removeFromCart(itemId, variantId);
   }
-};
-function addToCart() {
+}
+function handleAddToCart() {
   if (!isLoggedIn.value) {
     itemStore.addToCart(props.item, selectedVariant.value);
   } else {
@@ -375,27 +416,7 @@ onMounted(() => {
   }
 });
 
-// --- Basic Info Section ---
-function getStarImages(rating) {
-  const fullStar = "/Graphics/FullStar.svg";
-  const halfStar = "/Graphics/HalfStar.svg";
-  const emptyStar = "/Graphics/EmptyStar.svg";
-  const starImages = [];
-  const roundedRating = Math.round(rating * 2) / 2;
-  for (let i = 0; i < 5; i++) {
-    if (roundedRating - i >= 1) {
-      starImages.push(fullStar);
-    } else if (roundedRating - i === 0.5) {
-      starImages.push(halfStar);
-    } else {
-      starImages.push(emptyStar);
-    }
-  }
-  return starImages;
-}
-const starImages = computed(() => getStarImages(props.item.ratings || 0));
-
-// --- Variants Section ---
+// --- Variant Selector Logic ---
 const selectedAttributes = ref({});
 const selectableAttributes = [
   "color",
@@ -575,14 +596,13 @@ onMounted(() => {
       }
     });
     selectedVariant.value = defaultVariant;
-    // Optionally, update the gallery image if a variant image exists.
     galleryActiveImage.value = defaultVariant.image || props.item.image;
   }
 });
 </script>
 
 <style scoped>
-/* Modal Styles */
+/* Modal Overlay & Content */
 .modal {
   position: fixed !important;
   top: 0;
@@ -614,27 +634,47 @@ onMounted(() => {
   cursor: pointer;
 }
 
-/* Gallery Styles */
+/* Inline Layout & Styling (applied inside the modal) */
+.section {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  gap: 2rem;
+  padding: 0 2rem;
+}
+.checkout-divider {
+  width: 1px;
+  background-color: #ddd;
+  align-self: stretch;
+}
+.right-section {
+  min-height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 2rem;
+  padding-top: 3rem;
+  flex: 1;
+}
+
+/* Image Gallery Styles */
 .gallery {
   position: relative;
   background: white;
-  margin-right: 2rem;
+  flex: 1;
 }
 .main-image {
   position: relative;
-  width: 600px;
-  height: 550px;
-  border: 1px solid black;
+  width: 100%;
+  height: auto;
+  margin-top: 3rem;
 }
 .main-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(0.85);
   transition: all 0.2s ease-out;
-}
-.main-image img:hover {
-  transform: scale(0.9);
 }
 .thumbnails-overlay {
   position: absolute;
@@ -734,6 +774,7 @@ onMounted(() => {
 .attribute-label {
   display: flex;
   gap: 0.3rem;
+  margin-bottom: 1.2rem;
 }
 .attribute-name {
   color: #ccc;
@@ -818,7 +859,7 @@ onMounted(() => {
   color: green;
 }
 
-/* Quantity and Cart Button Styles */
+/* Quantity & Add-To-Cart Styles */
 .item-quantity {
   display: flex;
   gap: 1rem;
