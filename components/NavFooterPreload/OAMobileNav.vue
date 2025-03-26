@@ -19,24 +19,72 @@
       </div>
 
       <!-- Transition wrapper for switching between Links and Categories -->
-      <!-- Added mode="out-in" and keys to each component -->
       <transition name="fade" mode="out-in">
         <!-- Categories View -->
-        <NavFooterPreloadShopCategories
-          v-if="activeView !== 'links'"
-          key="categories"
-          @switchToLinks="trackAndSwitchToLinks"
-          @close-mobile-nav="trackAndCloseNav"
-        />
+        <template v-if="activeView !== 'links'" key="categories">
+          <ul class="mobile-category-list">
+            <!-- Back button (shown on mobile) -->
+            <li
+              v-if="mobileView"
+              @click="trackAndSwitchToLinks"
+              class="back-button"
+            >
+              ← Back
+            </li>
+            <!-- List of categories -->
+            <li
+              v-for="cat in categories"
+              :key="cat"
+              @click="trackAndNavigateToCategory(cat)"
+            >
+              {{ cat }}
+            </li>
+          </ul>
+        </template>
 
         <!-- Links View -->
-        <NavFooterPreloadMobileNavLinks
-          v-else
-          key="links"
-          @switchToCategories="trackAndSwitchToCategories"
-          @open-shop-menu="activeView = 'menu'"
-          @closeNav="trackAndCloseNav"
-        />
+        <template v-else key="links">
+          <ul class="mobile-nav-list">
+            <!-- Home -->
+            <li>
+              <NuxtLink to="/" @click="closeAndReset('Home')"> Home </NuxtLink>
+            </li>
+
+            <!-- Blog -->
+            <li>
+              <NuxtLink to="/blog" @click="closeAndReset('Blog')">
+                Blog
+              </NuxtLink>
+            </li>
+
+            <!-- Profile -->
+            <li>
+              <NuxtLink to="/profile" @click="closeAndReset('Profile')">
+                Profile
+              </NuxtLink>
+            </li>
+
+            <!-- Wishlist -->
+            <li>
+              <NuxtLink
+                to="/profile?section=wishlist"
+                @click="closeAndReset('Wishlist')"
+              >
+                Wishlist
+              </NuxtLink>
+            </li>
+
+            <!-- Shop button -->
+            <li>
+              <button @click="trackShopClick">Shop</button>
+            </li>
+
+            <!-- Search placeholder -->
+            <li>
+              <button disabled>Search (coming soon)</button>
+            </li>
+          </ul>
+        </template>
       </transition>
     </div>
   </div>
@@ -44,40 +92,19 @@
 
 <script setup>
 const emit = defineEmits(["close"]);
-
-const activeView = ref("");
+const activeView = ref(""); // "" for categories view, "links" for links view
+const mobileView = ref(false);
 
 const userStore = useUserStore();
-
-// Check if user is logged in
 const isLoggedIn = computed(() => !!userStore.token);
-
-// Inject Meta Pixel and Klaviyo with $ prefix
 const { $fbq } = useNuxtApp();
 const { $klaviyo } = useNuxtApp();
+const router = useRouter();
 
-/** Close nav and track the action. */
-function trackAndCloseNav() {
-  trackNavigation("MobileNav", "close");
-  emit("close");
-  activeView.value = "links";
-}
-
-/** Switch to Categories view and track the action. */
-function trackAndSwitchToCategories() {
-  trackNavigation("Categories");
-  activeView.value = "categories";
-}
-
-/** Switch to Links view and track the action. */
-function trackAndSwitchToLinks() {
-  trackNavigation("Links");
-  activeView.value = "links";
-}
-
-/** Track navigation or interaction events with Meta Pixel and Klaviyo, including login status and user data. */
+// Unified tracking function for all events
 function trackNavigation(actionType, action = null) {
-  let eventName, properties;
+  let eventName = "";
+  let properties = {};
 
   if (actionType === "MobileNav" && action === "close") {
     eventName = "ClosedMobileNav";
@@ -97,10 +124,17 @@ function trackNavigation(actionType, action = null) {
       view: "links",
       timestamp: new Date().toISOString(),
     };
-  } else if (actionType === "Home") {
-    eventName = "NavigatedToHome";
+  } else if (actionType === "Category") {
+    eventName = "NavigatedToCategory";
     properties = {
-      pageName: "Home",
+      category: action,
+      timestamp: new Date().toISOString(),
+    };
+  } else if (typeof actionType === "string") {
+    // For Home, Blog, Profile, Wishlist, Shop, etc.
+    eventName = `NavigatedTo${actionType}`;
+    properties = {
+      pageName: actionType,
       timestamp: new Date().toISOString(),
     };
   }
@@ -121,15 +155,57 @@ function trackNavigation(actionType, action = null) {
         isLoggedIn: false,
       };
 
-  // Track with Meta Pixel
   $fbq("trackCustom", eventName, enhancedProperties);
-
-  // Track with Klaviyo
   $klaviyo("track", eventName, enhancedProperties);
 }
 
-/** Handle resize logic. */
+// Parent component functions
+function trackAndCloseNav() {
+  trackNavigation("MobileNav", "close");
+  emit("close");
+  activeView.value = "links";
+}
+
+function trackAndSwitchToCategories() {
+  trackNavigation("Categories");
+  activeView.value = "categories";
+}
+
+function trackAndSwitchToLinks() {
+  trackNavigation("Links");
+  activeView.value = "links";
+}
+
+// Links view functions
+function closeAndReset(pageName) {
+  trackNavigation(pageName);
+  trackAndCloseNav();
+}
+
+function trackShopClick() {
+  trackNavigation("Shop");
+  trackAndSwitchToCategories();
+}
+
+// Categories view function
+function trackAndNavigateToCategory(category) {
+  trackNavigation("Category", category);
+  router.push({
+    path: "/",
+    query: {
+      tab: "All",
+      category,
+    },
+  });
+  if (window.innerWidth < 768) {
+    trackAndSwitchToLinks();
+  }
+  trackAndCloseNav();
+}
+
+// Responsive resize logic to set mobile view and initial active view
 function handleResize() {
+  mobileView.value = window.innerWidth < 768;
   activeView.value = window.innerWidth < 768 ? "links" : "";
 }
 
@@ -141,10 +217,26 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
 });
+
+// Hard-coded categories list
+const categories = [
+  "Desks and Tables",
+  "Chairs and Seating",
+  "Computers and Electronics",
+  "Office Supplies",
+  "Ergonomic Accessories",
+  "Lighting",
+  "Decor and Comfort",
+  "Communication",
+  "Health and Wellness",
+  "Networking and Security",
+  "Cleaning and Maintenance",
+  "Storage Solutions",
+];
 </script>
 
 <style scoped>
-/* Dark, full-screen overlay */
+/* Parent component styles */
 .overlay {
   position: fixed;
   top: 0;
@@ -158,7 +250,6 @@ onBeforeUnmount(() => {
   padding: 1rem;
 }
 
-/* The slide-out container */
 .mobile-nav-content {
   width: 20rem;
   max-width: 100%;
@@ -169,7 +260,6 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-
   font-family: "Montserrat", sans-serif;
   line-height: 1.4;
 }
@@ -180,7 +270,6 @@ onBeforeUnmount(() => {
   margin-bottom: -1rem;
 }
 
-/* Close Button */
 .close-button {
   background: none;
   border: none;
@@ -188,7 +277,6 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
-/* Logo container near the top */
 .mobile-nav-logo {
   display: flex;
 }
@@ -197,7 +285,7 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 
-/* Fade transition for switching between Links and Categories */
+/* Fade transition for switching between views */
 .fade-enter-active,
 .fade-leave-active {
   opacity: 1;
@@ -212,5 +300,73 @@ onBeforeUnmount(() => {
   .mobile-nav-content {
     padding: 1rem 2rem;
   }
+}
+
+/* Categories view styles */
+.mobile-category-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  padding: 0;
+}
+
+.mobile-category-list li {
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.mobile-category-list li:hover {
+  font-weight: bold;
+}
+
+.back-button {
+  font-size: 1.1rem;
+  margin-bottom: 1.2rem;
+  color: #777;
+}
+
+@media (max-width: 480px) {
+  .mobile-category-list li {
+    margin-bottom: 0.65rem;
+    font-size: 1.2rem;
+  }
+}
+
+/* Links view styles */
+.mobile-nav-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.mobile-nav-list li {
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.mobile-nav-list li:after {
+  content: ">";
+}
+
+.mobile-nav-list li:hover {
+  font-weight: bold;
+}
+
+button {
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  background: none;
+  border: none;
+}
+
+button:hover {
+  font-weight: bold;
 }
 </style>

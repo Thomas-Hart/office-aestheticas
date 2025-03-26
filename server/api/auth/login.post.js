@@ -16,15 +16,20 @@ export default defineEventHandler(async (event) => {
         // Finding the user by email
         const user = await User.findOne({ email });
 
+        console.log("user: " + JSON.stringify(user));
+        console.log("email: " + email);
+        console.log("password: " + password);
+
         // If no user is found, or the password does not match
-        if (!user || !(await bcrypt.compare(password, user.password))) {
+        if (!user || !password || !user.password || !(await bcrypt.compare(password, user.password))) {
             throw createError({ statusCode: 401, message: 'Invalid credentials' });
         }
+        
 
         // Creating a JWT for the user
         const token = jwt.sign(
             { userId: user._id, email: user.email },
-            config.JWT_SECRET,
+            config.private.JWT_SECRET,
             { expiresIn: '1h' }
         );
 
@@ -32,7 +37,7 @@ export default defineEventHandler(async (event) => {
         return { token, user: user };
 
     } catch (error) {
-        console.error('Error in POST /api/login:', error);
+        console.error('Error in POST /api/auth/login:', error);
         if (error.statusCode === 401) {
             throw createError({ statusCode: 401, message: 'Invalid credentials' });
         }

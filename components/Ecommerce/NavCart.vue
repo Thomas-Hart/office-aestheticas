@@ -762,6 +762,33 @@ async function handleOrderCompleted(orderData) {
 
 /* Responsive Mobile Styles */
 @media (max-width: 1024px) {
+  .checkout-panel-full {
+    padding: 0;
+  }
+  .checkout-container {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 325px;
+  }
+
+  .checkout-right {
+    position: relative;
+    padding-bottom: 2rem;
+  }
+  .right-wrapper {
+    padding: 1rem;
+    width: 100%;
+  }
+  .checkout-left {
+    position: relative;
+  }
+  .right-wrapper {
+    padding: 2rem;
+  }
+  .left-wrapper {
+    padding: 1rem;
+  }
   .cart-wrapper {
     width: 55%;
   }
@@ -779,16 +806,11 @@ async function handleOrderCompleted(orderData) {
     width: 100%;
     height: 100%;
   }
-  .cart-wrapper,
-  .checkout-panel-full {
+  .cart-wrapper {
     width: 100%;
     height: 100%;
     padding: 1rem;
     box-shadow: none;
-  }
-  .checkout-left,
-  .checkout-right {
-    padding: 1rem;
   }
   .cart-actions {
     gap: 0rem;

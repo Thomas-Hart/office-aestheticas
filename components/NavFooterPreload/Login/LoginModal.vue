@@ -108,12 +108,12 @@ const handleGoogleLogin = async (response) => {
         content_name: "Office Aestheticas Google Login",
         email: response.user.email,
       });
-      await $klaviyoClientApi.subscribe(
-        useRuntimeConfig().public.TEST_KLAVIYO_OA_USERS_ID, // Replace with your Klaviyo list ID
-        response.user.email,
-        null,
-        "Office Aestheticas Google Signup"
-      );
+      // await $klaviyoClientApi.subscribe(
+      //   useRuntimeConfig().public.TEST_KLAVIYO_OA_USERS_ID, // Replace with your Klaviyo list ID
+      //   response.user.email,
+      //   null,
+      //   "Office Aestheticas Google Signup"
+      // );
       if (!isLocalhost()) {
         $fbq("track", "LoggedIn", {
           source: "Login Modal",
@@ -152,14 +152,14 @@ const handleLoginError = (error) => {
 };
 
 const handleSignUp = async (signUpData) => {
-  const { $fbq, $klaviyoClientApi } = useNuxtApp();
+  const { $fbq, $klaviyoClientApi, $klaviyo } = useNuxtApp();
 
-  await $klaviyoClientApi.subscribe(
-    useRuntimeConfig().public.TEST_KLAVIYO_OA_USERS_ID, // Replace with your Klaviyo list ID
-    signUpData.email,
-    null,
-    "Office Aestheticas Email Signup"
-  );
+  // await $klaviyoClientApi.subscribe(
+  //   useRuntimeConfig().public.TEST_KLAVIYO_OA_USERS_ID, // Replace with your Klaviyo list ID
+  //   signUpData.email,
+  //   null,
+  //   "Office Aestheticas Email Signup"
+  // );
   $klaviyo("identify", { email: signUpData.email });
   if (!isLocalhost()) {
     $fbq("track", "CompleteRegistration", {

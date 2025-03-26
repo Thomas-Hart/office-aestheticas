@@ -7,12 +7,10 @@
         <nav class="breadcrumb" aria-label="Breadcrumb">
           <ul class="breadcrumb-list">
             <li class="breadcrumb-item">
-              <NuxtLink to="/" @click="trackNavigation('Home')">Home</NuxtLink>
+              <NuxtLink to="/">Home</NuxtLink>
             </li>
             <li class="breadcrumb-item">
-              <NuxtLink to="/blog" @click="trackNavigation('Blog')"
-                >Blog</NuxtLink
-              >
+              <NuxtLink to="/blog">Blog</NuxtLink>
             </li>
             <li class="breadcrumb-item active" aria-current="page">
               {{ selectedTag || "All Posts" }}
@@ -23,22 +21,14 @@
         <div class="filters sticky-filters">
           <h3>Filter by</h3>
           <label for="tag-filter">Topic</label>
-          <select
-            id="tag-filter"
-            :value="selectedTag"
-            @change="trackAndOnTagChange"
-          >
+          <select id="tag-filter" :value="selectedTag" @change="onTagChange">
             <option value="">All Tags</option>
             <option v-for="tag in allTags" :key="tag" :value="tag">
               {{ formatTag(tag) }}
             </option>
           </select>
           <label for="sort-filter">Sorting</label>
-          <select
-            id="sort-filter"
-            :value="sortOption"
-            @change="trackAndOnSortChange"
-          >
+          <select id="sort-filter" :value="sortOption" @change="onSortChange">
             <option value="alphabetical">Alphabetical</option>
             <option value="reverse-alphabetical">Reverse Alphabetical</option>
             <option value="most-recent">Most Recent</option>
@@ -59,7 +49,7 @@
               v-for="(blog, index) in sortedFeatured"
               :key="blog._id"
               class="featured-blog"
-              @click="trackViewContent(blog._id, blog.mainTitle, blog.tags)"
+              @click="goToBlog(blog._id)"
             >
               <div class="featured-thumbnail">
                 <NuxtImg
@@ -117,13 +107,7 @@
             :key="blog._id"
             class="blog-entry"
           >
-            <NuxtLink
-              class="blog-entry__thumbnail"
-              :to="`/blog/${blog._id}`"
-              @click.native="
-                trackViewContent(blog._id, blog.mainTitle, blog.tags)
-              "
-            >
+            <NuxtLink class="blog-entry__thumbnail" :to="`/blog/${blog._id}`">
               <NuxtImg
                 :src="resolvedImgPath(blog.thumbnail)"
                 :alt="
@@ -167,7 +151,6 @@
         <div
           v-if="loading && currentPage > 1"
           class="infinite-loading-indicator"
-          @appear="trackAndFetchMoreBlogs"
         >
           <div class="spinner"></div>
         </div>
@@ -179,15 +162,6 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "#imports";
-
-const userStore = useUserStore();
-
-// Check if user is logged in
-const isLoggedIn = computed(() => !!userStore.token);
-
-// Inject Meta Pixel and Klaviyo with $ prefix
-const { $fbq } = useNuxtApp();
-const { $klaviyo } = useNuxtApp();
 
 // Reactive state
 const selectedTag = ref("");
@@ -268,17 +242,8 @@ const onTagChange = (event) => {
 };
 
 const onSortChange = (event) => {
+  // Sorting is handled locally.
   sortOption.value = event.target.value;
-};
-
-const trackAndOnTagChange = (event) => {
-  trackNavigation("TagFilter", event.target.value);
-  onTagChange(event);
-};
-
-const trackAndOnSortChange = (event) => {
-  trackNavigation("SortOption", event.target.value);
-  onSortChange(event);
 };
 
 const resetAndFetch = () => {
@@ -291,33 +256,6 @@ const router = useRouter();
 const goToBlog = (blogId) => {
   router.push(`/blog/${blogId}`);
 };
-
-function trackViewContent(blogId, title, tags) {
-  const contentCategory =
-    tags && tags.length ? tags.join(", ") : "Uncategorized";
-  const viewContentData = {
-    content_type: "blog",
-    content_id: blogId,
-    content_name: title || "Untitled Blog",
-    content_category: contentCategory,
-  };
-
-  // Track with Klaviyo
-  $klaviyo("track", "ViewContent", viewContentData);
-
-  // Track with Meta Pixel
-  $fbq("track", "ViewContent", viewContentData);
-
-  // Additional custom tracking with user data
-  trackNavigation("ViewContent", { blogId, title, contentCategory });
-}
-
-function trackAndFetchMoreBlogs() {
-  if (!loading.value && !allLoaded.value) {
-    trackNavigation("MoreBlogs", currentPage.value + 1);
-    fetchBlogs(currentPage.value + 1);
-  }
-}
 
 function resolvedImgPath(path) {
   return path ? `/BlogPics/${path}` : "/HARTECHOLogo.webp";
@@ -391,77 +329,6 @@ const createObserver = () => {
     observer.observe(loadMoreTrigger.value);
   }
 };
-
-/** Track navigation or interaction events with Meta Pixel and Klaviyo, including login status and user data. */
-function trackNavigation(actionType, action = null) {
-  let eventName, properties;
-
-  if (actionType === "Home") {
-    eventName = "NavigatedToHome";
-    properties = {
-      pageName: "Home",
-      timestamp: new Date().toISOString(),
-    };
-  } else if (actionType === "Blog") {
-    eventName = "NavigatedToBlogPage";
-    properties = {
-      pageName: "Blog",
-      timestamp: new Date().toISOString(),
-    };
-  } else if (actionType === "TagFilter") {
-    eventName = "ChangedTagFilter";
-    properties = {
-      tag: action || "",
-      timestamp: new Date().toISOString(),
-    };
-  } else if (actionType === "SortOption") {
-    eventName = "ChangedSortOption";
-    properties = {
-      sortOption: action || "",
-      timestamp: new Date().toISOString(),
-    };
-  } else if (actionType === "ViewContent") {
-    eventName = "ViewedBlogContent";
-    properties = {
-      blogId: action.blogId,
-      title: action.title || "Untitled Blog",
-      contentCategory: action.contentCategory,
-      timestamp: new Date().toISOString(),
-    };
-  } else if (actionType === "MoreBlogs") {
-    eventName = "LoadedMoreBlogs";
-    properties = {
-      page: action,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  const enhancedProperties = isLoggedIn.value
-    ? {
-        ...properties,
-        isLoggedIn: true,
-        userId: userStore.user._id,
-        email: userStore.user.email,
-        cartSize: userStore.user.cart.length,
-        wishlistSize: userStore.user.wishlist.length,
-        recentlyViewedCount: userStore.user.recentlyViewedItems.length,
-        location: `${userStore.user.contact.city}, ${userStore.user.contact.state}`,
-      }
-    : {
-        ...properties,
-        isLoggedIn: false,
-      };
-
-  // Track with Meta Pixel (custom event only if not ViewContent)
-  if (eventName !== "ViewedBlogContent") {
-    $fbq("trackCustom", eventName, enhancedProperties);
-  }
-
-  // Track with Klaviyo (custom event only if not ViewContent)
-  if (eventName !== "ViewedBlogContent") {
-    $klaviyo("track", eventName, enhancedProperties);
-  }
-}
 
 onMounted(() => {
   createObserver();
