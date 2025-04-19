@@ -478,6 +478,7 @@ async function handleOrderCompleted(orderData) {
   width: 100%;
   padding-bottom: 1rem;
   display: flex;
+  justify-content: space-between;
   margin-bottom: 1rem;
 }
 .item-image {
@@ -775,10 +776,13 @@ async function handleOrderCompleted(orderData) {
   .checkout-right {
     position: relative;
     padding-bottom: 2rem;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
   }
   .right-wrapper {
     padding: 1rem;
-    width: 100%;
+    min-width: 100%;
   }
   .checkout-left {
     position: relative;

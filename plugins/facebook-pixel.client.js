@@ -12,7 +12,6 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Initialize the Facebook Pixel
   const initFacebookPixel = () => {
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
       !(function (f, b, e, v, n, t, s) {
         if (f.fbq) return;
         n = f.fbq = function () {
@@ -32,9 +31,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       const pixelID = useRuntimeConfig().public.META_PIXEL_ID;
       fbq('init', pixelID);
       fbq('track', 'PageView');
-    } else {
-      console.log('On localhost. Pixel not loaded.');
-    }
+    
   };
 
   // Load the pixel when the browser is idle

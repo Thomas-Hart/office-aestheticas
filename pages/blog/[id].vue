@@ -670,7 +670,6 @@ h3.subheading {
   margin-top: 3rem;
   padding: 2rem;
   background: #f9f9f9;
-  border-radius: 8px;
   margin-left: auto;
   margin-right: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);

@@ -353,7 +353,7 @@ emit("hide-loading");
   flex-direction: column;
   justify-content: center;
   padding: 2rem 0;
-  margin-top: 75px;
+  margin-top: 0;
 }
 
 .content-container {
@@ -371,7 +371,6 @@ emit("hide-loading");
 
 .right-column {
   width: 70%;
-  margin-top: 5rem;
 }
 
 .filter-title {

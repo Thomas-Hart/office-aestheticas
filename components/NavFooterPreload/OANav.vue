@@ -285,7 +285,7 @@ function trackAndNavigate(pageName) {
 }
 function trackAndOpenShopMenu(pageName) {
   trackNavigation(pageName);
-  emit("open-shop-menu");
+  emit("toggle-mobile-nav");
 }
 
 // Mobile nav handlers

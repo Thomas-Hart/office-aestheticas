@@ -1,6 +1,5 @@
 // plugins/klaviyo-pixel.client.js
 export default defineNuxtPlugin((nuxtApp) => {
-  // Default no-op fallback functions (for SSR)
   const defaultKlaviyoWrapper = (...args) => {
     console.warn('Klaviyo is not available during SSR.');
   };
@@ -19,8 +18,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     });
 
     const publicApiKey = useRuntimeConfig().public.TEST_KLAVIYO_PUBLIC_KEY;
+    console.log('Klaviyo publicApiKey:', publicApiKey);
     if (!publicApiKey) {
-      console.warn('Klaviyo public API key not found in runtime config. Tracking will not function.');
+      console.warn('Klaviyo public API key not found in runtime config.');
       nuxtApp.provide('klaviyo', defaultKlaviyoWrapper);
       nuxtApp.provide('klaviyoClientApi', defaultKlaviyoClientApi);
       return;
@@ -50,13 +50,13 @@ export default defineNuxtPlugin((nuxtApp) => {
       setTimeout(() => initKlaviyoPixel(), 2000);
     }
 
-    // Client-side wrapper that pushes to _learnq
     const klaviyoWrapper = (...args) => {
+      console.log('klaviyoWrapper args:', args);
       if (window._learnq) {
         window._learnq.push(args);
-        // Send to server endpoint for server-side tracking
         const [method, eventName, properties = {}] = args;
         if (method === 'track') {
+          console.log('Sending track to server:', eventName, properties);
           $fetch('/api/klaviyo-events', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -69,6 +69,7 @@ export default defineNuxtPlugin((nuxtApp) => {
             }),
           }).catch(err => console.error('Server Klaviyo Track Error:', err));
         } else if (method === 'identify') {
+          console.log('Sending identify to server:', properties);
           $fetch('/api/klaviyo-events', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -85,24 +86,22 @@ export default defineNuxtPlugin((nuxtApp) => {
     };
 
     const clientApiCall = async (endpoint, body) => {
+      console.log(`clientApiCall`, endpoint, body);
       try {
         const response = await $fetch(`https://a.klaviyo.com${endpoint}?company_id=${publicApiKey}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            revision: '2024-10-15', // Updated to latest API revision
+            revision: '2024-10-15',
           },
           body: JSON.stringify(body),
         });
+        console.log(`clientApiCall success`, endpoint, response);
 
-        // Forward to server-side endpoint for dual tracking
         await $fetch('/api/klaviyo-client', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            endpoint,
-            body,
-          }),
+          body: JSON.stringify({ endpoint, body }),
         }).catch(err => console.error('Server Klaviyo Client API Error:', err));
 
         return response;
@@ -114,31 +113,21 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     const klaviyoClientApi = {
       subscribe: (listId, email, phoneNumber, source = 'Website Form') => {
+        console.log('subscribe() called with', { listId, email, phoneNumber, source });
         const attributes = { list_id: listId, email, custom_source: source };
-        if (phoneNumber) {
-          attributes.phone_number = phoneNumber;
-        }
-        return clientApiCall('/client/subscriptions', {
-          data: { type: 'subscription', attributes },
+        if (phoneNumber) attributes.phone_number = phoneNumber;
+        return clientApiCall('/client/subscriptions', { data: { type: 'subscription', attributes } });
+      },
+      trackEvent: (profile, metric, properties = {}, timestamp = new Date().toISOString(), value = null) => {
+        console.log('trackEvent() called with', { profile, metric, properties, timestamp, value });
+        return clientApiCall('/client/events', {
+          data: { type: 'event', attributes: { profile: profile || {}, metric: { name: metric }, properties, time: timestamp, value } }
         });
       },
-      trackEvent: (profile, metric, properties = {}, timestamp = new Date().toISOString(), value = null) =>
-        clientApiCall('/client/events', {
-          data: {
-            type: 'event',
-            attributes: {
-              profile: profile || {},
-              metric: { name: metric },
-              properties,
-              time: timestamp,
-              value,
-            },
-          },
-        }),
-      updateProfile: (attributes) =>
-        clientApiCall('/client/profiles', {
-          data: { type: 'profile', attributes },
-        }),
+      updateProfile: (attributes) => {
+        console.log('updateProfile() called with', attributes);
+        return clientApiCall('/client/profiles', { data: { type: 'profile', attributes } });
+      },
     };
 
     nuxtApp.provide('klaviyo', klaviyoWrapper);
