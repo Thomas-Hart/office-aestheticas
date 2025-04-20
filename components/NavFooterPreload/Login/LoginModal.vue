@@ -2,14 +2,21 @@
   <div class="modal-overlay" @click.self="closeModal">
     <div class="modal" key="modal">
       <button @click="closeModal" class="close-button">×</button>
+
+      <transition name="fade">
+        <div v-if="showSuccessMessage" class="success-message">
+          Logged in successfully!
+        </div>
+      </transition>
+
       <transition name="fade" mode="out-in">
         <div v-if="!showSignUp" key="loginForm" class="content-wrapper">
           <div class="login-modal-container">
             <h2>Login</h2>
-            <form @submit.prevent="onLoginSubmit" class="login-form-content">
+            <form class="login-form-content">
               <div
                 class="form-group"
-                :class="{ 'has-text': loginEmail?.length > 0 }"
+                :class="{ 'has-text': loginEmail.length > 0 }"
               >
                 <label for="loginEmail">Email</label>
                 <input
@@ -21,7 +28,7 @@
               </div>
               <div
                 class="form-group"
-                :class="{ 'has-text': loginPassword?.length > 0 }"
+                :class="{ 'has-text': loginPassword.length > 0 }"
               >
                 <label for="loginPassword">Password</label>
                 <NavFooterPreloadLoginPasswordInput
@@ -43,12 +50,19 @@
               </transition>
             </form>
             <div class="alternative-methods">
-              <GoogleSignInButton
-                v-if="config?.public?.GOOGLE_CLIENT_ID"
-                @success="handleGoogleLogin"
-                @error="handleLoginError"
-                :client-id="config.public.GOOGLE_CLIENT_ID"
-              />
+              <button
+                v-if="config.public.GOOGLE_CLIENT_ID"
+                type="button"
+                class="google-btn"
+                @click="onGoogleSignIn"
+              >
+                <img
+                  src="/Logos/google-logo.svg"
+                  alt="Google logo"
+                  class="google-logo"
+                />
+                Sign in with Google
+              </button>
             </div>
             <button @click="switchToSignUp" class="switch-button">
               Don't have an account? Sign Up
@@ -57,10 +71,10 @@
         </div>
         <div v-else key="signUpForm" class="form-container">
           <h2>Sign Up</h2>
-          <form @submit.prevent="onSignUpSubmit">
+          <form>
             <div
               class="form-group"
-              :class="{ 'has-text': signUpName?.length > 0 }"
+              :class="{ 'has-text': signUpName.length > 0 }"
             >
               <label for="signUpName">Name</label>
               <input
@@ -72,7 +86,7 @@
             </div>
             <div
               class="form-group"
-              :class="{ 'has-text': signUpEmail?.length > 0 }"
+              :class="{ 'has-text': signUpEmail.length > 0 }"
             >
               <label for="signUpEmail">Email</label>
               <input
@@ -84,7 +98,7 @@
             </div>
             <div
               class="form-group password-field"
-              :class="{ 'has-text': signUpPassword?.length > 0 }"
+              :class="{ 'has-text': signUpPassword.length > 0 }"
             >
               <label for="signUpPassword">Password</label>
               <NavFooterPreloadLoginPasswordInput
@@ -95,7 +109,7 @@
             </div>
             <div
               class="form-group"
-              :class="{ 'has-text': signUpPasswordConfirm?.length > 0 }"
+              :class="{ 'has-text': signUpPasswordConfirm.length > 0 }"
             >
               <label for="signUpPasswordConfirm">Confirm Password</label>
               <NavFooterPreloadLoginPasswordInput
@@ -162,6 +176,8 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from "vue";
+
 const userStore = useUserStore();
 const itemStore = useItemStore();
 const config = useRuntimeConfig();
@@ -171,6 +187,7 @@ const showSignUp = ref(false);
 const isLoading = ref(false);
 const loginError = ref({});
 const signUpError = ref({});
+const showSuccessMessage = ref(false);
 
 const loginEmail = ref("");
 const loginPassword = ref("");
@@ -206,39 +223,78 @@ const signUpFormValid = computed(
     passwordHasNumber.value
 );
 
-const closeModal = () => emit("close");
-const switchToSignUp = () => (showSignUp.value = true);
-const switchToLogin = () => (showSignUp.value = false);
+let oauth2Client = null;
 
-const handleEmailLogin = async (loginData) => {
-  const { $fbq, $klaviyo } = useNuxtApp();
-  $klaviyo("identify", { email: loginData.email });
-  $klaviyo("track", "LoggedIn", {
-    source: "Login Modal",
-    content_name: "Office Aestheticas Email Login",
-    email: loginData.email,
+function loadGoogleSdk() {
+  return new Promise((resolve) => {
+    if (document.getElementById("google-client-script")) return resolve();
+    const s = document.createElement("script");
+    s.id = "google-client-script";
+    s.src = "https://accounts.google.com/gsi/client";
+    s.async = true;
+    s.defer = true;
+    s.onload = () => resolve();
+    document.head.appendChild(s);
   });
-  if (
-    process.client &&
-    !["localhost", "127.0.0.1"].includes(window.location.hostname)
-  ) {
-    $fbq("track", "LoggedIn", {
-      source: "Login Modal",
-      content_name: "Office Aestheticas Email Login",
-      email: loginData.email,
+}
+
+function initGoogle() {
+  oauth2Client = window.google.accounts.oauth2.initTokenClient({
+    client_id: config.public.GOOGLE_CLIENT_ID,
+    scope: "openid email profile",
+    callback: handleCredentialResponse, // ← restored
+  });
+}
+
+function handleCredentialResponse(resp) {
+  const token = resp.credential || resp.access_token;
+  handleGoogleLogin({ credential: token });
+}
+
+async function onGoogleSignIn() {
+  if (!oauth2Client) return;
+  oauth2Client.requestAccessToken();
+}
+
+onMounted(async () => {
+  await loadGoogleSdk();
+  initGoogle();
+});
+
+function closeModal() {
+  emit("close");
+}
+function switchToSignUp() {
+  showSignUp.value = true;
+}
+function switchToLogin() {
+  showSignUp.value = false;
+}
+
+async function updateUserCart() {
+  try {
+    await $fetch(`/api/users/cart/add/${userStore.user._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: { items: itemStore.cart },
     });
-  }
+  } catch {}
+}
+
+async function onLoginSubmit() {
   isLoading.value = true;
   loginError.value = {};
   try {
     const response = await $fetch("/api/auth/login", {
       method: "POST",
-      body: { email: loginData.email, password: loginData.password },
+      body: { email: loginEmail.value, password: loginPassword.value },
     });
     userStore.setToken(response.token);
     userStore.setUser(response.user);
+    await updateUserCart();
+    showSuccessMessage.value = true;
+    await new Promise((r) => setTimeout(r, 2000));
     closeModal();
-    updateUserCart();
   } catch (error) {
     loginError.value = {
       general: error.data?.message || "Invalid email or password",
@@ -246,11 +302,13 @@ const handleEmailLogin = async (loginData) => {
   } finally {
     isLoading.value = false;
   }
-};
+}
 
-const handleGoogleLogin = async (response) => {
+async function handleGoogleLogin(response) {
   const { credential } = response;
   if (!credential) return;
+  isLoading.value = true;
+  loginError.value = {};
   const { $fbq, $klaviyo, $klaviyoClientApi } = useNuxtApp();
   try {
     const res = await $fetch("/api/auth/google-login", {
@@ -259,20 +317,18 @@ const handleGoogleLogin = async (response) => {
     });
     userStore.setToken(res.token);
     userStore.setUser(res.user);
-    closeModal();
-    $klaviyo("identify", { email: res.user.email });
-    $klaviyo("track", "LoggedIn", {
-      source: "Login Modal",
-      content_name: "Office Aestheticas Google Login",
-      email: res.user.email,
-    });
-
     await $klaviyoClientApi.subscribe(
       config.public.TEST_KLAVIYO_OA_USERS_ID,
       res.user.email,
       null,
       "Office Aestheticas Google Signup"
     );
+    $klaviyo("identify", { email: res.user.email });
+    $klaviyo("track", "LoggedIn", {
+      source: "Login Modal",
+      content_name: "Office Aestheticas Google Login",
+      email: res.user.email,
+    });
     if (
       process.client &&
       !["localhost", "127.0.0.1"].includes(window.location.hostname)
@@ -283,28 +339,21 @@ const handleGoogleLogin = async (response) => {
         email: res.user.email,
       });
     }
+    await updateUserCart();
+    showSuccessMessage.value = true;
+    await new Promise((r) => setTimeout(r, 2000));
+    closeModal();
   } catch (error) {
     loginError.value = {
       general: error.data?.message || "Google login failed",
     };
+  } finally {
+    isLoading.value = false;
   }
-};
+}
 
-const updateUserCart = async () => {
-  try {
-    await $fetch(`/api/users/cart/add/${userStore.user._id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: { items: itemStore.cart },
-    });
-  } catch {}
-};
-
-const handleSignUp = async (data) => {
+async function handleSignUp(data) {
   const { $klaviyoClientApi, $klaviyo, $fbq } = useNuxtApp();
-  console.log("users id: " + config.public.TEST_KLAVIYO_OA_USERS_ID);
-  console.log("email: " + data.email);
-  // FIGURE OUT WHY THIS ISN'T WORKING. PROBABLY AN ID ISSUE SOMEWHERE
   await $klaviyoClientApi.subscribe(
     config.public.TEST_KLAVIYO_OA_USERS_ID,
     data.email,
@@ -312,13 +361,11 @@ const handleSignUp = async (data) => {
     "Office Aestheticas Email Signup"
   );
   $klaviyo("identify", { email: data.email });
-
   $fbq("track", "CompleteRegistration", {
     source: "Login Modal",
     content_name: "Office Aestheticas Email Signup",
     email: data.email,
   });
-
   isLoading.value = true;
   signUpError.value = {};
   if (data.password !== data.passwordConfirm) {
@@ -331,7 +378,10 @@ const handleSignUp = async (data) => {
       method: "POST",
       body: { email: data.email, password: data.password, name: data.name },
     });
-    await handleEmailLogin({ email: data.email, password: data.password });
+    // auto‑login after signup
+    loginEmail.value = data.email;
+    loginPassword.value = data.password;
+    await onLoginSubmit();
   } catch (error) {
     signUpError.value = {
       general: error.data?.message || "Sign-up failed. Please try again.",
@@ -339,14 +389,9 @@ const handleSignUp = async (data) => {
   } finally {
     isLoading.value = false;
   }
-};
+}
 
-const onLoginSubmit = () => {
-  handleEmailLogin({ email: loginEmail.value, password: loginPassword.value });
-  loginPassword.value = "";
-};
-
-const onSignUpSubmit = () => {
+function onSignUpSubmit() {
   if (!signUpFormValid.value) {
     if (
       !passwordValidLength.value ||
@@ -365,26 +410,18 @@ const onSignUpSubmit = () => {
     passwordConfirm: signUpPasswordConfirm.value,
     name: signUpName.value,
   });
-};
+}
 
-const toggleRequirements = () => {
+function toggleRequirements() {
   showRequirements.value = !showRequirements.value;
-};
+}
 
-const validatePassword = () => {
+function validatePassword() {
   const pw = signUpPassword.value;
   passwordValidLength.value = pw.length >= 8;
   passwordHasUppercase.value = /[A-Z]/.test(pw);
   passwordHasNumber.value = /[0-9]/.test(pw);
-};
-
-onMounted(() => {
-  const script = document.createElement("script");
-  script.src = "https://accounts.google.com/gsi/client";
-  script.async = true;
-  script.defer = true;
-  document.head.appendChild(script);
-});
+}
 </script>
 
 <style scoped>
@@ -419,6 +456,12 @@ h2 {
   margin-bottom: 1rem;
   color: #000;
   font-size: 1.5rem;
+}
+.success-message {
+  color: #28a745;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 .form-group {
   position: relative;
@@ -474,19 +517,6 @@ h2 {
 }
 .password-field {
   position: relative;
-  /* padding-right: 32px; */
-}
-.password-info-icon {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 1.1rem;
-  color: #3f654c;
-}
-.password-info-icon:hover {
-  color: #2e5e2f;
 }
 .password-requirements-trigger {
   margin-top: 1rem;
@@ -583,6 +613,28 @@ h2 {
 }
 .alternative-methods {
   margin-top: 1.5rem;
+}
+.google-btn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  justify-content: center;
+}
+.google-btn:hover {
+  background: #f7f7f7;
+  border-color: #aaa;
+}
+.google-logo {
+  width: 18px;
+  height: 18px;
+  margin-right: 0.5rem;
 }
 .error-message {
   color: #f44336;

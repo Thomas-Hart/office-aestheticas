@@ -76,7 +76,6 @@ export default defineNuxtConfig({
 
       // Google Sign In
       JWT_SECRET: process.env.JWT_SECRET,
-      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
       GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
       GOOGLE_LOGIN_URI: process.env.GOOGLE_LOGIN_URI,
       GOOGLE_LOGIN_URI_TEST: process.env.GOOGLE_LOGIN_URI_TEST,
@@ -110,6 +109,9 @@ export default defineNuxtConfig({
       AMAZON_PAY_SELLER_ID: process.env.AMAZON_PAY_SELLER_ID,    // Also Merchant ID
       AMAZON_PAY_PUBLIC_KEY_ID: process.env.AMAZON_PAY_PUBLIC_KEY_ID,
       AMAZON_PAY_CLIENT_ID: process.env.AMAZON_PAY_CLIENT_ID, // Also Store ID
+
+      // Google Sign In
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
 
       // Klaviyo
       TEST_KLAVIYO_PUBLIC_KEY: process.env.TEST_KLAVIYO_PUBLIC_KEY,
