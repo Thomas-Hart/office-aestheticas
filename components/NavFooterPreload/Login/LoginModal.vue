@@ -266,6 +266,7 @@ const handleGoogleLogin = async (response) => {
       content_name: "Office Aestheticas Google Login",
       email: res.user.email,
     });
+
     await $klaviyoClientApi.subscribe(
       config.public.TEST_KLAVIYO_OA_USERS_ID,
       res.user.email,
@@ -301,6 +302,9 @@ const updateUserCart = async () => {
 
 const handleSignUp = async (data) => {
   const { $klaviyoClientApi, $klaviyo, $fbq } = useNuxtApp();
+  console.log("users id: " + config.public.TEST_KLAVIYO_OA_USERS_ID);
+  console.log("email: " + data.email);
+  // FIGURE OUT WHY THIS ISN'T WORKING. PROBABLY AN ID ISSUE SOMEWHERE
   await $klaviyoClientApi.subscribe(
     config.public.TEST_KLAVIYO_OA_USERS_ID,
     data.email,

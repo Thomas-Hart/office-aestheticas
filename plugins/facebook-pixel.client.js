@@ -48,7 +48,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       if (method === 'track') {
         // Send to server endpoint using $fetch
         try {
-          await $fetch('/api/facebook-events', {
+          await fetch('/api/facebook-events', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
