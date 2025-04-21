@@ -3,7 +3,7 @@ import { connectDB } from '~/server/utils/dbConnect';
 import { disconnectDB } from '~/server/utils/dbDisconnect';
 
 export default defineEventHandler(async (event) => {
-  console.log("[API] index.get.js: Received request for all items");
+  // console.log("[API] index.get.js: Received request for all items");
   await connectDB();
   try {
     const items = await Item.find({});

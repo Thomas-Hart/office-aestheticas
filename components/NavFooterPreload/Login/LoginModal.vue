@@ -3,9 +3,12 @@
     <div class="modal" key="modal">
       <button @click="closeModal" class="close-button">×</button>
 
-      <transition name="fade">
-        <div v-if="showSuccessMessage" class="success-message">
-          Logged in successfully!
+      <transition name="notification">
+        <div
+          v-if="notification.show"
+          :class="['notification-bubble', notification.type]"
+        >
+          {{ notification.text }}
         </div>
       </transition>
 
@@ -13,11 +16,8 @@
         <div v-if="!showSignUp" key="loginForm" class="content-wrapper">
           <div class="login-modal-container">
             <h2>Login</h2>
-            <form class="login-form-content">
-              <div
-                class="form-group"
-                :class="{ 'has-text': loginEmail.length > 0 }"
-              >
+            <form @submit.prevent class="login-form-content">
+              <div class="form-group" :class="{ 'has-text': loginEmail }">
                 <label for="loginEmail">Email</label>
                 <input
                   id="loginEmail"
@@ -26,10 +26,7 @@
                   required
                 />
               </div>
-              <div
-                class="form-group"
-                :class="{ 'has-text': loginPassword.length > 0 }"
-              >
+              <div class="form-group" :class="{ 'has-text': loginPassword }">
                 <label for="loginPassword">Password</label>
                 <NavFooterPreloadLoginPasswordInput
                   id="loginPassword"
@@ -37,18 +34,24 @@
                 />
               </div>
               <SubcomponentsLoadingButton
+                type="button"
                 class="full-width-btn"
                 :isLoading="isLoading"
                 :disabled="!loginFormValid"
                 @click="onLoginSubmit"
                 text="Login"
               />
-              <transition name="fade">
-                <div v-if="loginError.general" class="error-message">
-                  {{ loginError.general }}
-                </div>
-              </transition>
+              <button
+                type="button"
+                class="switch-button forgot-button"
+                @click="goToForgotPassword"
+              >
+                Forgot password?
+              </button>
             </form>
+
+            <div class="divider"><span>or sign in with</span></div>
+
             <div class="alternative-methods">
               <button
                 v-if="config.public.GOOGLE_CLIENT_ID"
@@ -64,18 +67,17 @@
                 Sign in with Google
               </button>
             </div>
+
             <button @click="switchToSignUp" class="switch-button">
               Don't have an account? Sign Up
             </button>
           </div>
         </div>
+
         <div v-else key="signUpForm" class="form-container">
           <h2>Sign Up</h2>
-          <form>
-            <div
-              class="form-group"
-              :class="{ 'has-text': signUpName.length > 0 }"
-            >
+          <form @submit.prevent>
+            <div class="form-group" :class="{ 'has-text': signUpName }">
               <label for="signUpName">Name</label>
               <input
                 id="signUpName"
@@ -84,10 +86,7 @@
                 required
               />
             </div>
-            <div
-              class="form-group"
-              :class="{ 'has-text': signUpEmail.length > 0 }"
-            >
+            <div class="form-group" :class="{ 'has-text': signUpEmail }">
               <label for="signUpEmail">Email</label>
               <input
                 id="signUpEmail"
@@ -98,7 +97,7 @@
             </div>
             <div
               class="form-group password-field"
-              :class="{ 'has-text': signUpPassword.length > 0 }"
+              :class="{ 'has-text': signUpPassword }"
             >
               <label for="signUpPassword">Password</label>
               <NavFooterPreloadLoginPasswordInput
@@ -109,7 +108,7 @@
             </div>
             <div
               class="form-group"
-              :class="{ 'has-text': signUpPasswordConfirm.length > 0 }"
+              :class="{ 'has-text': signUpPasswordConfirm }"
             >
               <label for="signUpPasswordConfirm">Confirm Password</label>
               <NavFooterPreloadLoginPasswordInput
@@ -118,6 +117,7 @@
               />
             </div>
             <SubcomponentsLoadingButton
+              type="button"
               class="full-width-btn"
               :isLoading="isLoading"
               :disabled="!signUpFormValid"
@@ -125,6 +125,7 @@
               text="Sign Up"
             />
           </form>
+
           <div class="password-requirements-trigger">
             <button
               type="button"
@@ -134,14 +135,11 @@
               <span class="icon">ℹ️</span> Show password requirements
             </button>
           </div>
-          <transition name="fade">
-            <div v-if="signUpError.general" class="error-message">
-              {{ signUpError.general }}
-            </div>
-          </transition>
+
           <button @click="switchToLogin" class="switch-button">
             Already have an account? Login
           </button>
+
           <transition name="fade">
             <div
               v-if="showRequirements || forceShowRequirements"
@@ -176,8 +174,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
 const userStore = useUserStore();
 const itemStore = useItemStore();
 const config = useRuntimeConfig();
@@ -185,9 +185,6 @@ const emit = defineEmits(["close"]);
 
 const showSignUp = ref(false);
 const isLoading = ref(false);
-const loginError = ref({});
-const signUpError = ref({});
-const showSuccessMessage = ref(false);
 
 const loginEmail = ref("");
 const loginPassword = ref("");
@@ -202,6 +199,8 @@ const forceShowRequirements = ref(false);
 const passwordValidLength = ref(false);
 const passwordHasUppercase = ref(false);
 const passwordHasNumber = ref(false);
+
+const notification = reactive({ show: false, text: "", type: "success" });
 
 const loginFormValid = computed(() => loginEmail.value && loginPassword.value);
 const isPasswordMatch = computed(
@@ -242,7 +241,7 @@ function initGoogle() {
   oauth2Client = window.google.accounts.oauth2.initTokenClient({
     client_id: config.public.GOOGLE_CLIENT_ID,
     scope: "openid email profile",
-    callback: handleCredentialResponse, // ← restored
+    callback: handleCredentialResponse,
   });
 }
 
@@ -257,8 +256,15 @@ async function onGoogleSignIn() {
 }
 
 onMounted(async () => {
-  await loadGoogleSdk();
-  initGoogle();
+  try {
+    await loadGoogleSdk();
+    initGoogle();
+  } catch {
+    showNotification(
+      "error",
+      "There was an error initializing login. Please try again later."
+    );
+  }
 });
 
 function closeModal() {
@@ -270,6 +276,9 @@ function switchToSignUp() {
 function switchToLogin() {
   showSignUp.value = false;
 }
+function goToForgotPassword() {
+  router.push("/forgotPassword");
+}
 
 async function updateUserCart() {
   try {
@@ -278,12 +287,20 @@ async function updateUserCart() {
       headers: { "Content-Type": "application/json" },
       body: { items: itemStore.cart },
     });
-  } catch {}
+  } catch {
+    showNotification("error", "There was an error. Please try again later.");
+  }
+}
+
+function showNotification(type, text) {
+  notification.type = type;
+  notification.text = text;
+  notification.show = true;
+  setTimeout(() => (notification.show = false), 1500);
 }
 
 async function onLoginSubmit() {
   isLoading.value = true;
-  loginError.value = {};
   try {
     const response = await $fetch("/api/auth/login", {
       method: "POST",
@@ -292,28 +309,26 @@ async function onLoginSubmit() {
     userStore.setToken(response.token);
     userStore.setUser(response.user);
     await updateUserCart();
-    showSuccessMessage.value = true;
-    await new Promise((r) => setTimeout(r, 2000));
-    closeModal();
+    showNotification("success", "Logged in successfully!");
+    setTimeout(closeModal, 1200);
   } catch (error) {
-    loginError.value = {
-      general: error.data?.message || "Invalid email or password",
-    };
+    showNotification(
+      "error",
+      error.data?.message ||
+        "There was an error logging in. Please try again later."
+    );
   } finally {
     isLoading.value = false;
   }
 }
 
 async function handleGoogleLogin(response) {
-  const { credential } = response;
-  if (!credential) return;
   isLoading.value = true;
-  loginError.value = {};
-  const { $fbq, $klaviyo, $klaviyoClientApi } = useNuxtApp();
   try {
+    const { $fbq, $klaviyo, $klaviyoClientApi } = useNuxtApp();
     const res = await $fetch("/api/auth/google-login", {
       method: "POST",
-      body: { token: credential },
+      body: { token: response.credential },
     });
     userStore.setToken(res.token);
     userStore.setUser(res.user);
@@ -340,52 +355,48 @@ async function handleGoogleLogin(response) {
       });
     }
     await updateUserCart();
-    showSuccessMessage.value = true;
-    await new Promise((r) => setTimeout(r, 2000));
-    closeModal();
+    showNotification("success", "Logged in successfully!");
+    setTimeout(closeModal, 1200);
   } catch (error) {
-    loginError.value = {
-      general: error.data?.message || "Google login failed",
-    };
+    showNotification(
+      "error",
+      error.data?.message ||
+        "There was an error logging in. Please try again later."
+    );
   } finally {
     isLoading.value = false;
   }
 }
 
 async function handleSignUp(data) {
-  const { $klaviyoClientApi, $klaviyo, $fbq } = useNuxtApp();
-  await $klaviyoClientApi.subscribe(
-    config.public.TEST_KLAVIYO_OA_USERS_ID,
-    data.email,
-    null,
-    "Office Aestheticas Email Signup"
-  );
-  $klaviyo("identify", { email: data.email });
-  $fbq("track", "CompleteRegistration", {
-    source: "Login Modal",
-    content_name: "Office Aestheticas Email Signup",
-    email: data.email,
-  });
   isLoading.value = true;
-  signUpError.value = {};
-  if (data.password !== data.passwordConfirm) {
-    signUpError.value = { general: "Passwords do not match" };
-    isLoading.value = false;
-    return;
-  }
   try {
+    const { $klaviyoClientApi, $klaviyo, $fbq } = useNuxtApp();
+    await $klaviyoClientApi.subscribe(
+      config.public.TEST_KLAVIYO_OA_USERS_ID,
+      data.email,
+      null,
+      "Office Aestheticas Email Signup"
+    );
+    $klaviyo("identify", { email: data.email });
+    $fbq("track", "CompleteRegistration", {
+      source: "Login Modal",
+      content_name: "Office Aestheticas Email Signup",
+      email: data.email,
+    });
     await $fetch("/api/users", {
       method: "POST",
       body: { email: data.email, password: data.password, name: data.name },
     });
-    // auto‑login after signup
     loginEmail.value = data.email;
     loginPassword.value = data.password;
     await onLoginSubmit();
   } catch (error) {
-    signUpError.value = {
-      general: error.data?.message || "Sign-up failed. Please try again.",
-    };
+    showNotification(
+      "error",
+      error.data?.message ||
+        "There was an error signing up. Please try again later."
+    );
   } finally {
     isLoading.value = false;
   }
@@ -393,15 +404,9 @@ async function handleSignUp(data) {
 
 function onSignUpSubmit() {
   if (!signUpFormValid.value) {
-    if (
-      !passwordValidLength.value ||
-      !passwordHasUppercase.value ||
-      !passwordHasNumber.value
-    ) {
-      forceShowRequirements.value = true;
-      showRequirements.value = true;
-    }
-    signUpError.value = { general: "Please fill in all fields correctly." };
+    showNotification("error", "Please fill in all fields correctly.");
+    forceShowRequirements.value = true;
+    showRequirements.value = true;
     return;
   }
   handleSignUp({
@@ -452,16 +457,51 @@ function validatePassword() {
   font-size: 2rem;
   cursor: pointer;
 }
+.notification-bubble {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.75rem 1.25rem;
+  border-radius: 1.5rem;
+  color: #fff;
+  font-size: 0.9rem;
+  z-index: 1200;
+  animation: bounce-in 0.4s ease-out, float-up 0.6s ease-in 3s forwards;
+}
+.notification-bubble.success {
+  background: #28a745;
+}
+.notification-bubble.error {
+  background: #f44336;
+}
+@keyframes bounce-in {
+  0% {
+    transform: translateX(-50%) scale(0.3);
+    opacity: 0;
+  }
+  60% {
+    transform: translateX(-50%) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
+}
+@keyframes float-up {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-30px);
+  }
+}
 h2 {
   margin-bottom: 1rem;
   color: #000;
   font-size: 1.5rem;
-}
-.success-message {
-  color: #28a745;
-  font-size: 1rem;
-  margin-bottom: 1rem;
-  text-align: center;
 }
 .form-group {
   position: relative;
@@ -592,6 +632,34 @@ h2 {
 .full-width-btn {
   width: 100%;
 }
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+.divider span {
+  padding: 0 0.75rem;
+  color: #777;
+  font-size: 0.85rem;
+  background: #fff;
+  position: relative;
+  z-index: 1;
+}
+.divider::before {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ccc;
+  margin-right: 0.75rem;
+}
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ccc;
+  margin-left: 0.75rem;
+}
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -611,6 +679,10 @@ h2 {
   text-decoration: underline;
   color: #2e5e2f;
 }
+.forgot-button {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
 .alternative-methods {
   margin-top: 1.5rem;
 }
@@ -620,7 +692,6 @@ h2 {
   width: 100%;
   background: #fff;
   border: 1px solid #ccc;
-  border-radius: 0;
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
   cursor: pointer;
@@ -635,17 +706,5 @@ h2 {
   width: 18px;
   height: 18px;
   margin-right: 0.5rem;
-}
-.error-message {
-  color: #f44336;
-  font-size: 0.9rem;
-  margin-top: -0.5rem;
-  margin-bottom: 1rem;
-  text-align: left;
-}
-.form-group.invalid input,
-.form-group.invalid select,
-.form-group.invalid .nav-footer-preload-login-password-input {
-  border-color: #f44336;
 }
 </style>

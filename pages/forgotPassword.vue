@@ -54,7 +54,7 @@ const message = ref("");
 const isLoading = ref(false);
 const messageType = ref(""); // 'success' or 'error'
 
-const emit = defineEmits(["back"]);
+const emit = defineEmits(["back", "hide-loading"]);
 
 const isFormValid = computed(() => {
   return email.value !== "";
@@ -113,6 +113,8 @@ const sendResetEmail = async (userId) => {
     throw error;
   }
 };
+
+emit("hide-loading");
 </script>
   
 

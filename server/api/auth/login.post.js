@@ -16,9 +16,9 @@ export default defineEventHandler(async (event) => {
         // Finding the user by email
         const user = await User.findOne({ email });
 
-        console.log("user: " + JSON.stringify(user));
-        console.log("email: " + email);
-        console.log("password: " + password);
+        // console.log("user: " + JSON.stringify(user));
+        // console.log("email: " + email);
+        // console.log("password: " + password);
 
         // If no user is found, or the password does not match
         if (!user || !password || !user.password || !(await bcrypt.compare(password, user.password))) {

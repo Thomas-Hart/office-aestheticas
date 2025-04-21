@@ -730,6 +730,9 @@ if (isLoggedIn.value) {
     flex: 1;
     justify-content: center;
   }
+  .cart-count {
+    top: -0.5rem;
+  }
 }
 @media (min-width: 769px) {
   .mobile-menu-button,
