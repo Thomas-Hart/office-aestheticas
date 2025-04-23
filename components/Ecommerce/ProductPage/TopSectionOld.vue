@@ -1,3 +1,4 @@
+```vue
 <template>
   <section class="section">
     <!-- Inline Image Gallery -->
@@ -32,6 +33,20 @@
       </div>
     </div>
 
+    <div class="payment-methods">
+      <h3 class="payment-title">Payment methods</h3>
+      <div class="payment-icons">
+        <!-- <img src="placeholder1.png" alt="Method 1" />
+        <img src="placeholder2.png" alt="Method 2" />
+        <img src="placeholder3.png" alt="Method 3" />
+        <img src="placeholder4.png" alt="Method 4" /> -->
+      </div>
+      <p class="payment-note">
+        Your payment information is processed securely and the price includes
+        regional tax.
+      </p>
+    </div>
+
     <div class="checkout-divider"></div>
 
     <section class="right-section">
@@ -40,7 +55,6 @@
         <div class="basic-info">
           <h1 class="product-name">{{ item.name }}</h1>
           <div class="ratings-row">
-            <!-- Replaced star images with a globally available SubcomponentsStarRating -->
             <div class="stars-container">
               <SubcomponentsStarRating :rating="item.ratings || 0" />
             </div>
@@ -86,7 +100,8 @@
         >
           SALE: {{ item.savingsPercentage }} OFF! (You save ${{
             (item.savingsAmount || 0).toFixed(2)
-          }})
+          }}
+          )
         </p>
 
         <!-- Inline Variant Selector -->
@@ -194,12 +209,10 @@ const props = defineProps({
   isOutOfStock: { type: Boolean, default: false },
 });
 
-// --- Setup Stores & Authentication ---
 const itemStore = useItemStore();
 const userStore = useUserStore();
 const isLoggedIn = computed(() => !!userStore.user);
 
-// --- Local Copy of the Item & Variant Setup ---
 const localItem = ref({ ...props.item });
 const selectedVariant = ref(
   localItem.value.variants && localItem.value.variants.length
@@ -215,7 +228,6 @@ if (localItem.value.variants && localItem.value.variants.length > 0) {
   selectedVariant.value = defaultVariant;
 }
 
-// --- Computed Gallery Image ---
 const computedGalleryImage = computed(() => {
   if (
     selectedVariant.value &&
@@ -238,7 +250,6 @@ watch(computedGalleryImage, (newVal) => {
 });
 const getImagePath = (img) => `/ItemPics/${img || ""}`;
 
-// --- Thumbnails Scrolling ---
 const thumbnailContainer = ref(null);
 const scrollPosition = ref(0);
 function hoverImage(img) {
@@ -271,7 +282,6 @@ const canScrollDown = computed(() => {
   return false;
 });
 
-// --- Variant Selector Logic ---
 const selectedAttributes = ref({});
 const selectableAttributes = [
   "color",
@@ -461,7 +471,6 @@ onMounted(() => {
   }
 });
 
-// --- Updated Quantity & Cart Logic Using Store Methods ---
 const itemInCart = computed(() => {
   if (!isLoggedIn.value) {
     return itemStore.cart.find(
@@ -581,7 +590,6 @@ function handleNotifyMe() {
 </script>
 
 <style scoped>
-/* Wrapper & Layout */
 .section {
   max-width: 1300px;
   margin: 0 auto;
@@ -595,18 +603,6 @@ function handleNotifyMe() {
   align-self: stretch;
 }
 
-.right-section {
-  min-height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  top: 2rem;
-  padding: 3rem 0 1rem 0;
-  flex: 1;
-}
-
-/* Image Gallery Styles */
 .gallery {
   position: relative;
   background: white;
@@ -624,7 +620,6 @@ function handleNotifyMe() {
   object-fit: cover;
   transition: all 0.2s ease-out;
 }
-
 .thumbnails-overlay {
   position: absolute;
   top: 10px;
@@ -674,7 +669,43 @@ function handleNotifyMe() {
   margin-top: 0.5rem;
 }
 
-/* Basic Info Styles */
+/* Payment Methods */
+.payment-methods {
+  background: #f5f5f5;
+  padding: 1rem;
+  margin: 2rem 0;
+}
+.payment-title {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.payment-icons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.payment-icons img {
+  height: 32px;
+  width: auto;
+}
+.payment-note {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.right-section {
+  min-height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 2rem;
+  padding: 3rem 0 1rem;
+  flex: 1;
+}
+
+/* Basic Info */
 .basic-info {
   margin-bottom: 1rem;
   color: black;
@@ -682,25 +713,22 @@ function handleNotifyMe() {
 .product-name {
   font-size: 1.5rem;
   line-height: 1.3rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 2rem;
   color: black;
   font-family: "Source Sans Pro", serif;
 }
-
 .pricing {
   width: 100%;
   display: flex;
   align-items: flex-end;
 }
-
 .pricing .new {
   font-size: 2rem;
   font-weight: bold;
   margin-right: 1rem;
   font-family: "Poppins", serif;
 }
-
 .pricing .old {
   font-size: 1.8rem;
   color: gray;
@@ -708,7 +736,6 @@ function handleNotifyMe() {
   text-decoration: line-through;
   font-family: "Poppins", serif;
 }
-
 .ratings-row {
   display: flex;
   align-items: center;
@@ -721,17 +748,12 @@ function handleNotifyMe() {
   width: 100px;
   align-items: flex-end;
 }
-.star-icon {
-  width: 100%;
-  margin: 0 !important;
-}
 .rating-number,
 .ratings-row span {
   font-size: 1rem;
   margin-left: 8px;
   color: black;
 }
-
 .savings-text {
   background: #e9f2ef;
   padding: 1rem;
@@ -740,7 +762,7 @@ function handleNotifyMe() {
   font-size: 1.5rem;
 }
 
-/* Variant Selector Styles */
+/* Variant Selector */
 .variant-selector {
   margin-top: 20px;
   padding-top: 20px;
@@ -848,7 +870,7 @@ function handleNotifyMe() {
   color: green;
 }
 
-/* Quantity & Add-To-Cart Styles */
+/* Quantity & Cart */
 .item-quantity {
   display: flex;
   gap: 1rem;
@@ -917,4 +939,31 @@ function handleNotifyMe() {
   background-color: #555;
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
 }
+
+@media (max-width: 768px) {
+  .section {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+  .payment-methods {
+    order: 1;
+  }
+  .main-image {
+    margin-top: 1rem;
+  }
+  .product-name {
+    margin-bottom: 1rem;
+  }
+  .ratings-row {
+    margin-bottom: 1rem;
+  }
+  .attribute-section {
+    margin-bottom: 1rem;
+  }
+  .right-section {
+    padding-top: 0;
+  }
+}
 </style>
+```

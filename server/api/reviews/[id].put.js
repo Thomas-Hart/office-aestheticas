@@ -16,12 +16,19 @@ export default defineEventHandler(async (event) => {
   try {
     await connectDB();
     const { id } = event.context.params;
-    const body = await readBody(event); // Updated to readBody
-    // Update the review document and return the updated version
-    const updatedReview = await Review.findByIdAndUpdate(id, body, { new: true });
+    const body = await readBody(event);
+
+    // Only set the fields you pass in (so nested helpful will merge correctly)
+    const updatedReview = await Review.findByIdAndUpdate(
+      id,
+      { $set: body },
+      { new: true }
+    );
+
     if (updatedReview) {
       await updateItemRating(updatedReview.itemId);
     }
+
     await disconnectDB();
     return updatedReview;
   } catch (error) {

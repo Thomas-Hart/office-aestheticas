@@ -662,7 +662,7 @@ async function handleOrderCompleted(orderData) {
   justify-content: flex-end;
 }
 .left-wrapper {
-  padding: 2rem 3rem 1rem 1rem;
+  padding: 2rem 3rem 2rem 1rem;
   width: 100%;
   max-width: 550px;
 }
@@ -775,7 +775,7 @@ async function handleOrderCompleted(orderData) {
 
   .checkout-right {
     position: relative;
-    padding-bottom: 2rem;
+    padding-bottom: 0rem;
     width: 100%;
     justify-content: center;
     align-items: center;

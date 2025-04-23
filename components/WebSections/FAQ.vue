@@ -108,7 +108,7 @@ function trackNavigation(actionType, action = null) {
 .FAQ-wrapper {
   margin: 0 auto;
   max-width: 1300px;
-  padding: 4rem 2rem 12rem 0;
+  padding: 4rem 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -192,7 +192,11 @@ h1 {
 @media (max-width: 480px) {
   /*  ------------  MOBILE  ------------   */
   .FAQ-wrapper {
-    padding: 6rem 1rem;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    margin-bottom: 0;
   }
 
   .question {

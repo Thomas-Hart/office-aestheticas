@@ -100,10 +100,14 @@
 
 /* Responsive Styles */
 @media (max-width: 768px) {
+  .collection-section {
+    padding: 0; /* Add padding to prevent images from touching the borders */
+  }
+
   .collection-wrapper {
     flex-direction: column; /* Shift to vertical layout */
     gap: 30px; /* Add spacing between items */
-    width: calc(min(calc(100vw - 4rem), 1300px));
+    width: calc(min(calc(100vw - 2rem), 1300px));
   }
 
   .image-container {
@@ -136,10 +140,6 @@
 }
 
 @media (max-width: 480px) {
-  .collection-wrapper {
-    width: calc(min(calc(100vw - 3.5rem), 1300px));
-  }
-
   .image-container {
     height: 15rem; /* Further adjust height for smaller devices */
   }

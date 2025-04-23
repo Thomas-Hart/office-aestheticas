@@ -147,7 +147,7 @@ function trackSignUpInteraction() {
   color: #fff;
   display: flex;
   flex-direction: column;
-  margin-top: 10rem;
+  margin-top: 5rem;
 }
 
 /* 1) TOP NAV: black bar with Refund & Privacy links */
@@ -301,7 +301,7 @@ function trackSignUpInteraction() {
 /* At or below 768px: reduce horizontal padding to 1.5rem; stack content vertically, etc. */
 @media (max-width: 768px) {
   .office-footer {
-    margin-top: 5rem;
+    margin-top: 2rem;
   }
 
   .top-nav {

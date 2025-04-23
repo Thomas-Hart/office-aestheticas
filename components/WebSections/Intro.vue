@@ -234,7 +234,7 @@ onMounted(() => {
 }
 
 .content-wrapper {
-  max-width: 1000px;
+  max-width: 1200px;
   padding: 0 20px;
   z-index: 3; /* Content above the overlay and glow canvas */
   position: relative;
@@ -360,14 +360,6 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .title {
-    font-size: 1.8rem;
-  }
-
-  .subtitle {
-    font-size: 0.95rem;
-  }
-
   .lamp-icon {
     width: 70px;
   }
@@ -385,10 +377,9 @@ onMounted(() => {
 }
 
 @media (max-width: 480px) {
-  .title {
-    font-size: 1.5rem;
+  .content-wrapper {
+    padding: 0;
   }
-
   .subtitle {
     font-size: 0.85rem;
   }
