@@ -1,4 +1,3 @@
-```vue
 <template>
   <section class="section">
     <!-- Inline Image Gallery -->
@@ -31,20 +30,22 @@
           </button>
         </div>
       </div>
-    </div>
 
-    <div class="payment-methods">
-      <h3 class="payment-title">Payment methods</h3>
-      <div class="payment-icons">
-        <!-- <img src="placeholder1.png" alt="Method 1" />
-        <img src="placeholder2.png" alt="Method 2" />
-        <img src="placeholder3.png" alt="Method 3" />
-        <img src="placeholder4.png" alt="Method 4" /> -->
-      </div>
-      <p class="payment-note">
-        Your payment information is processed securely and the price includes
-        regional tax.
-      </p>
+      <SubcomponentsPaymentMethods v-if="isAbove768" />
+
+      <!-- <div class="payment-methods" v-if="isAbove768">
+        <h3 class="payment-title">Payment methods</h3>
+        <div class="payment-icons">
+          <img src="placeholder1.png" alt="Method 1" />
+          <img src="placeholder2.png" alt="Method 2" />
+          <img src="placeholder3.png" alt="Method 3" />
+          <img src="placeholder4.png" alt="Method 4" />
+        </div>
+        <p class="payment-note">
+          Your payment information is processed securely and the price includes
+          regional tax.
+        </p>
+      </div> -->
     </div>
 
     <div class="checkout-divider"></div>
@@ -199,6 +200,8 @@
           Add To Cart
         </button>
       </div>
+
+      <SubcomponentsPaymentMethods v-if="!isAbove768" />
     </section>
   </section>
 </template>
@@ -206,7 +209,6 @@
 <script setup>
 const props = defineProps({
   item: { type: Object, required: true },
-  isOutOfStock: { type: Boolean, default: false },
 });
 
 const itemStore = useItemStore();
@@ -227,6 +229,13 @@ if (localItem.value.variants && localItem.value.variants.length > 0) {
   localItem.value.price = defaultVariant.price;
   selectedVariant.value = defaultVariant;
 }
+
+const isOutOfStock = computed(() => {
+  if (localItem.value.variants && localItem.value.variants.length) {
+    return selectedVariant.value.stock <= 0;
+  }
+  return props.item.stock <= 0;
+});
 
 const computedGalleryImage = computed(() => {
   if (
@@ -455,7 +464,19 @@ function optionKey(attribute, option) {
   return attribute === "color" ? option.value.name : option.value;
 }
 
+const isAbove768 = ref(false);
+
+function updateIsAbove768() {
+  isAbove768.value = window.innerWidth > 768;
+}
+
+onUnmounted(() => {
+  window.removeEventListener("resize", updateIsAbove768);
+});
+
 onMounted(() => {
+  updateIsAbove768();
+  window.addEventListener("resize", updateIsAbove768);
   if (localItem.value.variants && localItem.value.variants.length) {
     const defaultVariant = localItem.value.variants[0];
     Object.keys(defaultVariant).forEach((attribute) => {
@@ -580,7 +601,7 @@ function handleAddToCart() {
 }
 
 function handleNotifyMe() {
-  if (email.value && props.isOutOfStock) {
+  if (email.value && isOutOfStock.value) {
     alert(
       `You will be notified when this item is back in stock at ${email.value}.`
     );
@@ -667,31 +688,6 @@ function handleNotifyMe() {
 }
 .scroll-arrow.down {
   margin-top: 0.5rem;
-}
-
-/* Payment Methods */
-.payment-methods {
-  background: #f5f5f5;
-  padding: 1rem;
-  margin: 2rem 0;
-}
-.payment-title {
-  margin: 0 0 1rem;
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-.payment-icons {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-.payment-icons img {
-  height: 32px;
-  width: auto;
-}
-.payment-note {
-  font-size: 0.9rem;
-  color: #555;
 }
 
 .right-section {
@@ -911,7 +907,7 @@ function handleNotifyMe() {
 .notify-button {
   padding: 8px 16px;
   background-color: #3f654c;
-  color: black;
+  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -966,4 +962,3 @@ function handleNotifyMe() {
   }
 }
 </style>
-```

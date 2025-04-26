@@ -87,22 +87,18 @@ const handleForgotPassword = async () => {
 };
 
 const sendResetEmail = async (userId) => {
+  console.log("send reset email start");
   try {
-    const response = await $fetch(
-      "https://us-west3-national-auto-hub.cloudfunctions.net/forgotPasswordEmail",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Origin: "http://localhost:3000", // Add this line
-        },
-        body: JSON.stringify({
-          to: email.value,
-          from: "beau@nationalautohub.com",
-          link: "https://www.nationalautohub.com/reset?target=" + userId,
-        }),
-      }
-    );
+    const response = await $fetch("/api/forgot-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to: email.value,
+        link: "https://www.aestheticas.com/reset?target=" + userId,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -160,7 +156,7 @@ img {
 }
 
 h2 {
-  color: white;
+  color: black;
   text-shadow: none;
   font-size: 1.6rem;
   margin-bottom: 2rem;
@@ -211,7 +207,7 @@ label {
   pointer-events: none;
   width: 100%;
   text-align: left;
-  color: white;
+  color: black;
   font-weight: bold;
   margin-bottom: 0.5rem;
 }
@@ -227,7 +223,7 @@ input:focus::placeholder {
 }
 
 .success-message {
-  color: white;
+  color: black;
   background-color: green;
   padding: 0.5rem;
   font-size: 1rem;

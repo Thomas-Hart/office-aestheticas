@@ -14,17 +14,24 @@
         </div>
         <!-- Sidebar Navigation (icons can be added as needed) -->
         <div class="search-filters">
-          <input
-            type="text"
-            v-model="searchTerm"
-            placeholder="Search items..."
-          />
-          <select v-model="filterStatus">
-            <option value="">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Discontinued">Discontinued</option>
-            <option value="Coming Soon">Coming Soon</option>
-          </select>
+          <div class="form-group" :class="{ 'has-text': searchTerm }">
+            <label for="searchTerm">Search items...</label>
+            <input
+              id="searchTerm"
+              type="text"
+              v-model="searchTerm"
+              placeholder="Search items..."
+            />
+          </div>
+          <div class="form-group" :class="{ 'has-text': filterStatus }">
+            <label for="filterStatus">Status</label>
+            <select id="filterStatus" v-model="filterStatus">
+              <option value="">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Discontinued">Discontinued</option>
+              <option value="Coming Soon">Coming Soon</option>
+            </select>
+          </div>
         </div>
         <ul class="item-list">
           <li
@@ -41,6 +48,7 @@
           + New Item
         </button>
       </aside>
+
       <!-- Editor Section -->
       <section class="editor">
         <!-- Tab Navigation -->
@@ -63,7 +71,7 @@
           <div v-if="activeTab === 'general'">
             <!-- Top: Key Product Information Card -->
             <div class="card form-card">
-              <div class="product-image-preview" v-if="selectedItem.image">
+              <div v-if="selectedItem.image" class="product-image-preview">
                 <NuxtImg
                   class="zoomable"
                   :src="`/ItemPics/${selectedItem.image}`"
@@ -84,6 +92,12 @@
                       v-for="field in section.fields"
                       :key="field.model"
                       class="form-group"
+                      :class="{
+                        'has-text':
+                          field.props.type === 'number'
+                            ? getValue(section, field.model) != null
+                            : getValue(section, field.model),
+                      }"
                     >
                       <label :for="field.model">{{ field.label }}</label>
                       <component
@@ -106,6 +120,20 @@
                         v-for="subField in section.subFields.dimensions"
                         :key="subField.model"
                         class="form-group"
+                        :class="{
+                          'has-text':
+                            subField.props.type === 'number'
+                              ? getNestedValue(
+                                  section,
+                                  'dimensions',
+                                  subField.model
+                                ) != null
+                              : getNestedValue(
+                                  section,
+                                  'dimensions',
+                                  subField.model
+                                ),
+                        }"
                       >
                         <label :for="subField.model">{{
                           subField.label
@@ -149,6 +177,7 @@
                 </div>
               </form>
             </div>
+
             <!-- Bottom: Additional Information Card -->
             <div class="card additional-info-card">
               <div
@@ -162,6 +191,12 @@
                     v-for="field in section.fields"
                     :key="field.model"
                     class="form-group"
+                    :class="{
+                      'has-text':
+                        field.props.type === 'number'
+                          ? getValue(section, field.model) != null
+                          : getValue(section, field.model),
+                    }"
                   >
                     <label :for="field.model">{{ field.label }}</label>
                     <component
@@ -184,6 +219,20 @@
                       v-for="subField in section.subFields.dimensions"
                       :key="subField.model"
                       class="form-group"
+                      :class="{
+                        'has-text':
+                          subField.props.type === 'number'
+                            ? getNestedValue(
+                                section,
+                                'dimensions',
+                                subField.model
+                              ) != null
+                            : getNestedValue(
+                                section,
+                                'dimensions',
+                                subField.model
+                              ),
+                      }"
                     >
                       <label :for="subField.model">{{ subField.label }}</label>
                       <component
@@ -219,6 +268,7 @@
                   </div>
                 </div>
               </div>
+
               <!-- List Editors -->
               <div class="list-editor">
                 <h3>More Images</h3>
@@ -227,11 +277,15 @@
                   :key="'img' + index"
                   class="list-item"
                 >
-                  <input
-                    type="text"
-                    v-model="selectedItem.moreImages[index]"
-                    placeholder="Image URL"
-                  />
+                  <div class="form-group has-text">
+                    <label :for="'moreImage' + index">Image URL</label>
+                    <input
+                      :id="'moreImage' + index"
+                      type="text"
+                      v-model="selectedItem.moreImages[index]"
+                      placeholder="Image URL"
+                    />
+                  </div>
                   <button
                     type="button"
                     @click="selectedItem.moreImages.splice(index, 1)"
@@ -247,6 +301,7 @@
                   Add More Image
                 </button>
               </div>
+
               <div class="list-editor">
                 <h3>Tags</h3>
                 <div
@@ -254,11 +309,15 @@
                   :key="'tag' + index"
                   class="list-item"
                 >
-                  <input
-                    type="text"
-                    v-model="selectedItem.tags[index]"
-                    placeholder="Tag"
-                  />
+                  <div class="form-group has-text">
+                    <label :for="'tag' + index">Tag</label>
+                    <input
+                      :id="'tag' + index"
+                      type="text"
+                      v-model="selectedItem.tags[index]"
+                      placeholder="Tag"
+                    />
+                  </div>
                   <button
                     type="button"
                     @click="selectedItem.tags.splice(index, 1)"
@@ -274,6 +333,7 @@
                   Add Tag
                 </button>
               </div>
+
               <div class="list-editor">
                 <h3>Gift Messages</h3>
                 <div
@@ -282,13 +342,17 @@
                   :key="'msg' + index"
                   class="list-item"
                 >
-                  <input
-                    type="text"
-                    v-model="
-                      selectedItem.giftOptions.availableGiftMessages[index]
-                    "
-                    placeholder="Gift Message"
-                  />
+                  <div class="form-group has-text">
+                    <label :for="'giftMsg' + index">Gift Message</label>
+                    <input
+                      :id="'giftMsg' + index"
+                      type="text"
+                      v-model="
+                        selectedItem.giftOptions.availableGiftMessages[index]
+                      "
+                      placeholder="Gift Message"
+                    />
+                  </div>
                   <button
                     type="button"
                     @click="
@@ -311,6 +375,7 @@
                   Add Gift Message
                 </button>
               </div>
+
               <div class="list-editor">
                 <h3>Shipping Regions</h3>
                 <div
@@ -319,11 +384,17 @@
                   :key="'region' + index"
                   class="list-item"
                 >
-                  <input
-                    type="text"
-                    v-model="selectedItem.shippingInfo.availableRegions[index]"
-                    placeholder="Region"
-                  />
+                  <div class="form-group has-text">
+                    <label :for="'region' + index">Region</label>
+                    <input
+                      :id="'region' + index"
+                      type="text"
+                      v-model="
+                        selectedItem.shippingInfo.availableRegions[index]
+                      "
+                      placeholder="Region"
+                    />
+                  </div>
                   <button
                     type="button"
                     @click="
@@ -344,6 +415,7 @@
                   Add Region
                 </button>
               </div>
+
               <div class="list-editor">
                 <h3>Frequently Bought Together</h3>
                 <div
@@ -353,18 +425,22 @@
                   :key="'fbt' + index"
                   class="list-item"
                 >
-                  <select
-                    v-model="selectedItem.frequentlyBoughtTogether[index]"
-                  >
-                    <option value="">Select an item</option>
-                    <option
-                      v-for="item in getFrequentlyBoughtOptions(index)"
-                      :key="item._id"
-                      :value="item._id"
+                  <div class="form-group has-text">
+                    <label :for="'fbt' + index">Select Item</label>
+                    <select
+                      :id="'fbt' + index"
+                      v-model="selectedItem.frequentlyBoughtTogether[index]"
                     >
-                      {{ item.name }}
-                    </option>
-                  </select>
+                      <option value="">Select an item</option>
+                      <option
+                        v-for="item in getFrequentlyBoughtOptions(index)"
+                        :key="item._id"
+                        :value="item._id"
+                      >
+                        {{ item.name }}
+                      </option>
+                    </select>
+                  </div>
                   <button
                     type="button"
                     @click="
@@ -384,150 +460,21 @@
               </div>
             </div>
           </div>
+
           <!-- Variants Tab -->
           <div v-if="activeTab === 'variants'">
-            <div class="card variants-card">
-              <div class="variants-header">
-                <h2>Variants</h2>
-              </div>
-              <div class="variants-list">
-                <div
-                  v-for="(variant, index) in selectedItem.variants"
-                  :key="index"
-                  class="variant-row"
-                >
-                  <div class="variant-preview">
-                    <NuxtImg
-                      v-if="variant.image"
-                      :src="`/ItemPics/${variant.image}`"
-                      alt="Variant Image"
-                      width="80"
-                      height="80"
-                    />
-                  </div>
-                  <div class="variant-fields">
-                    <div class="input-inline">
-                      <label>Variant Image URL</label>
-                      <input
-                        v-model="variant.image"
-                        type="text"
-                        placeholder="Enter variant image URL"
-                        @input="markDirty"
-                        @blur="updateVariantSKU(index)"
-                      />
-                    </div>
-                    <div class="input-inline">
-                      <label>Price</label>
-                      <input
-                        v-model.number="variant.price"
-                        type="number"
-                        step="0.01"
-                        required
-                        @input="markDirty"
-                        @blur="updateVariantSKU(index)"
-                      />
-                    </div>
-                    <div class="input-inline">
-                      <label>Old Price</label>
-                      <input
-                        v-model.number="variant.oldPrice"
-                        type="number"
-                        step="0.01"
-                        @input="markDirty"
-                        @blur="updateVariantSKU(index)"
-                      />
-                    </div>
-                    <div class="input-inline">
-                      <label>Stock</label>
-                      <input
-                        v-model.number="variant.stock"
-                        type="number"
-                        min="0"
-                        required
-                        @input="markDirty"
-                      />
-                    </div>
-                    <div class="input-inline" v-if="variant.sku">
-                      <label>SKU</label>
-                      <input v-model="variant.sku" type="text" readonly />
-                    </div>
-                    <div class="variant-attributes">
-                      <div class="attribute">
-                        <template
-                          v-if="
-                            (variant.color &&
-                              (variant.color.name || variant.color.hex)) ||
-                            isVariantAttributeExpanded(index, 'color')
-                          "
-                        >
-                          <label>Color</label>
-                          <input
-                            v-model="variant.color.name"
-                            placeholder="Color Name"
-                            @input="markDirty"
-                            @blur="updateVariantSKU(index)"
-                          />
-                          <input
-                            v-model="variant.color.hex"
-                            placeholder="Color Hex"
-                            @input="markDirty"
-                            @blur="updateVariantSKU(index)"
-                          />
-                        </template>
-                        <template v-else>
-                          <button
-                            type="button"
-                            @click="expandVariantAttribute(index, 'color')"
-                          >
-                            + Color
-                          </button>
-                        </template>
-                      </div>
-                      <template v-for="attr in variantAttributes" :key="attr">
-                        <div class="attribute">
-                          <template
-                            v-if="
-                              variant[attr] ||
-                              isVariantAttributeExpanded(index, attr)
-                            "
-                          >
-                            <label>{{ capitalize(attr) }}</label>
-                            <input
-                              v-model="variant[attr]"
-                              type="text"
-                              @input="markDirty"
-                              @blur="updateVariantSKU(index)"
-                            />
-                          </template>
-                          <template v-else>
-                            <button
-                              type="button"
-                              @click="expandVariantAttribute(index, attr)"
-                            >
-                              + {{ capitalize(attr) }}
-                            </button>
-                          </template>
-                        </div>
-                      </template>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    class="remove-btn"
-                    @click="removeVariant(index)"
-                  >
-                    Remove
-                  </button>
-                </div>
-                <button type="button" class="add-btn" @click="addVariant">
-                  + Add Variant
-                </button>
-              </div>
-            </div>
+            <EditItemVariants
+              :variants="selectedItem.variants"
+              @mark-dirty="markDirty"
+              @update-variant-sku="updateVariantSKU"
+              @add-variant="addVariant"
+              @remove-variant="removeVariant"
+            />
           </div>
         </div>
       </section>
     </div>
+
     <!-- Fixed Action Bar -->
     <div class="fixed-actions">
       <div class="unsaved" v-if="hasUnsavedChanges">Unsaved Changes</div>
@@ -547,39 +494,59 @@
         {{ actionNotification }}
       </div>
     </div>
+
     <!-- Modal for New Item Creation -->
     <div class="modal-overlay" v-if="showNewItemModal">
       <div class="modal">
         <h2>New Item</h2>
         <form @submit.prevent="submitNewItemModal">
-          <div class="modal-form-group">
-            <label>Name</label>
-            <input type="text" v-model="newItemForm.name" required />
-          </div>
-          <div class="modal-form-group">
-            <label>Price</label>
+          <div class="form-group" :class="{ 'has-text': newItemForm.name }">
+            <label for="newItemName">Name</label>
             <input
+              id="newItemName"
+              type="text"
+              v-model="newItemForm.name"
+              required
+            />
+          </div>
+          <div
+            class="form-group"
+            :class="{ 'has-text': newItemForm.price != null }"
+          >
+            <label for="newItemPrice">Price</label>
+            <input
+              id="newItemPrice"
               type="number"
               v-model.number="newItemForm.price"
               step="0.01"
               required
             />
           </div>
-          <div class="modal-form-group">
-            <label>Old Price</label>
+          <div
+            class="form-group"
+            :class="{ 'has-text': newItemForm.oldPrice != null }"
+          >
+            <label for="newItemOldPrice">Old Price</label>
             <input
+              id="newItemOldPrice"
               type="number"
               v-model.number="newItemForm.oldPrice"
               step="0.01"
             />
           </div>
-          <div class="modal-form-group">
-            <label>Description</label>
-            <textarea v-model="newItemForm.description"></textarea>
+          <div
+            class="form-group"
+            :class="{ 'has-text': newItemForm.description }"
+          >
+            <label for="newItemDescription">Description</label>
+            <textarea
+              id="newItemDescription"
+              v-model="newItemForm.description"
+            ></textarea>
           </div>
-          <div class="modal-form-group">
-            <label>Image URL</label>
-            <input type="text" v-model="newItemForm.image" />
+          <div class="form-group" :class="{ 'has-text': newItemForm.image }">
+            <label for="newItemImage">Image URL</label>
+            <input id="newItemImage" type="text" v-model="newItemForm.image" />
           </div>
           <div class="modal-actions">
             <button
@@ -749,7 +716,7 @@ const formSections = [
         label: "Estimated Delivery Time",
         model: "estimatedDeliveryTime",
         component: "input",
-        props: { type: "text", placeholder: "e.g., 3-5 business days" },
+        props: { type: "text" },
       },
     ],
     subFields: {
@@ -854,11 +821,9 @@ const formSections = [
 ];
 
 const getFrequentlyBoughtOptions = (index) => {
-  // Get the already selected items in the frequently bought list (except current index)
   const alreadySelected = selectedItem.frequentlyBoughtTogether.filter(
     (val, i) => i !== index
   );
-  // Return items excluding the current item and those already selected
   return items.value.filter(
     (item) =>
       item._id !== selectedItem._id && !alreadySelected.includes(item._id)
@@ -898,63 +863,6 @@ const handleNestedInput = (section, subKey, field, e) =>
     field.props.type === "checkbox" ? e.target.checked : e.target.value
   );
 
-const addVariant = () => {
-  selectedItem.variants.push({
-    color: { name: "", hex: "" },
-    size: "",
-    material: "",
-    style: "",
-    capacity: "",
-    flavor: "",
-    scent: "",
-    power: "",
-    length: "",
-    region: "",
-    price: 0,
-    oldPrice: 0,
-    savingsAmount: 0,
-    savingsPercentage: "",
-    image: "",
-    stock: 0,
-    sku: "",
-    dimensions: { length: 0, width: 0, height: 0 },
-  });
-  markDirty();
-};
-const removeVariant = (index) => {
-  selectedItem.variants.splice(index, 1);
-  markDirty();
-};
-const variantAttributes = [
-  "size",
-  "material",
-  "style",
-  "capacity",
-  "flavor",
-  "scent",
-  "power",
-  "length",
-  "region",
-];
-const variantExpanded = reactive({});
-const expandVariantAttribute = (i, attr) => {
-  if (!variantExpanded[i]) variantExpanded[i] = {};
-  variantExpanded[i][attr] = true;
-};
-const isVariantAttributeExpanded = (i, attr) =>
-  variantExpanded[i] && variantExpanded[i][attr];
-const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-const updateVariantSKU = (index) => {
-  const variant = selectedItem.variants[index];
-  const attributes = [variant.color?.name || "", variant.size || ""]
-    .filter(Boolean)
-    .join("-");
-  variant.sku = `${selectedItem.name.replace(/\s+/g, "").toUpperCase()}-${
-    attributes || "BASE"
-  }-${index + 1}`;
-  markDirty();
-};
-
 const fetchItems = async () => {
   try {
     const data = await $fetch("/api/items");
@@ -993,6 +901,7 @@ const clearSelectedItem = () => {
       dimensions: { length: 0, width: 0, height: 0 },
       freeShippingEligible: false,
       availableRegions: [],
+
       estimatedDeliveryTime: "",
     },
     reviewCount: 0,
@@ -1079,10 +988,105 @@ async function submitNewItemModal() {
   activeTab.value = "general";
   isModalLoading.value = false;
 }
+
+// Variant functions
+const updateVariantSKU = (index) => {
+  const variant = selectedItem.variants[index];
+  const attributes = [variant.color?.name || "", variant.size || ""]
+    .filter(Boolean)
+    .join("-");
+  variant.sku = `${selectedItem.name.replace(/\s+/g, "").toUpperCase()}-${
+    attributes || "BASE"
+  }-${index + 1}`;
+  markDirty();
+};
+
+const addVariant = () => {
+  selectedItem.variants.push({
+    color: { name: "", hex: "" },
+    size: "",
+    material: "",
+    style: "",
+    capacity: "",
+    flavor: "",
+    scent: "",
+    power: "",
+    length: "",
+    region: "",
+    price: 0,
+    oldPrice: 0,
+    savingsAmount: 0,
+    savingsPercentage: "",
+    image: "",
+    stock: 0,
+    sku: "",
+    dimensions: { length: 0, width: 0, height: 0 },
+  });
+  markDirty();
+};
+const removeVariant = (index) => {
+  selectedItem.variants.splice(index, 1);
+  markDirty();
+};
 </script>
 
 <style scoped>
-/* Use Inter font (or Roboto fallback) with clear typography and ample whitespace */
+/* INPUT & FORM-GROUP STYLES FROM MODAL COMPONENT */
+
+.form-group {
+  position: relative;
+  margin-bottom: 1rem;
+  height: 50px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  line-height: 60px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: #000;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+.form-group.has-text input,
+.form-group.has-text select,
+.form-group.has-text textarea {
+  line-height: 12px;
+  padding-top: 16px;
+  border-color: #66afe9;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #66afe9;
+  outline: none;
+}
+.form-group label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #777;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+.form-group.has-text label {
+  top: 8px;
+  transform: none;
+  font-size: 12px;
+  color: #555;
+}
+
+/* REST OF ORIGINAL STYLES */
 .wrapper,
 body {
   font-family: "Inter", "Roboto", sans-serif;
@@ -1094,7 +1098,6 @@ body {
   padding: 0;
 }
 
-/* Layout & Spacing */
 .wrapper {
   padding: 20px;
 }
@@ -1103,13 +1106,13 @@ body {
   gap: 20px;
 }
 
-/* Sidebar Styling */
+/* Sidebar */
 .sidebar {
   flex: 0 0 250px;
   background: #fff;
   padding: 20px;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Enhanced shadow for depth */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 .breadcrumbs {
   font-size: 0.9rem;
@@ -1121,14 +1124,6 @@ body {
 }
 .breadcrumb-separator {
   margin-right: 5px;
-}
-.search-filters input,
-.search-filters select {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #e5e7eb;
-  min-width: 200px;
 }
 .item-list {
   list-style: none;
@@ -1156,22 +1151,19 @@ body {
   font-size: 1rem;
   cursor: pointer;
   transition: background 0.2s ease;
-  min-width: 200px;
 }
 .new-item-btn:hover {
   background: #1d4ed8;
 }
 
-/* Editor Styling */
+/* Editor */
 .editor {
   flex: 1;
   background: #fff;
   padding: 20px;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Enhanced shadow for depth */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
-
-/* Tab Header */
 .tab-header {
   display: flex;
   gap: 15px;
@@ -1185,7 +1177,6 @@ body {
   cursor: pointer;
   color: #6b7280;
   transition: background 0.2s ease;
-  min-width: 200px;
 }
 .tab-header button.active,
 .tab-header button:hover {
@@ -1193,81 +1184,22 @@ body {
   color: #2563eb;
   font-weight: 500;
 }
-
-/* Card Layouts */
 .card {
   background: #fff;
   border: 1px solid #e5e7eb;
   padding: 20px;
   margin-bottom: 20px;
   border-radius: 4px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Enhanced shadow for depth */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
-.form-card {
-  margin-bottom: 20px;
-}
-.additional-info-card,
-.variants-card {
-  /* Card layout for additional information and variants */
-}
-
-/* Grid System for Forms */
 .grid {
   display: grid;
   gap: 15px;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.form-group label {
-  font-size: 0.9rem;
-  color: #4b5563;
-}
-
-/* Product Image with Zoom Effect */
-.product-image-preview {
-  text-align: center;
-  margin-bottom: 20px;
-}
-.product-image-preview img {
-  max-width: 100%;
-  height: auto;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Enhanced shadow for depth */
-  transition: transform 0.3s ease;
-}
-.product-image-preview img.zoomable:hover {
-  transform: scale(1.05);
-}
-
-/* List Editors */
 .list-editor {
   margin-bottom: 15px;
 }
-.list-editor h3 {
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-  color: #4b5563;
-}
-.list-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-input {
-  padding-left: 5px;
-}
-.list-item input {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #e5e7eb;
-  min-width: 200px;
-}
-/* Secondary style for list editor buttons */
 .add-list-btn {
   background: transparent;
   border: 1px solid #2563eb;
@@ -1275,105 +1207,9 @@ input {
   padding: 10px 15px;
   cursor: pointer;
   transition: background 0.2s ease;
-  min-width: 200px;
 }
 .add-list-btn:hover {
   background: #e5e7eb;
-}
-
-/* Variants */
-.variants-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-.variants-header h2 {
-  font-size: 1.6rem;
-  color: #374151;
-}
-.variants-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-.variant-row {
-  display: flex;
-  gap: 15px;
-  align-items: flex-start;
-  padding: 20px;
-  background: #ffffff; /* Distinct background for variant rows */
-  border: 1px solid #e5e7eb; /* Distinct border for variant rows */
-  border-radius: 4px;
-}
-.variant-preview {
-  flex: 0 0 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.variant-fields {
-  flex: 1;
-}
-.input-inline {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-bottom: 10px;
-}
-.input-inline label {
-  font-size: 0.9rem;
-  color: #4b5563;
-}
-.input-inline input {
-  padding: 10px;
-  border: 1px solid #e5e7eb;
-  min-width: 200px;
-}
-.variant-attributes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-top: 10px;
-}
-.attribute {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.attribute label {
-  font-size: 0.9rem;
-  color: #4b5563;
-}
-.attribute input {
-  padding: 10px;
-  border: 1px solid #e5e7eb;
-  min-width: 200px;
-}
-.remove-btn {
-  background: #dc2626;
-  color: #fff;
-  padding: 10px 15px;
-  border: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background 0.2s ease;
-  min-width: 200px;
-}
-.remove-btn:hover {
-  background: #c11b1b;
-}
-.add-btn {
-  background: #16a34a;
-  color: #fff;
-  padding: 12px 20px;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  align-self: center;
-  min-width: 200px;
-}
-.add-btn:hover {
-  background: #15803d;
 }
 
 /* Fixed Action Bar */
@@ -1382,7 +1218,7 @@ input {
   bottom: 20px;
   right: 20px;
   display: flex;
-  gap: 20px; /* Increased gap for better spacing */
+  gap: 20px;
   align-items: center;
 }
 .fixed-actions button {
@@ -1390,29 +1226,19 @@ input {
   border: none;
   background: #2563eb;
   color: #fff;
-  font-size: 1rem;
   cursor: pointer;
   transition: background 0.2s ease;
-  min-width: 200px;
 }
 .fixed-actions button:hover {
   background: #1d4ed8;
 }
-.fixed-actions .unsaved {
+.unsaved {
   background: #fbbf24;
   color: #1f2937;
   padding: 10px 15px;
-  font-size: 1rem;
-}
-.fixed-actions .action-notification {
-  background: #2563eb;
-  color: #fff;
-  padding: 10px 15px;
-  font-size: 1rem;
 }
 
-/* Modal with Fade-in and Scale Animation */
-/* Modal animation with scale */
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1424,8 +1250,6 @@ input {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  opacity: 1;
-  transition: opacity 0.3s ease;
 }
 .modal {
   background: #fff;
@@ -1433,8 +1257,8 @@ input {
   width: 400px;
   border: 1px solid #e5e7eb;
   border-radius: 4px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Enhanced shadow for depth */
-  animation: fadeIn 0.3s ease; /* Modal animation with scale */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease;
 }
 @keyframes fadeIn {
   from {
@@ -1454,19 +1278,6 @@ input {
 .modal-form-group {
   margin-bottom: 15px;
 }
-.modal-form-group label {
-  display: block;
-  margin-bottom: 5px;
-  color: #4b5563;
-  font-size: 0.9rem;
-}
-.modal-form-group input,
-.modal-form-group textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #e5e7eb;
-  min-width: 200px;
-}
 .modal-actions {
   display: flex;
   justify-content: space-between;
@@ -1479,7 +1290,6 @@ input {
   padding: 10px 20px;
   cursor: pointer;
   transition: background 0.2s ease;
-  min-width: 200px;
 }
 .modal-submit-btn:hover {
   background: #1d4ed8;
@@ -1491,31 +1301,12 @@ input {
   padding: 10px 20px;
   cursor: pointer;
   transition: background 0.2s ease;
-  min-width: 200px;
 }
 .modal-cancel-btn:hover {
   background: #c11b1b;
 }
 
-/* Focus states for accessibility */
-/* Focus states for accessibility */
-button:focus,
-input:focus,
-textarea:focus,
-select:focus {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
-}
-
-/* Global Reset for Form Elements */
-button,
-input,
-textarea,
-select {
-  border-radius: 4px;
-}
-
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
   .main-container {
     flex-direction: column;

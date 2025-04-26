@@ -304,7 +304,7 @@ function calculateStats() {
     return;
   }
   const sum = reviews.value.reduce((acc, r) => acc + (r.rating || 0), 0);
-  overallRating.value = (sum / totalReviews.value).toFixed(1);
+  overallRating.value = parseFloat((sum / totalReviews.value).toFixed(1));
 }
 
 function applyFilter(value) {

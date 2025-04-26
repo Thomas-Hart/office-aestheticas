@@ -252,7 +252,8 @@ function trackAndHandleWishlistClick() {
 
 function trackAndShowVariantModal() {
   trackNavigation("ViewedVariants", props.item.name);
-  showVariantModal.value = true;
+  goToItem(props.item._id);
+  // showVariantModal.value = true;
 }
 
 function trackAndAddToCart() {

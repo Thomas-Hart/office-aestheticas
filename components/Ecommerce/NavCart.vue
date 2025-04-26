@@ -819,5 +819,8 @@ async function handleOrderCompleted(orderData) {
   .cart-actions {
     gap: 0rem;
   }
+  .right-wrapper {
+    padding: 1rem;
+  }
 }
 </style>

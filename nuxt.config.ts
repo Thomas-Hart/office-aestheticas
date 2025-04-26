@@ -60,10 +60,6 @@ export default defineNuxtConfig({
       ] 
     : [],
 
-    googleSignIn: {
-      clientId: process.env.GOOGLE_CLIENT_ID,
-    },
-
   runtimeConfig: {    
     // Public keys that are exposed to the client
     
