@@ -5,10 +5,10 @@ export default defineEventHandler(async (event) => {
 
   // Create an S3 client using runtime config values
   const s3 = new S3Client({
-    region: config.NUXT_AWS_REGION,
+    region: config.AWS_REGION,
     credentials: {
-      accessKeyId: config.NUXT_AWS_ACCESS_KEY,
-      secretAccessKey: config.NUXT_AWS_SECRET_KEY,
+      accessKeyId: config.AWS_ACCESS_KEY,
+      secretAccessKey: config.AWS_SECRET_KEY,
     },
   });
 
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const params = {
-    Bucket: config.NUXT_S3_BUCKET, // S3 bucket name from config
+    Bucket: config.S3_BUCKET, // S3 bucket name from config
     Key: key, // The key (path) of the object to delete
   };
 

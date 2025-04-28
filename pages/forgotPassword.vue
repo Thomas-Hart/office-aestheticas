@@ -89,14 +89,14 @@ const handleForgotPassword = async () => {
 const sendResetEmail = async (userId) => {
   console.log("send reset email start");
   try {
-    const response = await $fetch("/api/forgot-password", {
+    const response = await $fetch("/api/forgotPassword/ses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        to: email.value,
-        link: "https://www.aestheticas.com/reset?target=" + userId,
+        email: email.value,
+        resetLink: "https://www.aestheticas.com/reset?target=" + userId,
       }),
     });
 

@@ -77,10 +77,10 @@ export default defineNuxtConfig({
       GOOGLE_LOGIN_URI_TEST: process.env.GOOGLE_LOGIN_URI_TEST,
 
       // AWS
-      NUXT_AWS_ACCESS_KEY: process.env.NUXT_AWS_ACCESS_KEY,
-      NUXT_AWS_SECRET_KEY: process.env.NUXT_AWS_SECRET_KEY,
-      NUXT_AWS_REGION: process.env.NUXT_AWS_REGION,
-      NUXT_S3_BUCKET: process.env.NUXT_S3_BUCKET,
+      AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
+      AWS_SECRET_KEY: process.env.AWS_SECRET_KEY,
+      AWS_REGION: process.env.AWS_REGION,
+      S3_BUCKET: process.env.S3_BUCKET,
 
       // Amazon Pay
       AMAZON_PAY_CLIENT_SECRET: process.env.AMAZON_PAY_CLIENT_SECRET,
