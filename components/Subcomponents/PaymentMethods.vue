@@ -2,7 +2,7 @@
   <div class="payment-methods">
     <h3 class="payment-title">Payment methods</h3>
     <div class="payment-icons">
-      <NuxtImg src="/Logos/Amex.png" alt="American Express" />
+      <NuxtImg src="/Logos/AMEX.png" alt="American Express" />
       <NuxtImg src="/Logos/Visa.svg" alt="Visa" />
       <NuxtImg src="/Logos/Discover.svg" alt="Discover" />
       <NuxtImg src="/Logos/Mastercard.svg" alt="Mastercard" />
