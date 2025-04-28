@@ -1,29 +1,19 @@
 <template>
   <div class="wrapper" v-if="hydrated">
-    <transition name="fade" mode="out-in">
-      <div v-if="!isLoggedIn" class="login-form">
-        <div class="left">
-          <div class="image-wrapper">
-            <img src="/BlogPics/BlogPic1.webp" alt="" />
-          </div>
-        </div>
-        <NavFooterPreloadLoginPage />
-      </div>
-      <div v-else class="dash">
-        <ProfileSidebar
-          :isSidebarVisible="isSidebarVisible"
-          :currentSection="currentSection"
-          @toggle-sidebar="isSidebarVisible = !isSidebarVisible"
-          @change-section="changeSection"
-        />
-        <WebSectionsProfileContent
-          :isSidebarVisible="isSidebarVisible"
-          :currentSection="currentSection"
-          @toggle-sidebar="isSidebarVisible = !isSidebarVisible"
-          @close-sidebar="isSidebarVisible = false"
-        />
-      </div>
-    </transition>
+    <div class="dash">
+      <ProfileSidebar
+        :isSidebarVisible="isSidebarVisible"
+        :currentSection="currentSection"
+        @toggle-sidebar="isSidebarVisible = !isSidebarVisible"
+        @change-section="changeSection"
+      />
+      <WebSectionsProfileContent
+        :isSidebarVisible="isSidebarVisible"
+        :currentSection="currentSection"
+        @toggle-sidebar="isSidebarVisible = !isSidebarVisible"
+        @close-sidebar="isSidebarVisible = false"
+      />
+    </div>
   </div>
 </template>
 
