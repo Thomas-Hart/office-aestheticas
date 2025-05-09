@@ -108,6 +108,8 @@
 </template>
 
 <script setup>
+// FIRST, GET WISHLIST BUTTON WORKING ALONG WITH SOME ANIMATION
+// SECOND, FIND OUT HOW TO MAKE THE THUMB TAP OPEN THE ITEM OVERLAY INSTEAD OF HOVER WHEN THAT'S RELEVANT
 const props = defineProps({ item: Object });
 const emit = defineEmits(["openLoginModal"]);
 
