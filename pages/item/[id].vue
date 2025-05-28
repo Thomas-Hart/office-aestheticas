@@ -20,9 +20,9 @@
     </div>
 
     <!-- FAQ Section -->
-    <section class="FAQ">
+    <!-- <section class="FAQ">
       <WebSectionsFAQ />
-    </section>
+    </section> -->
   </div>
 </template>
 

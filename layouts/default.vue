@@ -80,15 +80,22 @@ function closeLoginModal() {
 }
 
 // Scroll behavior for hiding and showing nav
-const handleScroll = () => {
+const HIDE_OFFSET = 100;
+
+function handleScroll() {
   const currentScrollY = window.scrollY;
-  if (currentScrollY > lastScrollY) {
-    isNavHidden.value = true; // Hide nav on scroll down
-  } else {
-    isNavHidden.value = false; // Show nav on scroll up
+
+  // only hide if you're both scrolling down AND past the offset
+  if (currentScrollY > lastScrollY && currentScrollY > HIDE_OFFSET) {
+    isNavHidden.value = true;
   }
+  // always show if you scroll up again
+  else if (currentScrollY < lastScrollY) {
+    isNavHidden.value = false;
+  }
+
   lastScrollY = currentScrollY;
-};
+}
 
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);

@@ -2,7 +2,7 @@
   <div
     class="product-card"
     v-if="!loading"
-    @click="handleMouseEnter"
+    @click.capture="handleCardClick"
     ref="hoverTarget"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
@@ -33,7 +33,10 @@
             class="wishlist-icon"
             @click.stop="trackAndHandleWishlistClick"
           />
-          <div class="overlay-content">
+          <div
+            class="overlay-content"
+            :class="{ noninteractive: !overlayInteractive }"
+          >
             <!-- TITLE (word-by-word, letter-by-letter) -->
             <h3 class="overlay-title">
               {{ item.name }}
@@ -113,6 +116,8 @@
 const props = defineProps({ item: Object });
 const emit = defineEmits(["openLoginModal"]);
 
+const overlayInteractive = ref(true); // ← new!
+
 const isAddedToCart = ref(false);
 const showVariantModal = ref(false);
 
@@ -136,6 +141,19 @@ const handleMouseEnter = () => {
 const handleMouseLeave = () => {
   showOverlay.value = false;
 };
+
+function handleCardClick(event) {
+  if (!showOverlay.value) {
+    event.stopPropagation();
+    showOverlay.value = true;
+
+    // disable buttons until overlay has actually rendered
+    overlayInteractive.value = false;
+    nextTick(() => {
+      overlayInteractive.value = true;
+    });
+  }
+}
 
 onMounted(() => {
   loading.value = false;
@@ -390,7 +408,9 @@ function trackNavigation(actionType, action = null) {
   padding: 1rem;
   box-sizing: border-box;
 }
-
+.noninteractive {
+  pointer-events: none;
+}
 .overlay-title {
   margin-bottom: 0.25rem;
 }

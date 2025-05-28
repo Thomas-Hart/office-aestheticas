@@ -54,11 +54,12 @@
         <h3><code>// Technical</code></h3>
         <ul>
           <li>
-            Vue.js (Nuxt3) · JavaScript · TypeScript · Node.js · Express.js ·
-            REST APIs · MongoDB · Mongoose · SQL Basics · HTML5 · CSS3 (SCSS,
-            Responsive Design) · TailwindCSS · UI/UX Design Principles ·
-            Third-Party Integrations · Git · GitHub · AWS · Google Cloud/Search
-            Console · Vercel Deployment · And more!
+            Vue (Nuxt3) · React (Next) · Ruby on Rails · JavaScript · TypeScript
+            · Java · Python · C · C++ · Docker · Node · Express · REST APIs ·
+            MongoDB · Mongoose · SQL · HTML5 · CSS3 (SCSS, Responsive Design) ·
+            TailwindCSS · Git · GitHub Actions · AWS · Google Cloud Platform
+            (GCP) · Vercel Deployment · UI/UX · Design Principles · Third-Party
+            Integrations · And more!
           </li>
         </ul>
       </div>
