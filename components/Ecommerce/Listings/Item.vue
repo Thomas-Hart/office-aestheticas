@@ -561,9 +561,6 @@ function trackNavigation(actionType, action = null) {
 }
 
 @media (max-width: 768px) {
-}
-
-@media (max-width: 768px) {
   /* .overlay-content {
     padding: 0.65rem;
   }
