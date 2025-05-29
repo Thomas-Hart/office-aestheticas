@@ -2,10 +2,11 @@
   <div
     class="product-card"
     v-if="!loading"
-    @click.capture="handleCardClick"
-    ref="hoverTarget"
+    @pointerdown.capture="handlePointerDown"
+    @click.capture="swallowClick"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
+    ref="hoverTarget"
   >
     <div class="image-container">
       <!-- Product Image -->
@@ -33,10 +34,7 @@
             class="wishlist-icon"
             @click.stop="trackAndHandleWishlistClick"
           />
-          <div
-            class="overlay-content"
-            :class="{ noninteractive: !overlayInteractive }"
-          >
+          <div class="overlay-content">
             <!-- TITLE (word-by-word, letter-by-letter) -->
             <h3 class="overlay-title">
               {{ item.name }}
@@ -116,8 +114,6 @@
 const props = defineProps({ item: Object });
 const emit = defineEmits(["openLoginModal"]);
 
-const overlayInteractive = ref(true); // ← new!
-
 const isAddedToCart = ref(false);
 const showVariantModal = ref(false);
 
@@ -126,37 +122,73 @@ const userStore = useUserStore();
 const router = useRouter();
 const loading = ref(true);
 
-const showOverlay = ref(false);
-
 const { $fbq } = useNuxtApp();
 const { $klaviyo } = useNuxtApp();
+
+const showOverlay = ref(false);
+const openedByTap = ref(false);
+const swallowNextClick = ref(false);
+const hoverTarget = ref(null);
 
 // Check if user is logged in
 const isLoggedIn = computed(() => !!userStore.user);
 
-const handleMouseEnter = () => {
-  showOverlay.value = true;
-};
+function handleMouseEnter() {
+  if (!showOverlay.value) showOverlay.value = true;
+}
 
-const handleMouseLeave = () => {
-  showOverlay.value = false;
-};
+function handleMouseLeave() {
+  // only hide if it wasn’t tap-opened
+  if (!openedByTap.value) showOverlay.value = false;
+}
 
-function handleCardClick(event) {
+function handlePointerDown(event) {
+  if (event.pointerType !== "touch") return;
+
   if (!showOverlay.value) {
-    event.stopPropagation();
     showOverlay.value = true;
+    openedByTap.value = true;
+    swallowNextClick.value = true;
 
-    // disable buttons until overlay has actually rendered
-    overlayInteractive.value = false;
-    nextTick(() => {
-      overlayInteractive.value = true;
+    // listen for any next tap anywhere
+    document.addEventListener("pointerdown", handleClickOutside, {
+      capture: true,
+    });
+  }
+}
+
+function swallowClick(event) {
+  if (swallowNextClick.value) {
+    event.stopImmediatePropagation();
+    event.preventDefault();
+    swallowNextClick.value = false;
+  }
+}
+
+function handleClickOutside(event) {
+  if (
+    showOverlay.value &&
+    hoverTarget.value &&
+    !hoverTarget.value.contains(event.target)
+  ) {
+    showOverlay.value = false;
+    openedByTap.value = false;
+    swallowNextClick.value = false;
+    document.removeEventListener("pointerdown", handleClickOutside, {
+      capture: true,
     });
   }
 }
 
 onMounted(() => {
   loading.value = false;
+});
+
+// clean up on unmount just in case
+onUnmounted(() => {
+  document.removeEventListener("pointerdown", handleClickOutside, {
+    capture: true,
+  });
 });
 
 /** Word-based splitting so lines break only between words */
@@ -432,6 +464,10 @@ function trackNavigation(actionType, action = null) {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.overlay-buttons-container button {
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
 .overlay-add-button {
   border: none;
