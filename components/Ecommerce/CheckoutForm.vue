@@ -371,7 +371,21 @@ const props = defineProps({
   cartItems: Object,
 });
 
-const emit = defineEmits("orderCompleted");
+const emit = defineEmits(["orderCompleted", "stateChanged", "zipCodeChanged"]);
+
+watch(
+  () => shippingAddress.value.state,
+  (newState) => {
+    emit("stateChanged", newState);
+  }
+);
+
+watch(
+  () => shippingAddress.value.ZIPCode,
+  (newZIPCode) => {
+    emit("zipCodeChanged", newZIPCode);
+  }
+);
 
 let accessToken;
 const { data: tokenData, error: tokenError } = await useFetch(
