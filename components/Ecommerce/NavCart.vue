@@ -126,6 +126,8 @@
                       :totalAmount="totalPrice"
                       :cartItems="activeCart"
                       @orderCompleted="handleOrderCompleted"
+                      @stateChanged="handleStateChanged"
+                      @zipCodeChanged="handleZIPCodeChanged"
                     />
                   </div>
                 </div>
@@ -175,7 +177,7 @@
                       </div>
                       <div class="order-summary-item-total">
                         <p class="subtotal-text">
-                          ${{ item.price * item.quantity }}
+                          ${{ (item.price * item.quantity).toFixed(2) }}
                         </p>
                       </div>
                     </div>
@@ -192,13 +194,16 @@
                     </div>
                     <div class="cart-subtotal">
                       <p class="subtotal-text">Estimated Taxes</p>
-                      <p class="subtotal-text">${{ tax.toFixed(2) }}</p>
+                      <p class="subtotal-text" v-if="showTax">
+                        ${{ tax.toFixed(2) }}
+                      </p>
+                      <p class="subtotal-text" v-else>Enter Shipping Address</p>
                     </div>
                     <div class="cart-total">
                       <div class="total-text">
                         <p>Total</p>
                       </div>
-                      <p>${{ totalPrice.toFixed(2) }}</p>
+                      <p>${{ totalWithTax.toFixed(2) }}</p>
                     </div>
                   </div>
                 </div>
@@ -214,11 +219,15 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import stateTaxRates from "~/utils/stateTaxRates.js";
+
 const userStore = useUserStore();
 const itemStore = useItemStore();
 const emit = defineEmits(["close-cart"]);
 const router = useRouter();
 const route = useRoute();
+const currentState = ref("");
+const currentZip = ref("");
 
 const isLoggedIn = computed(() => !!userStore.user);
 const activeCart = computed(() =>
@@ -318,8 +327,38 @@ const subtotal = computed(() =>
     0
   )
 );
-const taxRate = 0.1; // 10%
-const tax = computed(() => subtotal.value * taxRate);
+
+// 1) tax as before
+const tax = computed(() => {
+  if (!showTax.value || !currentState.value) return 0;
+  const rate = stateTaxRates[currentState.value] ?? 0;
+  return subtotal.value * rate;
+});
+
+// 2) roundedTax
+const roundedTax = computed(() => Number(tax.value.toFixed(2)));
+
+// 3) totalWithTax
+const totalWithTax = computed(() => {
+  if (!showTax.value) return subtotal.value;
+  // subtotal + roundedTax, then round again to avoid FP drift
+  return Number((subtotal.value + roundedTax.value).toFixed(2));
+});
+
+function handleStateChanged(newState) {
+  currentState.value = newState;
+  console.log("state changed: " + currentState.value);
+  console.log("Tax: " + tax.value);
+}
+
+function handleZIPCodeChanged(newZip) {
+  currentZip.value = newZip;
+  console.log("zip changed: " + currentZip.value);
+}
+
+const showTax = computed(() => {
+  return /^[0-9]{5}$/.test(currentZip.value);
+});
 
 // Handle order completion (console.log statements preserved)
 async function handleOrderCompleted(orderData) {
