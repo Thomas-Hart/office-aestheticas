@@ -23,11 +23,11 @@
               ← Back
             </li>
             <li
-              v-for="cat in categories"
-              :key="cat"
-              @click="trackAndNavigateToCategory(cat)"
+              v-for="(label, key) in tagDescriptions"
+              :key="key"
+              @click="trackAndNavigateToCategory(key)"
             >
-              {{ cat }}
+              {{ label }}
             </li>
           </ul>
         </template>
@@ -46,9 +46,9 @@
                 <button @click="handleProfileClick">Profile</button>
               </template>
               <template v-else>
-                <NuxtLink to="/profile" @click="closeAndReset('Profile')"
-                  >Profile</NuxtLink
-                >
+                <NuxtLink to="/profile" @click="closeAndReset('Profile')">
+                  Profile
+                </NuxtLink>
               </template>
             </li>
             <li>
@@ -59,8 +59,9 @@
                 <NuxtLink
                   to="/profile?section=wishlist"
                   @click="closeAndReset('Wishlist')"
-                  >Wishlist</NuxtLink
                 >
+                  Wishlist
+                </NuxtLink>
               </template>
             </li>
             <li><button @click="trackShopClick">Shop</button></li>
@@ -73,6 +74,10 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useRouter } from "vue-router";
+import { tagDescriptions } from "~/utils/tagDescriptions.js"; // ← pull categories from tagDescriptions
+
 const emit = defineEmits(["close", "open-login-modal"]);
 const activeView = ref("");
 const mobileView = ref(false);
@@ -98,7 +103,10 @@ function trackNavigation(actionType, action = null) {
     properties = { category: action, timestamp: new Date().toISOString() };
   } else {
     eventName = `NavigatedTo${actionType}`;
-    properties = { pageName: actionType, timestamp: new Date().toISOString() };
+    properties = {
+      pageName: actionType,
+      timestamp: new Date().toISOString(),
+    };
   }
   const enhancedProperties = isLoggedIn.value
     ? {
@@ -154,9 +162,9 @@ function trackShopClick() {
   trackAndSwitchToCategories();
 }
 
-function trackAndNavigateToCategory(category) {
-  trackNavigation("Category", category);
-  router.push({ path: "/", query: { tab: "All", category } });
+function trackAndNavigateToCategory(categoryKey) {
+  trackNavigation("Category", categoryKey);
+  router.push({ path: "/", query: { tab: "All", category: categoryKey } });
   if (window.innerWidth < 768) {
     trackAndSwitchToLinks();
   }
@@ -176,21 +184,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
 });
-
-const categories = [
-  "Desks and Tables",
-  "Chairs and Seating",
-  "Computers and Electronics",
-  "Office Supplies",
-  "Ergonomic Accessories",
-  "Lighting",
-  "Decor and Comfort",
-  "Communication",
-  "Health and Wellness",
-  "Networking and Security",
-  "Cleaning and Maintenance",
-  "Storage Solutions",
-];
 </script>
 
 <style scoped>

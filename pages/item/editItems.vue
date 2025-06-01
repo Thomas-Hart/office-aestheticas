@@ -302,6 +302,7 @@
                 </button>
               </div>
 
+              <!-- Tags Section (now a <select> pulling from tagDescriptions.js) -->
               <div class="list-editor">
                 <h3>Tags</h3>
                 <div
@@ -310,13 +311,20 @@
                   class="list-item"
                 >
                   <div class="form-group has-text">
-                    <label :for="'tag' + index">Tag</label>
-                    <input
+                    <label :for="'tag' + index">Category</label>
+                    <select
                       :id="'tag' + index"
-                      type="text"
                       v-model="selectedItem.tags[index]"
-                      placeholder="Tag"
-                    />
+                    >
+                      <option value="">Select a category</option>
+                      <option
+                        v-for="(label, key) in tagDescriptions"
+                        :key="key"
+                        :value="key"
+                      >
+                        {{ label }}
+                      </option>
+                    </select>
                   </div>
                   <button
                     type="button"
@@ -574,6 +582,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
 import { NuxtImg } from "#components";
+import { tagDescriptions } from "~/utils/tagDescriptions.js"; // ← adjust path if needed
 
 const actionNotification = ref(""),
   hasUnsavedChanges = ref(false);
@@ -901,7 +910,6 @@ const clearSelectedItem = () => {
       dimensions: { length: 0, width: 0, height: 0 },
       freeShippingEligible: false,
       availableRegions: [],
-
       estimatedDeliveryTime: "",
     },
     reviewCount: 0,
