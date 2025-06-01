@@ -10,14 +10,14 @@
   >
     <div class="image-container">
       <!-- Product Image -->
-      <img
+      <NuxtImg
         :src="'/ItemPics/' + item.image"
         alt="Product Image"
         class="product-image"
       />
 
       <!-- Sale Ribbon -->
-      <img
+      <NuxtImg
         v-if="item.oldPrice"
         src="/Graphics/Items/sale.svg"
         alt="Sale"
@@ -28,10 +28,15 @@
       <transition name="fade">
         <div v-if="showOverlay" class="overlay">
           <!-- Wishlist Icon -->
-          <img
-            src="/Graphics/Items/whiteHeart.svg"
+          <NuxtImg
+            :src="
+              isInWishlist
+                ? '/Graphics/Items/whiteHeartFull.svg'
+                : '/Graphics/Items/whiteHeart.svg'
+            "
             alt="Wishlist"
             class="wishlist-icon"
+            :class="{ pop: animating }"
             @click.stop="trackAndHandleWishlistClick"
           />
           <div class="overlay-content">
@@ -77,7 +82,7 @@
       </transition>
 
       <!-- Checkmark (if added to cart) -->
-      <img
+      <NuxtImg
         :src="resolvedCheckImg()"
         class="checkmark"
         v-if="isAddedToCart"
@@ -97,25 +102,30 @@
     </div>
 
     <!-- Variant Modal -->
-    <teleport to="body">
+    <!-- <teleport to="body">
       <EcommerceListingsVariantModal
         v-if="showVariantModal"
         :item="item"
         @closeModal="closeVariantModal"
         class="modal-overlay"
       />
+    </teleport> -->
+    <teleport to="body">
+      <NavFooterPreloadLoginModal
+        v-if="showLoginModal"
+        @close="closeLoginModal"
+      />
     </teleport>
   </div>
 </template>
 
 <script setup>
-// FIRST, GET WISHLIST BUTTON WORKING ALONG WITH SOME ANIMATION
-// SECOND, FIND OUT HOW TO MAKE THE THUMB TAP OPEN THE ITEM OVERLAY INSTEAD OF HOVER WHEN THAT'S RELEVANT
 const props = defineProps({ item: Object });
 const emit = defineEmits(["openLoginModal"]);
 
 const isAddedToCart = ref(false);
 const showVariantModal = ref(false);
+const showLoginModal = ref(false);
 
 const itemStore = useItemStore();
 const userStore = useUserStore();
@@ -219,20 +229,50 @@ const isInWishlist = computed(() => {
   return userStore.user.wishlist.some((w) => w.item === props.item._id);
 });
 
+// Login modal functions
+function openLoginModal() {
+  console.log("opening...");
+  showLoginModal.value = true;
+  document.body.classList.add("no-scroll");
+}
+
+function closeLoginModal() {
+  showLoginModal.value = false;
+  document.body.classList.remove("no-scroll");
+}
+
 async function handleWishlistClick() {
   if (!isLoggedIn.value) {
-    emit("openLoginModal");
+    openLoginModal();
     return;
   }
-  const wishlistItem = {
-    item: props.item._id,
-    name: props.item.name,
-    image: props.item.image,
-  };
-  if (isInWishlist.value) {
-    await removeFromWishlistOnServer(props.item._id);
-  } else {
-    await addToWishlistOnServer(wishlistItem);
+  // 1) flip UI state immediately
+  const willAdd = !isInWishlist.value;
+  willAdd
+    ? userStore.user.wishlist.push({ item: props.item._id })
+    : (userStore.user.wishlist = userStore.user.wishlist.filter(
+        (w) => w.item !== props.item._id
+      ));
+
+  // 2) then sync with server
+  try {
+    if (willAdd) {
+      await addToWishlistOnServer({
+        item: props.item._id,
+        name: props.item.name,
+        image: props.item.image,
+      });
+    } else {
+      await removeFromWishlistOnServer(props.item._id);
+    }
+  } catch (e) {
+    // rollback on error
+    willAdd
+      ? (userStore.user.wishlist = userStore.user.wishlist.filter(
+          (w) => w.item !== props.item._id
+        ))
+      : userStore.user.wishlist.push({ item: props.item._id });
+    console.error("Wishlist sync failed:", e);
   }
 }
 
@@ -297,9 +337,16 @@ function trackViewContent() {
   goToItem(props.item._id);
 }
 
-function trackAndHandleWishlistClick() {
+const animating = ref(false);
+async function trackAndHandleWishlistClick() {
+  if (!isLoggedIn.value) {
+    openLoginModal();
+    return;
+  }
+  animating.value = true;
+  setTimeout(() => (animating.value = false), 300);
   trackNavigation("WishlistClick", isInWishlist.value ? "Removed" : "Added");
-  handleWishlistClick();
+  await handleWishlistClick();
 }
 
 function trackAndShowVariantModal() {
@@ -594,6 +641,21 @@ function trackNavigation(actionType, action = null) {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.pop {
+  animation: pop-scale 0.3s ease-out;
+}
+@keyframes pop-scale {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @media (max-width: 768px) {
