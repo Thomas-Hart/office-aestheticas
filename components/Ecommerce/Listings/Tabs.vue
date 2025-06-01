@@ -23,8 +23,12 @@
         <label for="categorySelect">Category</label>
         <select id="categorySelect" v-model="selectedCategory">
           <option value="">All</option>
-          <option v-for="cat in uniqueCategories" :key="cat" :value="cat">
-            {{ cat }}
+          <option
+            v-for="(label, key) in tagDescriptions"
+            :key="key"
+            :value="key"
+          >
+            {{ label }}
           </option>
         </select>
       </div>
@@ -97,6 +101,10 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted, watch, nextTick } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { tagDescriptions } from "~/utils/tagDescriptions.js"; // ← import categories
+
 const tabs = ["Featured", "On Sale!", "All"];
 const bestSellersSection = ref(null);
 const activeTab = ref("Featured");
@@ -111,32 +119,30 @@ function sortByHighestPrice(arr) {
   return [...arr].sort((a, b) => b.price - a.price);
 }
 
-const uniqueCategories = computed(() => {
-  if (!items.value) return [];
-  const allTags = items.value
-    .flatMap((item) => item.tags || [])
-    .map((tag) => tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase());
-  return [...new Set(allTags)].sort();
-});
-
 const filteredItems = computed(() => {
   if (!items.value) return [];
+
   let result = [];
   switch (activeTab.value) {
     case "Featured":
       result = sortByHighestPrice(items.value);
       break;
+
     case "On Sale!":
       result = items.value.filter((item) => item.oldPrice);
       break;
+
     case "All":
       result = [...items.value];
+
+      // Filter by selectedCategory (only keys from tagDescriptions)
       if (selectedCategory.value) {
-        const lowerCat = selectedCategory.value.toLowerCase();
         result = result.filter((item) =>
-          item.tags.some((tag) => tag.toLowerCase() === lowerCat)
+          (item.tags || []).includes(selectedCategory.value)
         );
       }
+
+      // Filter by price range
       const minP = priceFilter.value.min;
       const maxP = priceFilter.value.max;
       result = result.filter((item) => {
@@ -145,13 +151,17 @@ const filteredItems = computed(() => {
         const passMax = maxP ? p <= maxP : true;
         return passMin && passMax;
       });
+
+      // Filter by star rating
       if (starRating.value > 0) {
         result = result.filter((item) => item.ratings >= starRating.value);
       }
       break;
+
     default:
       result = [...items.value];
   }
+
   return result;
 });
 
@@ -179,8 +189,8 @@ function parseQueryToLocal() {
   const q = route.query;
   activeTab.value = q.tab && tabs.includes(q.tab) ? q.tab : "Featured";
   selectedCategory.value =
-    typeof q.category === "string"
-      ? q.category.charAt(0).toUpperCase() + q.category.slice(1).toLowerCase()
+    typeof q.category === "string" && tagDescriptions[q.category]
+      ? q.category
       : "";
   priceFilter.value.min = q.minPrice ? Number(q.minPrice) : 0;
   priceFilter.value.max = q.maxPrice ? Number(q.maxPrice) : 0;
@@ -193,7 +203,7 @@ function updateQuery() {
     query: {
       ...route.query,
       tab: activeTab.value,
-      category: selectedCategory.value.toLowerCase() || "",
+      category: selectedCategory.value || "",
       minPrice: priceFilter.value.min || "",
       maxPrice: priceFilter.value.max || "",
       rating: starRating.value || "",
@@ -356,7 +366,6 @@ watch([activeTab, selectedCategory, priceFilter, starRating], updateQuery, {
 }
 
 .star-rating-filter .clear-rating {
-  /* margin-left: auto; */
   font-size: 0.75rem;
   color: #3f654c;
   cursor: pointer;
