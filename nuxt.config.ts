@@ -85,7 +85,7 @@ export default defineNuxtConfig({
       AMAZON_PAY_PRIVATE_KEY_PATH: process.env.AMAZON_PAY_PRIVATE_KEY_PATH,
 
       // Klaviyo
-      TEST_KLAVIYO_PRIVATE_KEY: process.env.TEST_KLAVIYO_PRIAVTE_KEY,
+      TEST_KLAVIYO_PRIVATE_KEY: process.env.TEST_KLAVIYO_PRIVATE_KEY,
       META_ACCESS_TOKEN: process.env.META_ACCESS_TOKEN,
 
       // Square Payment

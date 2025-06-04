@@ -19,7 +19,7 @@ export const useUserStore = defineStore(
       if (newUser && newUser.cart) {
         // Load the user's cart from the server
         user.value.cart = newUser.cart;
-        user.value.recentelyViewedItems = newUser.recentelyViewedItems || [];
+        user.value.recentlyViewedItems = newUser.recentlyViewedItems || [];
       }
     };
 
