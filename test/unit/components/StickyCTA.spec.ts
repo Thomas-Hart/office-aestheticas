@@ -1,9 +1,10 @@
 import { mount } from '@vue/test-utils'
 import StickyCTA from '@/components/Subcomponents/StickyCTA.vue'
 import { describe, it, expect } from 'vitest'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 globalThis.ref = ref
+globalThis.onMounted = onMounted
 
 describe('StickyCTA component', () => {
   it('changes size based on scroll direction', async () => {

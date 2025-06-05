@@ -1,9 +1,12 @@
 import { mount } from '@vue/test-utils'
 import Dropdown from '@/components/Subcomponents/Dropdown.vue'
 import { describe, it, expect } from 'vitest'
-import { ref } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 globalThis.ref = ref
+globalThis.computed = computed
+globalThis.onMounted = onMounted
+globalThis.onBeforeUnmount = onBeforeUnmount
 
 describe('Dropdown component', () => {
   it('toggles dropdown visibility', async () => {
