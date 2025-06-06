@@ -146,6 +146,7 @@ export const useUserStore = defineStore(
      */
     const validateCartItems = (allItems) => {
       user.value.cart = user.value.cart.map((cartItem) => {
+        let validatedItem
         const correspondingItem = allItems.find(
           (dbItem) => dbItem._id === cartItem._id
         );
@@ -156,16 +157,15 @@ export const useUserStore = defineStore(
         }
 
         // If variant, verify it's still valid
-        // In itemStore.validateCartItems for a variant item
-if (cartItem.variantId) {
-  const selectedVariant = correspondingItem.variants.find(
-    variant => variant._id === cartItem.variantId
-  );
-  if (selectedVariant) {
-    validatedItem = {
-      _id: correspondingItem._id,
-      name: correspondingItem.name,
-      price: selectedVariant.price,
+        if (cartItem.variantId) {
+          const selectedVariant = correspondingItem.variants.find(
+            variant => variant._id === cartItem.variantId
+          )
+          if (selectedVariant) {
+            validatedItem = {
+              _id: correspondingItem._id,
+              name: correspondingItem.name,
+              price: selectedVariant.price,
       originalPrice: selectedVariant.oldPrice || correspondingItem.oldPrice, // NEW
       image: selectedVariant.image || correspondingItem.image,
       variantId: selectedVariant._id,
@@ -180,26 +180,27 @@ if (cartItem.variantId) {
       length: selectedVariant.length,
       region: selectedVariant.region,
       quantity: cartItem.quantity,
-    };
-  } else {
-    console.warn(
-      `Variant with ID ${cartItem.variantId} is no longer available for item ${cartItem.name}`
-    );
-    return cartItem;
-  }
-} else {
-  // For non-variant items, include originalPrice as well
-  validatedItem = {
-    _id: correspondingItem._id,
-    name: correspondingItem.name,
-    price: correspondingItem.price,
-    originalPrice: correspondingItem.oldPrice, // NEW
-    image: correspondingItem.image,
-    quantity: cartItem.quantity,
-  };
-}
+            }
+          } else {
+            console.warn(
+              `Variant with ID ${cartItem.variantId} is no longer available for item ${cartItem.name}`
+            )
+            return cartItem
+          }
+        } else {
+          // For non-variant items, include originalPrice as well
+          validatedItem = {
+            _id: correspondingItem._id,
+            name: correspondingItem.name,
+            price: correspondingItem.price,
+            originalPrice: correspondingItem.oldPrice, // NEW
+            image: correspondingItem.image,
+            quantity: cartItem.quantity,
+          }
+        }
 
-      });
+        return validatedItem
+      })
     };
 
     /**
