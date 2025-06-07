@@ -7,7 +7,9 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./', import.meta.url))
+      '@': fileURLToPath(new URL('./', import.meta.url)),
+      '~': fileURLToPath(new URL('./', import.meta.url)),
+      '#imports': fileURLToPath(new URL('./test/mocks/imports.ts', import.meta.url))
     }
   },
   test: {
