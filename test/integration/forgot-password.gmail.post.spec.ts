@@ -179,5 +179,4 @@ describe('POST /api/forgot-password/gmail', () => {
     ;(globalThis as any).readBody.mockResolvedValue({ email: 'a@b.com', link: 'https://app', resetToken: 'tok' })
     await expect(handler({} as any)).rejects.toThrow('token fail')
   })
-
 })

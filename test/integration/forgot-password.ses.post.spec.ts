@@ -58,7 +58,6 @@ describe('POST /api/forgot-password/ses', () => {
     await handler(evt)
     expect((globalThis as any).readBody).toHaveBeenCalledWith(evt)
   })
-
   it('sends reset email via SES', async () => {
     ;(globalThis as any).readBody.mockResolvedValue({
       email: 'user@example.com',
@@ -82,6 +81,7 @@ describe('POST /api/forgot-password/ses', () => {
   it('throws 400 on invalid email', async () => {
     ;(globalThis as any).readBody.mockResolvedValue({ email: 'bad', resetLink: '' })
     await expect(handler({} as any)).rejects.toMatchObject({ statusCode: 400 })
+
     expect(sendMock).not.toHaveBeenCalled()
   })
 
@@ -116,6 +116,7 @@ describe('POST /api/forgot-password/ses', () => {
     vi.useRealTimers()
   })
 
+
   it('allows immediate request for a different email', async () => {
     ;(globalThis as any).readBody.mockResolvedValueOnce({ email: 'first@example.com', resetLink: 'x' })
     await handler({} as any)
@@ -137,5 +138,4 @@ describe('POST /api/forgot-password/ses', () => {
     ;(globalThis as any).readBody.mockResolvedValue({ email: 'user@example.com', resetLink: 'x' })
     await expect(handler({} as any)).rejects.toThrow('init fail')
   })
-
 })
