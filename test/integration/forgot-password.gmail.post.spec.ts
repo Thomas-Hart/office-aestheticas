@@ -58,6 +58,17 @@ beforeEach(() => {
 })
 
 describe('POST /api/forgot-password/gmail', () => {
+  it('reads the request body from the event', async () => {
+    const evt = {} as any
+    ;(globalThis as any).readBody.mockResolvedValue({
+      email: 'user@example.com',
+      link: 'x',
+      resetToken: 'tok'
+    })
+    await handler(evt)
+    expect((globalThis as any).readBody).toHaveBeenCalledWith(evt)
+  })
+
   it('sends reset email via Gmail', async () => {
     ;(globalThis as any).readBody.mockResolvedValue({
       email: 'a@b.com',
@@ -100,5 +111,72 @@ describe('POST /api/forgot-password/gmail', () => {
     await handler({} as any)
     expect(warnSpy).toHaveBeenCalledWith('MJML errors:', ['bad'])
     warnSpy.mockRestore()
+  })
+
+  it('sends the correct email parameters', async () => {
+    ;(globalThis as any).readBody.mockResolvedValue({ email: 'to@user.com', link: 'https://site', resetToken: 'tok' })
+    await handler({} as any)
+    expect(sendMailMock).toHaveBeenCalledWith({
+      from: '"Your Store" <user>',
+      to: 'to@user.com',
+      subject: 'Reset your password',
+      html: '<p>html</p>'
+    })
+  })
+
+  it('passes link and token to the MJML template', async () => {
+    const mjml = await import('mjml')
+    ;(globalThis as any).readBody.mockResolvedValue({
+      email: 'to@user.com',
+      link: 'https://site',
+      resetToken: 'tok'
+    })
+    await handler({} as any)
+    expect(mjml.default).toHaveBeenCalledWith(
+      expect.stringContaining('href="https://site/reset-password?token=tok"')
+    )
+  })
+
+  it('uses fallback redirect uri when none provided', async () => {
+    const orig = (globalThis as any).useRuntimeConfig
+    ;(globalThis as any).useRuntimeConfig = () => ({
+      public: { GMAIL_CLIENT_ID: 'id', GMAIL_USER: 'user' },
+      private: { GMAIL_CLIENT_SECRET: 'secret', GMAIL_REFRESH_TOKEN: 'refresh' }
+    })
+    ;(globalThis as any).readBody.mockResolvedValue({ email: 'a@b.com', link: 'https://app', resetToken: 'abc' })
+    await handler({} as any)
+    expect(OAuth2Mock).toHaveBeenCalledWith('id', 'secret', 'https://developers.google.com/oauthplayground')
+    ;(globalThis as any).useRuntimeConfig = orig
+  })
+
+  it('handles object access token responses', async () => {
+    OAuth2Mock.mockImplementationOnce(function (this: any) {
+      oAuthInstance = this
+      this.setCredentials = vi.fn()
+      this.getAccessToken = vi.fn().mockResolvedValue({ token: 'obj' })
+    })
+    ;(globalThis as any).readBody.mockResolvedValue({ email: 'a@b.com', link: 'https://app', resetToken: 'abc' })
+    await handler({} as any)
+    expect(createTransportMock).toHaveBeenCalledWith(expect.objectContaining({ auth: expect.objectContaining({ accessToken: 'obj' }) }))
+  })
+
+  it('propagates errors from sendMail', async () => {
+    ;(globalThis as any).readBody.mockResolvedValue({
+      email: 'err@user.com',
+      link: 'https://app',
+      resetToken: 'tok'
+    })
+    sendMailMock.mockRejectedValue(new Error('fail'))
+    await expect(handler({} as any)).rejects.toThrow('fail')
+  })
+
+  it('propagates errors from OAuth token retrieval', async () => {
+    OAuth2Mock.mockImplementationOnce(function (this: any) {
+      oAuthInstance = this
+      this.setCredentials = vi.fn()
+      this.getAccessToken = vi.fn().mockRejectedValue(new Error('token fail'))
+    })
+    ;(globalThis as any).readBody.mockResolvedValue({ email: 'a@b.com', link: 'https://app', resetToken: 'tok' })
+    await expect(handler({} as any)).rejects.toThrow('token fail')
   })
 })

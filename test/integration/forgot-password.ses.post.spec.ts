@@ -49,6 +49,15 @@ beforeEach(async () => {
 })
 
 describe('POST /api/forgot-password/ses', () => {
+  it('reads the request body from the event', async () => {
+    const evt = {} as any
+    ;(globalThis as any).readBody.mockResolvedValue({
+      email: 'user@example.com',
+      resetLink: 'link'
+    })
+    await handler(evt)
+    expect((globalThis as any).readBody).toHaveBeenCalledWith(evt)
+  })
   it('sends reset email via SES', async () => {
     ;(globalThis as any).readBody.mockResolvedValue({
       email: 'user@example.com',
@@ -72,6 +81,16 @@ describe('POST /api/forgot-password/ses', () => {
   it('throws 400 on invalid email', async () => {
     ;(globalThis as any).readBody.mockResolvedValue({ email: 'bad', resetLink: '' })
     await expect(handler({} as any)).rejects.toMatchObject({ statusCode: 400 })
+
+    expect(sendMock).not.toHaveBeenCalled()
+  })
+
+  it('does not start rate limit timer for invalid email', async () => {
+    ;(globalThis as any).readBody.mockResolvedValue({ email: 'bad', resetLink: 'x' })
+    await expect(handler({} as any)).rejects.toMatchObject({ statusCode: 400 })
+    ;(globalThis as any).readBody.mockResolvedValue({ email: 'valid@example.com', resetLink: 'x' })
+    await expect(handler({} as any)).resolves.toEqual({ status: 'ok' })
+    expect(sendMock).toHaveBeenCalledTimes(1)
   })
 
   it('rate limits repeated requests', async () => {
@@ -95,5 +114,28 @@ describe('POST /api/forgot-password/ses', () => {
     await expect(handler({} as any)).resolves.toEqual({ status: 'ok' })
     expect(sendMock).toHaveBeenCalledTimes(2)
     vi.useRealTimers()
+  })
+
+
+  it('allows immediate request for a different email', async () => {
+    ;(globalThis as any).readBody.mockResolvedValueOnce({ email: 'first@example.com', resetLink: 'x' })
+    await handler({} as any)
+    ;(globalThis as any).readBody.mockResolvedValueOnce({ email: 'second@example.com', resetLink: 'x' })
+    await expect(handler({} as any)).resolves.toEqual({ status: 'ok' })
+    expect(sendMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('propagates errors from SES send', async () => {
+    ;(globalThis as any).readBody.mockResolvedValue({ email: 'user@example.com', resetLink: 'x' })
+    sendMock.mockRejectedValue(new Error('oops'))
+    await expect(handler({} as any)).rejects.toThrow('oops')
+  })
+
+  it('propagates errors from SES client setup', async () => {
+    SESClientMock.mockImplementationOnce(() => {
+      throw new Error('init fail')
+    })
+    ;(globalThis as any).readBody.mockResolvedValue({ email: 'user@example.com', resetLink: 'x' })
+    await expect(handler({} as any)).rejects.toThrow('init fail')
   })
 })
